@@ -75,7 +75,8 @@ internally to Laravel; everything else sits on the Compose network with no publi
 | `minio` | object storage for previews and text blobs |
 
 More in [docs/architecture.md](docs/architecture.md); format coverage in
-[docs/formats.md](docs/formats.md).
+[docs/formats.md](docs/formats.md). Running against external Postgres, Redis or
+S3, and moving a setup onto a server: [docs/hosting.md](docs/hosting.md).
 
 ## Operating
 

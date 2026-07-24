@@ -10,15 +10,18 @@ x-app-env: &app-env
   ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
   ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me-please}
 
+  # Backing services default to the bundled containers. Point any host at an
+  # external server to use your own — see docs/hosting.md.
   DB_CONNECTION: pgsql
-  DB_HOST: postgres
-  DB_PORT: 5432
+  DB_HOST: ${DB_HOST:-postgres}
+  DB_PORT: ${DB_PORT:-5432}
   DB_DATABASE: ${DB_DATABASE:-nextsearch}
   DB_USERNAME: ${DB_USERNAME:-nextsearch}
   DB_PASSWORD: ${DB_PASSWORD:-nextsearch}
 
-  REDIS_HOST: redis
-  REDIS_PORT: 6379
+  REDIS_HOST: ${REDIS_HOST:-redis}
+  REDIS_PORT: ${REDIS_PORT:-6379}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
   CACHE_STORE: redis
   QUEUE_CONNECTION: redis
   SESSION_DRIVER: redis
@@ -26,7 +29,7 @@ x-app-env: &app-env
 
   SCOUT_DRIVER: meilisearch
   SCOUT_QUEUE: "true"
-  MEILISEARCH_HOST: http://meilisearch:7700
+  MEILISEARCH_HOST: ${MEILISEARCH_HOST:-http://meilisearch:7700}
   MEILISEARCH_KEY: ${MEILI_MASTER_KEY:?MEILI_MASTER_KEY fehlt}
 
   FILESYSTEM_DISK: s3
@@ -34,6 +37,9 @@ x-app-env: &app-env
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-nextsearch-secret}
   AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
   AWS_BUCKET: ${AWS_BUCKET:-nextsearch}
+  # A prefix inside the bucket, so NextSearch lives in a subfolder rather than
+  # at the bucket root. Empty = the bucket root.
+  AWS_ROOT: ${AWS_ROOT:-}
   AWS_ENDPOINT: ${AWS_ENDPOINT:-http://minio:9000}
   AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT:-true}
 
