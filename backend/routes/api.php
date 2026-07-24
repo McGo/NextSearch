@@ -28,6 +28,7 @@ Route::prefix('api')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::post('/auth/logout', [SessionController::class, 'logout']);
         Route::get('/auth/me', [SessionController::class, 'me']);
+        Route::put('/auth/password', [SessionController::class, 'changePassword']);
 
         Route::get('/search', SearchController::class);
 

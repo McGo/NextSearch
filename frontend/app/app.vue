@@ -11,6 +11,7 @@ useHead({
 })
 
 const showChrome = computed(() => route.path !== '/login')
+const passwordModalOpen = ref(false)
 
 const navigation = computed(() => [
   { label: 'Suche', to: '/', icon: 'i-lucide-search' },
@@ -50,6 +51,7 @@ const navigation = computed(() => [
           v-if="user"
           :items="[[
             { label: user.email, type: 'label' },
+            { label: 'Passwort ändern', icon: 'i-lucide-key-round', onSelect: () => { passwordModalOpen = true } },
             { label: 'Abmelden', icon: 'i-lucide-log-out', onSelect: () => logout() }
           ]]"
         >
@@ -73,6 +75,11 @@ const navigation = computed(() => [
     <UMain>
       <NuxtPage />
     </UMain>
+
+    <PasswordChangeModal
+      v-if="user"
+      v-model:open="passwordModalOpen"
+    />
 
     <UFooter v-if="showChrome">
       <template #left>

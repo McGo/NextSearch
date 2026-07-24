@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class SessionController extends Controller
@@ -59,6 +60,36 @@ class SessionController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json(['user' => $this->present($request->user())]);
+    }
+
+    /**
+     * Eigenes Passwort ändern. Steht jedem angemeldeten Nutzer offen, nicht nur
+     * Administratoren.
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            // Prüft gegen das Passwort des angemeldeten Nutzers.
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', Password::min(12), 'confirmed', 'different:current_password'],
+        ], [
+            // Deutsche Meldungen, bis die Lokalisierung (i18n) das übernimmt.
+            'current_password.required' => 'Bitte das aktuelle Passwort eingeben.',
+            'current_password.current_password' => 'Das aktuelle Passwort stimmt nicht.',
+            'password.required' => 'Bitte ein neues Passwort eingeben.',
+            'password.min' => 'Das neue Passwort braucht mindestens :min Zeichen.',
+            'password.confirmed' => 'Die Wiederholung stimmt nicht mit dem neuen Passwort überein.',
+            'password.different' => 'Das neue Passwort muss sich vom aktuellen unterscheiden.',
+        ]);
+
+        $request->user()->forceFill([
+            'password' => $validated['password'],
+        ])->save();
+
+        // Frische Session-ID nach dem Wechsel; die laufende Anmeldung bleibt.
+        $request->session()->regenerate();
+
+        return response()->json(['message' => 'Passwort geändert.']);
     }
 
     /**
