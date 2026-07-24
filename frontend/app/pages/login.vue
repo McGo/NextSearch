@@ -3,6 +3,11 @@ const { login } = useAuth()
 const route = useRoute()
 const config = useRuntimeConfig()
 const { t } = useI18n()
+const { state: branding, load: loadBranding } = useBranding()
+
+onMounted(loadBranding)
+
+const siteName = computed(() => branding.value.site_name || config.public.appName)
 
 useHead({ title: () => t('login.submit') })
 
@@ -34,13 +39,20 @@ async function submit() {
     <UCard class="w-full max-w-sm">
       <template #header>
         <div class="flex items-center gap-2">
+          <img
+            v-if="branding.has_logo && branding.logo_url"
+            :src="branding.logo_url"
+            :alt="siteName"
+            class="h-8 w-auto max-w-[160px] object-contain"
+          >
           <UIcon
+            v-else
             name="i-lucide-file-search"
             class="size-6 text-primary"
           />
           <div>
             <h1 class="font-semibold">
-              {{ config.public.appName }}
+              {{ siteName }}
             </h1>
             <p class="text-sm text-muted">
               {{ t('login.subtitle') }}
