@@ -89,12 +89,17 @@ export function useSearch() {
     error.value = null
 
     try {
-      result.value = await api.get<SearchResult>('/api/search', {
-        q: query.value,
+      // Nur senden, was gesetzt ist. Leere Parameter macht Laravel zu null,
+      // und die Facetten reisen als JSON-String, weil verschachtelte Objekte
+      // sich sonst nicht verlässlich in den Query-String serialisieren lassen.
+      const params: Record<string, string | number> = {
         sort: sort.value,
-        page: page.value,
-        filters: filters.value
-      })
+        page: page.value
+      }
+      if (query.value) params.q = query.value
+      if (countFilters(filters.value) > 0) params.filters = JSON.stringify(filters.value)
+
+      result.value = await api.get<SearchResult>('/api/search', params)
     } catch (e) {
       error.value = e instanceof ApiError ? e.message : 'Die Suche ist fehlgeschlagen.'
       result.value = null
