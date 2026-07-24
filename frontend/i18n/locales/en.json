@@ -15,7 +15,8 @@
     "folders": "Folders",
     "users": "Users",
     "status": "Status",
-    "github": "Source on GitHub"
+    "github": "Source on GitHub",
+    "settings": "Settings"
   },
   "userMenu": {
     "changePassword": "Change password",
@@ -289,6 +290,19 @@
       "clearConfirmAction": "Clear queue",
       "cleared": "{count} jobs cleared.",
       "clearFailed": "Could not clear the queue."
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Appearance of this installation.",
+      "logo": {
+        "title": "Logo",
+        "desc": "Replaces the NextSearch mark in the header, the favicon and the app icons on the home screen.",
+        "saved": "Logo saved.",
+        "failed": "The logo could not be saved.",
+        "removed": "Logo removed.",
+        "reset": "Reset to default",
+        "hint": "PNG, JPG or WebP, up to 4 MB. A wide logo fits the header; a roughly square one looks best as favicon and app icon."
+      }
     }
   },
   "indexing": {

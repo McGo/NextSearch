@@ -3,12 +3,21 @@ const config = useRuntimeConfig()
 const { user, isAdmin, logout } = useAuth()
 const route = useRoute()
 const { t, locale, locales, setLocale } = useI18n()
+const { state: branding, load: loadBranding } = useBranding()
+
+onMounted(loadBranding)
 
 useHead({
   titleTemplate: title => (title ? `${title} · ${config.public.appName}` : config.public.appName),
   htmlAttrs: { lang: () => locale.value },
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
-  link: [{ rel: 'icon', href: '/favicon.ico' }]
+  // Favicon follows the uploaded logo (with cache-busting), else the default.
+  link: [{
+    rel: 'icon',
+    href: () => branding.value.has_logo
+      ? `/api/branding/icon/favicon?v=${branding.value.logo_url?.split('v=')[1] ?? ''}`
+      : '/favicon.ico'
+  }]
 })
 
 const showChrome = computed(() => route.path !== '/login')
@@ -21,7 +30,8 @@ const navigation = computed(() => [
         { label: t('nav.instances'), to: '/admin/instances', icon: 'i-lucide-cloud' },
         { label: t('nav.folders'), to: '/admin/folders', icon: 'i-lucide-folder-tree' },
         { label: t('nav.users'), to: '/admin/users', icon: 'i-lucide-users' },
-        { label: t('nav.status'), to: '/admin/status', icon: 'i-lucide-activity' }
+        { label: t('nav.status'), to: '/admin/status', icon: 'i-lucide-activity' },
+        { label: t('nav.settings'), to: '/admin/settings', icon: 'i-lucide-settings' }
       ]
     : [])
 ])
@@ -61,11 +71,19 @@ const userMenuItems = computed(() => [
           to="/"
           class="flex items-center gap-2 font-semibold"
         >
-          <UIcon
-            name="i-lucide-file-search"
-            class="size-5 text-primary"
-          />
-          {{ config.public.appName }}
+          <img
+            v-if="branding.has_logo && branding.logo_url"
+            :src="branding.logo_url"
+            :alt="config.public.appName"
+            class="h-7 w-auto max-w-[200px] object-contain"
+          >
+          <template v-else>
+            <UIcon
+              name="i-lucide-file-search"
+              class="size-5 text-primary"
+            />
+            {{ config.public.appName }}
+          </template>
         </NuxtLink>
       </template>
 

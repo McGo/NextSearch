@@ -22,7 +22,8 @@ export default defineNuxtConfig({
     head: {
       link: [
         { rel: 'manifest', href: '/manifest.webmanifest' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }
+        // Falls back to the bundled icon until a logo is uploaded.
+        { rel: 'apple-touch-icon', href: '/api/branding/icon/apple' }
       ],
       meta: [
         { name: 'theme-color', content: '#2563eb' },

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\QueueController;
 use App\Http\Controllers\Admin\StatusController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\SessionController;
+use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\IndexingStatusController;
@@ -27,6 +28,12 @@ Route::prefix('api')->group(function () {
     Route::get('/auth/csrf', fn () => response()->noContent());
 
     Route::post('/auth/login', [SessionController::class, 'login']);
+
+    // Branding reads are public: the browser fetches the favicon, the manifest
+    // and its icons before anyone is signed in.
+    Route::get('/branding', [BrandingController::class, 'show']);
+    Route::get('/branding/logo', [BrandingController::class, 'logo']);
+    Route::get('/branding/icon/{variant}', [BrandingController::class, 'icon']);
 
     Route::middleware('auth')->group(function () {
         Route::post('/auth/logout', [SessionController::class, 'logout']);
@@ -55,6 +62,9 @@ Route::prefix('api')->group(function () {
         Route::middleware('admin')->prefix('admin')->group(function () {
             Route::get('/status', StatusController::class);
             Route::post('/queues/{queue}/clear', [QueueController::class, 'clear']);
+
+            Route::post('/branding/logo', [BrandingController::class, 'upload']);
+            Route::delete('/branding/logo', [BrandingController::class, 'destroy']);
 
             Route::apiResource('instances', InstanceController::class)
                 ->parameters(['instances' => 'instance'])
