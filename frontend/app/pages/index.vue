@@ -10,10 +10,13 @@ const {
 onMounted(run)
 
 const hasNoShares = computed(() => user.value?.folder_count === 0)
+
+// Auf Mobil sitzen die Facetten in einer Schublade statt über den Treffern.
+const filterDrawerOpen = ref(false)
 </script>
 
 <template>
-  <UContainer class="py-8">
+  <UContainer class="py-6 sm:py-8">
     <UAlert
       v-if="hasNoShares"
       class="mb-6"
@@ -24,14 +27,14 @@ const hasNoShares = computed(() => user.value?.folder_count === 0)
       description="Bis ein Administrator Ihnen einen Ordner zuweist, bleibt die Suche leer."
     />
 
-    <div class="flex gap-3">
+    <div class="flex gap-2 sm:gap-3">
       <UInput
         v-model="query"
         icon="i-lucide-search"
         placeholder="Volltextsuche über alle indizierten Dokumente"
         size="lg"
         autofocus
-        class="flex-1"
+        class="flex-1 min-w-0"
       />
 
       <USelect
@@ -39,12 +42,15 @@ const hasNoShares = computed(() => user.value?.folder_count === 0)
         :items="SORT_OPTIONS"
         value-key="value"
         size="lg"
-        class="w-48"
+        class="w-32 sm:w-44 lg:w-48 shrink-0"
       />
     </div>
 
     <div class="mt-6 grid grid-cols-1 lg:grid-cols-[16rem_1fr] gap-8">
+      <!-- Facettenleiste: auf Desktop fest an der Seite, auf Mobil in der
+           Schublade weiter unten. -->
       <FacetPanel
+        class="hidden lg:block"
         :facets="result?.facets ?? []"
         :selected="filters"
         :active-count="activeFilterCount"
@@ -53,10 +59,43 @@ const hasNoShares = computed(() => user.value?.folder_count === 0)
       />
 
       <section class="space-y-4">
-        <div class="flex items-center justify-between text-sm text-muted">
+        <!-- Mobile Steuerzeile: Filter-Knopf und Trefferzahl direkt über den
+             Ergebnissen, damit man nicht erst an den Filtern vorbeiscrollt. -->
+        <div class="flex items-center justify-between gap-3 lg:hidden">
+          <UButton
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-sliders-horizontal"
+            :disabled="!result || result.facets.length === 0"
+            @click="filterDrawerOpen = true"
+          >
+            Filter
+            <UBadge
+              v-if="activeFilterCount > 0"
+              size="sm"
+              color="primary"
+              variant="solid"
+              :label="String(activeFilterCount)"
+            />
+          </UButton>
+
+          <span
+            v-if="result"
+            class="text-sm text-muted whitespace-nowrap"
+          >
+            <UIcon
+              v-if="pending"
+              name="i-lucide-loader-circle"
+              class="animate-spin size-4 align-middle"
+            />
+            <template v-else>{{ result.total.toLocaleString('de-DE') }} Treffer</template>
+          </span>
+        </div>
+
+        <!-- Auf Desktop trägt diese Zeile die Trefferzahl. -->
+        <div class="hidden lg:flex items-center justify-between text-sm text-muted">
           <span v-if="result">
-            {{ result.total.toLocaleString('de-DE') }}
-            {{ result.total === 1 ? 'Treffer' : 'Treffer' }}
+            {{ result.total.toLocaleString('de-DE') }} Treffer
             <template v-if="result.took_ms !== null"> in {{ result.took_ms }} ms</template>
           </span>
           <UIcon
@@ -112,5 +151,34 @@ const hasNoShares = computed(() => user.value?.folder_count === 0)
         />
       </section>
     </div>
+
+    <!-- Mobile Filter-Schublade. Dieselbe Facettenleiste wie am Desktop, die
+         Filter greifen sofort — hinter der Schublade aktualisiert sich die
+         Trefferliste bereits. -->
+    <USlideover
+      v-model:open="filterDrawerOpen"
+      title="Filter"
+      side="left"
+      :ui="{ content: 'lg:hidden' }"
+    >
+      <template #body>
+        <FacetPanel
+          :facets="result?.facets ?? []"
+          :selected="filters"
+          :active-count="activeFilterCount"
+          @toggle="toggleFilter"
+          @clear="clearFilters"
+        />
+      </template>
+
+      <template #footer>
+        <UButton
+          block
+          color="neutral"
+          label="Fertig"
+          @click="filterDrawerOpen = false"
+        />
+      </template>
+    </USlideover>
   </UContainer>
 </template>
