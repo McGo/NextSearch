@@ -48,6 +48,13 @@ jobs:
         working-directory: frontend
         run: npm ci --ignore-scripts
 
+      # Erzeugt .nuxt/ inklusive der von @nuxt/eslint generierten Config, die
+      # das Lint braucht. Der postinstall-Prepare wird durch --ignore-scripts
+      # übersprungen, deshalb hier ausdrücklich.
+      - name: Nuxt vorbereiten
+        working-directory: frontend
+        run: npx nuxt prepare
+
       - name: Stil
         working-directory: frontend
         run: npm run lint
