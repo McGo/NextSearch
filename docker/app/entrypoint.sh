@@ -32,7 +32,7 @@ case "$role" in
   worker)
     wait_for_db
     exec php artisan queue:work redis \
-      --queue=crawl,process,preview,default \
+      --queue=crawl,process,default \
       --tries=3 \
       --backoff=30,120,600 \
       --max-time=3600 \

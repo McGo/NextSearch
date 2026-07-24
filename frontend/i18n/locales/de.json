@@ -257,7 +257,26 @@
       "updated": "{count} geändert",
       "skipped": "{count} übersprungen",
       "removed": "{count} entfernt",
-      "failedCount": "{count} Fehler"
+      "failedCount": "{count} Fehler",
+      "pipelineTitle": "Verarbeitungs-Pipeline",
+      "pipelineIntro": "Jedes Dokument wandert von links nach rechts. Zwei Hintergrund-Warteschlangen erledigen die Arbeit; der Suchindex am Ende ist das, worin Sie suchen.",
+      "inQueue": "{count} in der Warteschlange",
+      "source": {
+        "title": "Nextcloud",
+        "desc": "Ihre überwachten Ordner. Nur lesend — es wird nie zurückgeschrieben."
+      },
+      "crawlStage": {
+        "title": "Crawl",
+        "desc": "Läuft die Ordner Ebene für Ebene ab (PROPFIND) und erkennt neue und geänderte Dateien an ihrer ETag. Reiht jede zur Verarbeitung ein."
+      },
+      "processStage": {
+        "title": "Verarbeitung",
+        "desc": "Lädt die Datei, extrahiert Text und Metadaten via Tika (OCR bei Scans), rendert das Vorschaubild und schreibt das Dokument in den Suchindex."
+      },
+      "indexStage": {
+        "title": "Suchindex",
+        "desc": "Meilisearch. Sobald ein Dokument hier ankommt, ist es auffindbar."
+      }
     }
   },
   "indexing": {

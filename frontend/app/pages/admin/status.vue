@@ -24,7 +24,7 @@ interface IndexRun {
 interface Status {
   runs: IndexRun[]
   documents: Record<string, number>
-  queues: Record<string, number>
+  queues: { crawl: number, process: number }
   services: { tika: boolean, search: { numberOfDocuments?: number, isIndexing?: boolean } }
 }
 
@@ -85,44 +85,115 @@ function runStateLabel(state: IndexRun['state']): string {
     </div>
 
     <template v-else-if="status">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <UCard>
-          <p class="text-xs text-muted">
-            {{ t('admin.status.searchIndex') }}
+      <!-- The processing pipeline: what each queue does and how a document
+           flows from Nextcloud into the search index. -->
+      <section class="rounded-xl border border-default p-4 sm:p-6 space-y-4">
+        <div>
+          <h2 class="font-medium">
+            {{ t('admin.status.pipelineTitle') }}
+          </h2>
+          <p class="text-sm text-muted">
+            {{ t('admin.status.pipelineIntro') }}
           </p>
-          <p class="text-xl font-semibold tabular-nums">
-            {{ number(status.services.search.numberOfDocuments ?? 0) }}
-          </p>
-          <p class="text-xs text-muted">
-            {{ t('admin.status.documents') }}
-          </p>
-        </UCard>
+        </div>
 
-        <UCard>
-          <p class="text-xs text-muted">
-            {{ t('admin.status.extraction') }}
-          </p>
-          <p class="text-xl font-semibold">
-            <UBadge
-              variant="subtle"
-              :color="status.services.tika ? 'success' : 'error'"
-              :label="status.services.tika ? t('admin.status.reachable') : t('admin.status.unreachable')"
-            />
-          </p>
-        </UCard>
+        <div class="flex flex-col lg:flex-row lg:items-stretch gap-3">
+          <!-- Source -->
+          <div class="flex-1 rounded-lg border border-default bg-elevated/40 p-4">
+            <div class="flex items-center gap-2">
+              <UIcon
+                name="i-lucide-cloud"
+                class="size-5 text-primary shrink-0"
+              />
+              <span class="font-medium">{{ t('admin.status.source.title') }}</span>
+            </div>
+            <p class="mt-2 text-xs text-muted leading-relaxed">
+              {{ t('admin.status.source.desc') }}
+            </p>
+          </div>
 
-        <UCard
-          v-for="(size, queue) in status.queues"
-          :key="queue"
-        >
-          <p class="text-xs text-muted">
-            {{ t('admin.status.queue', { name: queue }) }}
-          </p>
-          <p class="text-xl font-semibold tabular-nums">
-            {{ size }}
-          </p>
-        </UCard>
-      </div>
+          <PipelineArrow />
+
+          <!-- Crawl queue -->
+          <div class="flex-1 rounded-lg border border-default p-4">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <UIcon
+                  name="i-lucide-folder-search"
+                  class="size-5 text-primary shrink-0"
+                />
+                <span class="font-medium truncate">{{ t('admin.status.crawlStage.title') }}</span>
+              </div>
+              <UBadge
+                size="sm"
+                :color="status.queues.crawl > 0 ? 'info' : 'neutral'"
+                variant="subtle"
+                :label="t('admin.status.inQueue', { count: number(status.queues.crawl) })"
+              />
+            </div>
+            <p class="mt-2 text-xs text-muted leading-relaxed">
+              {{ t('admin.status.crawlStage.desc') }}
+            </p>
+          </div>
+
+          <PipelineArrow />
+
+          <!-- Process queue -->
+          <div class="flex-1 rounded-lg border border-default p-4">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <UIcon
+                  name="i-lucide-cog"
+                  class="size-5 text-primary shrink-0"
+                />
+                <span class="font-medium truncate">{{ t('admin.status.processStage.title') }}</span>
+              </div>
+              <UBadge
+                size="sm"
+                :color="status.queues.process > 0 ? 'info' : 'neutral'"
+                variant="subtle"
+                :label="t('admin.status.inQueue', { count: number(status.queues.process) })"
+              />
+            </div>
+            <p class="mt-2 text-xs text-muted leading-relaxed">
+              {{ t('admin.status.processStage.desc') }}
+            </p>
+            <p class="mt-2 flex items-center gap-1.5 text-xs">
+              <UIcon
+                name="i-lucide-scan-text"
+                class="size-3.5 text-muted"
+              />
+              <span class="text-muted">Tika</span>
+              <UBadge
+                size="sm"
+                variant="subtle"
+                :color="status.services.tika ? 'success' : 'error'"
+                :label="status.services.tika ? t('admin.status.reachable') : t('admin.status.unreachable')"
+              />
+            </p>
+          </div>
+
+          <PipelineArrow />
+
+          <!-- Search index -->
+          <div class="flex-1 rounded-lg border border-primary/40 bg-primary/5 p-4">
+            <div class="flex items-center gap-2">
+              <UIcon
+                name="i-lucide-search"
+                class="size-5 text-primary shrink-0"
+              />
+              <span class="font-medium">{{ t('admin.status.indexStage.title') }}</span>
+            </div>
+            <p class="mt-1 text-2xl font-semibold tabular-nums">
+              {{ number(status.services.search.numberOfDocuments ?? 0) }}
+              <span class="text-xs font-normal text-muted">{{ t('admin.status.documents') }}</span>
+            </p>
+            <p class="mt-1 text-xs text-muted leading-relaxed">
+              {{ t('admin.status.indexStage.desc') }}
+            </p>
+          </div>
+        </div>
+      </section>
 
       <div class="flex flex-wrap gap-2">
         <UBadge

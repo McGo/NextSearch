@@ -47,7 +47,6 @@ class StatusController extends Controller
             'queues' => [
                 'crawl' => Queue::size('crawl'),
                 'process' => Queue::size('process'),
-                'preview' => Queue::size('preview'),
             ],
             'services' => [
                 'tika' => $tika->isReachable(),

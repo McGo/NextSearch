@@ -257,7 +257,26 @@
       "updated": "{count} changed",
       "skipped": "{count} skipped",
       "removed": "{count} removed",
-      "failedCount": "{count} errors"
+      "failedCount": "{count} errors",
+      "pipelineTitle": "Processing pipeline",
+      "pipelineIntro": "Each document travels left to right. Two background queues do the work; the search index at the end is what you search.",
+      "inQueue": "{count} in queue",
+      "source": {
+        "title": "Nextcloud",
+        "desc": "Your watched folders. Read only — nothing is ever written back."
+      },
+      "crawlStage": {
+        "title": "Crawl",
+        "desc": "Walks the folders level by level (PROPFIND), spotting new and changed files by their ETag. Queues each one for processing."
+      },
+      "processStage": {
+        "title": "Process",
+        "desc": "Downloads the file, extracts text and metadata via Tika (OCR for scans), renders the preview image, and writes the document into the search index."
+      },
+      "indexStage": {
+        "title": "Search index",
+        "desc": "Meilisearch. Once a document lands here it is findable."
+      }
     }
   },
   "indexing": {
