@@ -45,12 +45,11 @@ export default defineNuxtConfig({
     }
   },
 
-  routeRules: {
-    // The Laravel backend has no published port. Nitro forwards /api — so the UI
-    // and the API share an origin, and the session cookie plus CSRF protection
-    // work without further configuration.
-    '/api/**': { proxy: `${backendUrl}/api/**` }
-  },
+  // The Laravel backend has no published port. Nitro forwards /api to it — so
+  // the UI and the API share an origin and the session cookie plus CSRF
+  // protection work without further configuration. The proxy is a runtime
+  // server route (server/routes/api/[...].ts), not a build-time routeRule, so
+  // the backend URL stays configurable per deployment via NUXT_BACKEND_URL.
 
   compatibilityDate: '2026-06-30',
 

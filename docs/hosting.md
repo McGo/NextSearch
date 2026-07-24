@@ -48,6 +48,24 @@ Preview images and text blobs are then written under `nextsearch/…` in the
 bucket. Leave it empty to use the bucket root. Changing it later does not move
 existing objects — set it before the first index, or re-index afterwards.
 
+## Splitting web and app across compose files
+
+You can run the web and app containers from separate compose files — for
+example a frontend stack and a backend stack on a shared external network. The
+web container reaches the backend through `NUXT_BACKEND_URL`, read at runtime by
+the `/api` proxy (a Nitro server route, so the target isn't baked into the
+image). Point it at whatever the backend is called on your shared network:
+
+```
+# on the web stack
+NUXT_BACKEND_URL=http://nextsearch-app:8080
+```
+
+The backend must be reachable from the web container on that network, and both
+must share the session origin — the browser only ever talks to the web
+container, which proxies `/api` onward, so the session cookie and CSRF keep
+working. Nothing else about the container is host-specific.
+
 ## Deploying with the published images
 
 Locally, `docker compose up` builds the app and web images from source. On a
