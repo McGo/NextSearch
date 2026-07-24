@@ -3,15 +3,14 @@ name: Publish
 # Builds and pushes the app and web images to Docker Hub, multi-arch
 # (amd64 + arm64). Production then only pulls.
 #
-#   push to main   -> tag `latest` (the bleeding edge)
-#   push a v* tag  -> tags `1.2.0` and `1.2` (a pinned release)
+#   push a v* tag        -> tags `1.2.0` and `1.2` (a pinned release), automatic
+#   Run workflow on main -> tag `latest` (the bleeding edge), manual only
 #
 # Requires two repository secrets:
 #   DOCKERHUB_USERNAME  the Docker Hub account (mirkohaaser)
 #   DOCKERHUB_TOKEN     an access token with write scope for the repositories
 on:
   push:
-    branches: [main]
     tags: ['v*']
   workflow_dispatch:
     inputs:

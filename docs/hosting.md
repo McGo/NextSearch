@@ -55,9 +55,10 @@ server you don't need the source or a build step — the images are published to
 Docker Hub and you only pull them.
 
 `mirkohaaser/nextsearch-app` and `mirkohaaser/nextsearch-web` are built
-multi-arch (amd64 + arm64) by the `Publish` GitHub Actions workflow. A push to
-`main` publishes `latest` (the bleeding edge); a version tag `v1.2.0` publishes
-the pinned tags `1.2.0` and `1.2`. Deploy from a pinned version, not `latest`.
+multi-arch (amd64 + arm64) by the `Publish` GitHub Actions workflow. A version
+tag `v1.2.0` publishes the pinned tags `1.2.0` and `1.2` automatically; `latest`
+(the bleeding edge) is published only on demand, by running the workflow
+manually from `main`. Deploy from a pinned version, not `latest`.
 
 On the server, point the two image variables at a pinned version in your
 `.env` — pin a version rather than `latest` so a deploy is reproducible:
@@ -83,19 +84,19 @@ ignored once the images are pulled.
 ### Publishing (maintainers)
 
 Add two repository secrets — `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (an
-access token with write scope). After that, every push to `main` publishes
-`latest`, and a version tag publishes a pinned release:
+access token with write scope). A version tag then publishes a pinned release
+automatically:
 
 ```
 git tag v1.2.0
 git push origin v1.2.0
 ```
 
+`latest` is published manually: Actions → Publish → Run workflow, from `main`.
+
 The workflow builds both images for both architectures and pushes them. The
-arm64 build runs under emulation and is noticeably slower, and it runs on every
-`main` push — drop `linux/arm64` from `platforms` in
-`.github/workflows/publish.yml` if you only deploy on amd64, or remove the
-`branches: [main]` trigger to publish on tags only.
+arm64 build runs under emulation and is noticeably slower — drop `linux/arm64`
+from `platforms` in `.github/workflows/publish.yml` if you only deploy on amd64.
 
 ## Moving a local setup onto a server
 
