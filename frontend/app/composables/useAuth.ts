@@ -26,7 +26,7 @@ export function useAuth() {
     return user.value
   }
 
-  /** Beim ersten Aufruf einmal nachschlagen, danach aus dem Zustand bedienen. */
+  /** Look up once on the first call, then serve from state. */
   async function ensureResolved(): Promise<AuthUser | null> {
     if (!resolved.value) await refresh()
     return user.value

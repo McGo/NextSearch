@@ -20,6 +20,7 @@ interface DocumentDetail {
 
 const route = useRoute()
 const api = useApi()
+const { t } = useI18n()
 const { bytes, dateTime, icon } = useFormat()
 
 const uuid = route.params.uuid as string
@@ -30,8 +31,8 @@ const pending = ref(true)
 const rawUrl = computed(() => `/api/documents/${uuid}/raw`)
 
 /**
- * Muss zur Whitelist in DocumentController::INLINE_TYPES passen — alles andere
- * liefert das Backend als Download aus, eine Einbettung liefe ins Leere.
+ * Must match the whitelist in DocumentController::INLINE_TYPES — everything else
+ * the backend serves as a download, and embedding it would go nowhere.
  */
 const INLINE_TYPES = [
   'application/pdf',
@@ -42,8 +43,8 @@ const INLINE_TYPES = [
 const embeddable = computed(() => INLINE_TYPES.includes(document.value?.mime_type ?? ''))
 
 /**
- * Formate, die die App selbst rendert (siehe DocumentController::content):
- * Markdown gerendert, E-Mail als Kopf plus Text.
+ * Formats the app renders itself (see DocumentController::content): Markdown
+ * rendered, email as headers plus text.
  */
 const RENDERED_EXTENSIONS = ['md', 'markdown', 'eml', 'msg', 'txt']
 
@@ -61,8 +62,8 @@ interface RenderedContent {
 const rendered = ref<RenderedContent | null>(null)
 const contentPending = ref(false)
 
-// Nur rendern, was der Browser nicht ohnehin selbst einbettet (txt streamt
-// als text/plain bereits inline).
+// Only render what the browser doesn't embed anyway (txt already streams inline
+// as text/plain).
 const renderInApp = computed(() =>
   !embeddable.value && RENDERED_EXTENSIONS.includes(document.value?.extension ?? '')
 )
@@ -78,16 +79,14 @@ onMounted(async () => {
       try {
         rendered.value = await api.get<RenderedContent>(`/api/documents/${uuid}/content`)
       } catch {
-        // Kein Beinbruch — der Download-Knopf bleibt.
+        // No harm — the download button remains.
         rendered.value = null
       } finally {
         contentPending.value = false
       }
     }
   } catch (e) {
-    error.value = e instanceof ApiError
-      ? e.message
-      : 'Das Dokument konnte nicht geladen werden.'
+    error.value = e instanceof ApiError ? e.message : t('document.loadFailed')
   } finally {
     pending.value = false
   }
@@ -98,17 +97,17 @@ const metadataRows = computed(() => {
   if (!doc) return []
 
   return [
-    ['Ordner', `${doc.instance.name} · ${doc.folder.label}`],
-    ['Pfad', doc.directory || '/'],
-    ['Typ', doc.mime_type || doc.extension || 'unbekannt'],
-    ['Größe', bytes(doc.size)],
-    ['Geändert', dateTime(doc.modified_at)],
-    ['Indiziert', dateTime(doc.indexed_at)],
-    ...(doc.page_count ? [['Seiten', String(doc.page_count)]] : []),
-    ...(doc.metadata?.author ? [['Autor', String(doc.metadata.author)]] : []),
-    ...(doc.metadata?.title ? [['Titel', String(doc.metadata.title)]] : []),
-    ...(doc.metadata?.mail_from ? [['Absender', String(doc.metadata.mail_from)]] : []),
-    ...(doc.metadata?.mail_to ? [['Empfänger', String(doc.metadata.mail_to)]] : [])
+    [t('document.meta.folder'), `${doc.instance.name} · ${doc.folder.label}`],
+    [t('document.meta.path'), doc.directory || '/'],
+    [t('document.meta.type'), doc.mime_type || doc.extension || t('document.meta.unknown')],
+    [t('document.meta.size'), bytes(doc.size)],
+    [t('document.meta.modified'), dateTime(doc.modified_at)],
+    [t('document.meta.indexed'), dateTime(doc.indexed_at)],
+    ...(doc.page_count ? [[t('document.meta.pages'), String(doc.page_count)]] : []),
+    ...(doc.metadata?.author ? [[t('document.meta.author'), String(doc.metadata.author)]] : []),
+    ...(doc.metadata?.title ? [[t('document.meta.title'), String(doc.metadata.title)]] : []),
+    ...(doc.metadata?.mail_from ? [[t('document.meta.sender'), String(doc.metadata.mail_from)]] : []),
+    ...(doc.metadata?.mail_to ? [[t('document.meta.recipient'), String(doc.metadata.mail_to)]] : [])
   ] as [string, string][]
 })
 </script>
@@ -120,7 +119,7 @@ const metadataRows = computed(() => {
       color="neutral"
       variant="ghost"
       icon="i-lucide-arrow-left"
-      label="Zurück zur Suche"
+      :label="t('document.back')"
       class="mb-4"
     />
 
@@ -162,8 +161,8 @@ const metadataRows = computed(() => {
           </div>
         </div>
 
-        <!-- Das Original wird vom Backend durchgereicht; die Zugangsdaten der
-             Nextcloud bleiben dort. -->
+        <!-- The original is streamed by the backend; the Nextcloud credentials
+             stay there. -->
         <div
           v-if="embeddable"
           class="rounded-lg border border-default overflow-hidden bg-elevated"
@@ -182,7 +181,7 @@ const metadataRows = computed(() => {
           />
         </div>
 
-        <!-- Von der App gerenderte Formate: Markdown und E-Mail. -->
+        <!-- Formats the app renders: Markdown and email. -->
         <div
           v-else-if="renderInApp"
           class="rounded-lg border border-default bg-elevated/40 p-5 min-h-40"
@@ -197,8 +196,7 @@ const metadataRows = computed(() => {
             />
           </div>
 
-          <!-- E-Mail: Kopf plus Textkörper. Der Body ist reiner Text, deshalb
-               ungefährlich. -->
+          <!-- Email: headers plus body. The body is plain text, hence safe. -->
           <div
             v-else-if="rendered?.type === 'email'"
             class="space-y-4"
@@ -209,7 +207,7 @@ const metadataRows = computed(() => {
                 class="flex gap-2"
               >
                 <dt class="w-20 shrink-0 text-muted">
-                  Von
+                  {{ t('document.email.from') }}
                 </dt>
                 <dd class="min-w-0 break-words">
                   {{ rendered.from }}
@@ -220,7 +218,7 @@ const metadataRows = computed(() => {
                 class="flex gap-2"
               >
                 <dt class="w-20 shrink-0 text-muted">
-                  An
+                  {{ t('document.email.to') }}
                 </dt>
                 <dd class="min-w-0 break-words">
                   {{ rendered.to }}
@@ -231,7 +229,7 @@ const metadataRows = computed(() => {
                 class="flex gap-2"
               >
                 <dt class="w-20 shrink-0 text-muted">
-                  Betreff
+                  {{ t('document.email.subject') }}
                 </dt>
                 <dd class="min-w-0 break-words font-medium">
                   {{ rendered.subject }}
@@ -242,7 +240,7 @@ const metadataRows = computed(() => {
                 class="flex gap-2"
               >
                 <dt class="w-20 shrink-0 text-muted">
-                  Datum
+                  {{ t('document.email.date') }}
                 </dt>
                 <dd class="min-w-0 break-words">
                   {{ rendered.date }}
@@ -252,9 +250,8 @@ const metadataRows = computed(() => {
             <pre class="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed">{{ rendered.body }}</pre>
           </div>
 
-          <!-- Markdown: im Backend HTML-sicher gerendert (kein rohes HTML,
-               keine unsicheren Links), darf hier ohne weitere Bereinigung in
-               ein v-html. -->
+          <!-- Markdown: rendered HTML-safe in the backend (no raw HTML, no unsafe
+               links), so it may go into a v-html without further sanitising. -->
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div
             v-else-if="rendered?.type === 'markdown'"
@@ -267,8 +264,8 @@ const metadataRows = computed(() => {
             color="neutral"
             variant="subtle"
             icon="i-lucide-download"
-            title="Vorschau nicht verfügbar"
-            description="Der Inhalt ließ sich nicht darstellen. Über den Knopf rechts laden Sie das Original herunter."
+            :title="t('document.unavailableTitle')"
+            :description="t('document.unavailableDesc')"
           />
         </div>
 
@@ -277,8 +274,8 @@ const metadataRows = computed(() => {
           color="neutral"
           variant="subtle"
           icon="i-lucide-download"
-          title="Keine Vorschau im Browser"
-          :description="`Dateien vom Typ ${document.extension?.toUpperCase() || 'unbekannt'} lassen sich hier nicht darstellen. Über den Knopf rechts laden Sie das Original herunter.`"
+          :title="t('document.noPreviewTitle')"
+          :description="t('document.noPreviewDesc', { type: document.extension?.toUpperCase() || t('document.meta.unknown') })"
         />
       </section>
 
@@ -288,7 +285,7 @@ const metadataRows = computed(() => {
             :to="rawUrl"
             target="_blank"
             icon="i-lucide-external-link"
-            label="Original öffnen"
+            :label="t('document.openOriginal')"
             block
           />
           <UButton
@@ -296,7 +293,7 @@ const metadataRows = computed(() => {
             color="neutral"
             variant="outline"
             icon="i-lucide-download"
-            label="Herunterladen"
+            :label="t('document.download')"
             block
           />
           <UButton
@@ -305,7 +302,7 @@ const metadataRows = computed(() => {
             color="neutral"
             variant="ghost"
             icon="i-lucide-cloud"
-            label="In Nextcloud anzeigen"
+            :label="t('document.openInNextcloud')"
             block
           />
         </div>
@@ -315,8 +312,8 @@ const metadataRows = computed(() => {
           color="warning"
           variant="subtle"
           icon="i-lucide-scan-text"
-          title="Text stammt aus einer Texterkennung"
-          description="Das Dokument hatte keinen Textlayer. Erkennungsfehler sind möglich."
+          :title="t('document.ocrTitle')"
+          :description="t('document.ocrDesc')"
         />
 
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
@@ -341,8 +338,8 @@ const metadataRows = computed(() => {
 </template>
 
 <style scoped>
-/* Schlichte Auszeichnung für gerendertes Markdown — bewusst ohne
-   Typography-Plugin, damit keine zusätzliche Abhängigkeit nötig ist. */
+/* Plain styling for rendered Markdown — deliberately without the typography
+   plugin, so no extra dependency is needed. */
 .md-body {
   font-size: 0.9rem;
   line-height: 1.6;

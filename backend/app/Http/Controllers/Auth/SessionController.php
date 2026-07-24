@@ -24,10 +24,7 @@ class SessionController extends Controller
 
         if (RateLimiter::tooManyAttempts($key, maxAttempts: 5)) {
             throw ValidationException::withMessages([
-                'email' => sprintf(
-                    'Zu viele Versuche. Bitte %d Sekunden warten.',
-                    RateLimiter::availableIn($key),
-                ),
+                'email' => __('nextsearch.auth.too_many_attempts', ['seconds' => RateLimiter::availableIn($key)]),
             ])->status(429);
         }
 
@@ -38,7 +35,7 @@ class SessionController extends Controller
             RateLimiter::hit($key, decaySeconds: 300);
 
             throw ValidationException::withMessages([
-                'email' => 'E-Mail-Adresse oder Passwort stimmen nicht.',
+                'email' => __('nextsearch.auth.invalid_credentials'),
             ]);
         }
 
@@ -54,7 +51,7 @@ class SessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return response()->json(['message' => 'Abgemeldet.']);
+        return response()->json(['message' => __('nextsearch.auth.logged_out')]);
     }
 
     public function me(Request $request): JsonResponse
@@ -63,33 +60,31 @@ class SessionController extends Controller
     }
 
     /**
-     * Eigenes Passwort ändern. Steht jedem angemeldeten Nutzer offen, nicht nur
-     * Administratoren.
+     * Change your own password. Open to every signed-in user, not just admins.
      */
     public function changePassword(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            // Prüft gegen das Passwort des angemeldeten Nutzers.
+            // Checks against the signed-in user's password.
             'current_password' => ['required', 'current_password'],
             'password' => ['required', Password::min(12), 'confirmed', 'different:current_password'],
         ], [
-            // Deutsche Meldungen, bis die Lokalisierung (i18n) das übernimmt.
-            'current_password.required' => 'Bitte das aktuelle Passwort eingeben.',
-            'current_password.current_password' => 'Das aktuelle Passwort stimmt nicht.',
-            'password.required' => 'Bitte ein neues Passwort eingeben.',
-            'password.min' => 'Das neue Passwort braucht mindestens :min Zeichen.',
-            'password.confirmed' => 'Die Wiederholung stimmt nicht mit dem neuen Passwort überein.',
-            'password.different' => 'Das neue Passwort muss sich vom aktuellen unterscheiden.',
+            'current_password.required' => __('nextsearch.auth.password_current_required'),
+            'current_password.current_password' => __('nextsearch.auth.password_current_wrong'),
+            'password.required' => __('nextsearch.auth.password_required'),
+            'password.min' => __('nextsearch.auth.password_min', ['min' => 12]),
+            'password.confirmed' => __('nextsearch.auth.password_confirmed'),
+            'password.different' => __('nextsearch.auth.password_different'),
         ]);
 
         $request->user()->forceFill([
             'password' => $validated['password'],
         ])->save();
 
-        // Frische Session-ID nach dem Wechsel; die laufende Anmeldung bleibt.
+        // A fresh session id after the change; the running sign-in stays.
         $request->session()->regenerate();
 
-        return response()->json(['message' => 'Passwort geändert.']);
+        return response()->json(['message' => __('nextsearch.auth.password_changed')]);
     }
 
     /**
@@ -103,8 +98,8 @@ class SessionController extends Controller
             'email' => $user->email,
             'role' => $user->role,
             'is_admin' => $user->isAdmin(),
-            // Zahl der freigegebenen Ordner; die Oberfläche weist darauf hin,
-            // wenn keiner freigegeben ist.
+            // Number of shared folders; the interface points it out when none
+            // is shared.
             'folder_count' => $user->isAdmin() ? null : $user->folders()->count(),
         ];
     }

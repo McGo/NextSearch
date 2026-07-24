@@ -2,8 +2,9 @@
 const { login } = useAuth()
 const route = useRoute()
 const config = useRuntimeConfig()
+const { t } = useI18n()
 
-useHead({ title: 'Anmelden' })
+useHead({ title: () => t('login.submit') })
 
 const email = ref('')
 const password = ref('')
@@ -17,11 +18,11 @@ async function submit() {
 
   try {
     await login(email.value, password.value, remember.value)
-    await navigateTo((route.query.weiter as string) || '/')
+    await navigateTo((route.query.next as string) || '/')
   } catch (e) {
     error.value = e instanceof ApiError
       ? (e.fieldError('email') || e.message)
-      : 'Die Anmeldung ist fehlgeschlagen.'
+      : t('login.failed')
   } finally {
     pending.value = false
   }
@@ -42,7 +43,7 @@ async function submit() {
               {{ config.public.appName }}
             </h1>
             <p class="text-sm text-muted">
-              Volltextsuche über Ihre Nextcloud-Ordner
+              {{ t('login.subtitle') }}
             </p>
           </div>
         </div>
@@ -53,7 +54,7 @@ async function submit() {
         @submit.prevent="submit"
       >
         <UFormField
-          label="E-Mail"
+          :label="t('login.email')"
           name="email"
         >
           <UInput
@@ -67,7 +68,7 @@ async function submit() {
         </UFormField>
 
         <UFormField
-          label="Passwort"
+          :label="t('login.password')"
           name="password"
         >
           <UInput
@@ -81,7 +82,7 @@ async function submit() {
 
         <UCheckbox
           v-model="remember"
-          label="Angemeldet bleiben"
+          :label="t('login.remember')"
         />
 
         <UAlert
@@ -96,9 +97,25 @@ async function submit() {
           type="submit"
           block
           :loading="pending"
-          label="Anmelden"
+          :label="t('login.submit')"
         />
       </form>
+
+      <template
+        v-if="config.public.repoUrl"
+        #footer
+      >
+        <UButton
+          :to="config.public.repoUrl"
+          target="_blank"
+          rel="noopener"
+          color="neutral"
+          variant="link"
+          size="xs"
+          icon="i-simple-icons-github"
+          :label="t('nav.github')"
+        />
+      </template>
     </UCard>
   </div>
 </template>

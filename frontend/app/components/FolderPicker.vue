@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Blättert per WebDAV durch die Ordner einer Instanz. Jede Ebene wird einzeln
- * geholt — Nextcloud beantwortet keine rekursive Abfrage.
+ * Browses the folders of an instance over WebDAV. Each level is fetched on its
+ * own — Nextcloud does not answer a recursive request.
  */
 
 interface RemoteDirectory {
@@ -14,6 +14,7 @@ const props = defineProps<{ instanceUuid: string }>()
 const model = defineModel<string>({ default: '' })
 
 const api = useApi()
+const { t } = useI18n()
 
 const path = ref('')
 const directories = ref<RemoteDirectory[]>([])
@@ -24,7 +25,7 @@ const error = ref<string | null>(null)
 const breadcrumbs = computed(() => {
   const segments = path.value ? path.value.split('/') : []
   return [
-    { label: 'Wurzelverzeichnis', path: '' },
+    { label: t('admin.picker.root'), path: '' },
     ...segments.map((segment, i) => ({
       label: segment,
       path: segments.slice(0, i + 1).join('/')
@@ -48,7 +49,7 @@ async function open(target: string) {
     directories.value = response.directories
     model.value = response.path
   } catch (e) {
-    error.value = e instanceof ApiError ? e.message : 'Der Ordner ließ sich nicht öffnen.'
+    error.value = e instanceof ApiError ? e.message : t('admin.picker.failed')
   } finally {
     pending.value = false
   }
@@ -98,7 +99,7 @@ watch(() => props.instanceUuid, () => open(''), { immediate: true })
         v-else-if="!pending && directories.length === 0"
         class="px-3 py-4 text-sm text-muted"
       >
-        Hier liegen keine weiteren Ordner. Mit „Übernehmen" wählen Sie diese Ebene.
+        {{ t('admin.picker.empty') }}
       </p>
 
       <ul
@@ -129,7 +130,7 @@ watch(() => props.instanceUuid, () => open(''), { immediate: true })
     </div>
 
     <div class="border-t border-default px-3 py-2 text-xs text-muted">
-      Ausgewählt: <span class="font-mono">{{ path || '/' }}</span>
+      {{ t('admin.picker.selected') }}: <span class="font-mono">{{ path || '/' }}</span>
     </div>
   </div>
 </template>

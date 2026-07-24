@@ -12,10 +12,11 @@ const emit = defineEmits<{
   clear: []
 }>()
 
+const { t } = useI18n()
 const { facetValue } = useFormat()
 const { folderImageByLabel, instanceImageByName } = useDirectory()
 
-/** Lange Facetten zeigen zunächst nur die häufigsten Werte. */
+/** Long facets show only the most frequent values at first. */
 const expanded = ref<Record<string, boolean>>({})
 const COLLAPSED = 6
 
@@ -27,7 +28,7 @@ function isSelected(props: Record<string, string[]>, facet: string, value: strin
   return (props[facet] ?? []).includes(value)
 }
 
-// Bild zu einem Facettenwert — nur die Herkunfts-Facetten tragen eines.
+// Image for a facet value — only the origin facets carry one.
 function facetImage(facet: string, value: string): string | null {
   if (facet === 'folder_label') return folderImageByLabel.value[value] ?? null
   if (facet === 'instance_name') return instanceImageByName.value[value] ?? null
@@ -41,13 +42,13 @@ function facetImage(facet: string, value: string): string | null {
       v-if="activeCount > 0"
       class="flex items-center justify-between"
     >
-      <span class="text-sm text-muted">{{ activeCount }} Filter aktiv</span>
+      <span class="text-sm text-muted">{{ t('search.filtersActive', { count: activeCount }, activeCount) }}</span>
       <UButton
         size="xs"
         color="neutral"
         variant="ghost"
         icon="i-lucide-x"
-        label="Zurücksetzen"
+        :label="t('search.reset')"
         @click="emit('clear')"
       />
     </div>
@@ -56,7 +57,7 @@ function facetImage(facet: string, value: string): string | null {
       v-if="facets.length === 0"
       class="text-sm text-muted"
     >
-      Filter erscheinen, sobald es Treffer gibt.
+      {{ t('search.facetsEmpty') }}
     </p>
 
     <div
@@ -65,7 +66,7 @@ function facetImage(facet: string, value: string): string | null {
       class="space-y-2"
     >
       <h3 class="text-xs font-semibold uppercase tracking-wide text-muted">
-        {{ FACET_LABELS[facet.name] ?? facet.name }}
+        {{ t(`facet.${facet.name}`) }}
       </h3>
 
       <ul class="space-y-1">
@@ -104,7 +105,7 @@ function facetImage(facet: string, value: string): string | null {
         size="xs"
         color="neutral"
         variant="link"
-        :label="expanded[facet.name] ? 'Weniger' : `Alle ${facet.values.length} anzeigen`"
+        :label="expanded[facet.name] ? t('search.showLess') : t('search.showAll', { count: facet.values.length })"
         @click="expanded[facet.name] = !expanded[facet.name]"
       />
     </div>

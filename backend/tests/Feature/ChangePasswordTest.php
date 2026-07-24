@@ -32,7 +32,7 @@ class ChangePasswordTest extends TestCase
                 'password_confirmation' => 'ganz-neues-passwort',
             ])
             ->assertOk()
-            ->assertJsonPath('message', 'Passwort geändert.');
+            ->assertJsonPath('message', 'Password changed.');
 
         $this->assertTrue(Hash::check('ganz-neues-passwort', $user->fresh()->password));
     }

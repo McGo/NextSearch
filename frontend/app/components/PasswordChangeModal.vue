@@ -3,6 +3,7 @@ const open = defineModel<boolean>('open', { default: false })
 
 const api = useApi()
 const toast = useToast()
+const { t } = useI18n()
 
 const form = reactive({
   current_password: '',
@@ -28,11 +29,11 @@ async function submit() {
   try {
     await api.put('/api/auth/password', form)
     open.value = false
-    toast.add({ title: 'Passwort geändert.', color: 'success' })
+    toast.add({ title: t('password.changed'), color: 'success' })
   } catch (e) {
     error.value = e instanceof ApiError
       ? (e.fieldError('current_password') || e.fieldError('password') || e.message)
-      : 'Das Passwort ließ sich nicht ändern.'
+      : t('password.failed')
   } finally {
     saving.value = false
   }
@@ -42,7 +43,7 @@ async function submit() {
 <template>
   <UModal
     v-model:open="open"
-    title="Passwort ändern"
+    :title="t('password.title')"
   >
     <template #body>
       <form
@@ -50,7 +51,7 @@ async function submit() {
         @submit.prevent="submit"
       >
         <UFormField
-          label="Aktuelles Passwort"
+          :label="t('password.current')"
           name="current_password"
         >
           <UInput
@@ -63,9 +64,9 @@ async function submit() {
         </UFormField>
 
         <UFormField
-          label="Neues Passwort"
+          :label="t('password.new')"
           name="password"
-          hint="Mindestens zwölf Zeichen"
+          :hint="t('password.newHint')"
         >
           <UInput
             v-model="form.password"
@@ -77,7 +78,7 @@ async function submit() {
         </UFormField>
 
         <UFormField
-          label="Neues Passwort wiederholen"
+          :label="t('password.repeat')"
           name="password_confirmation"
         >
           <UInput
@@ -101,13 +102,13 @@ async function submit() {
           <UButton
             color="neutral"
             variant="ghost"
-            label="Abbrechen"
+            :label="t('common.cancel')"
             @click="open = false"
           />
           <UButton
             type="submit"
             :loading="saving"
-            label="Ändern"
+            :label="t('password.submit')"
           />
         </div>
       </form>

@@ -41,23 +41,46 @@ that and you open an XSS hole.
 **Streamed originals.** `Content-Disposition: inline` only for types in
 `DocumentController::INLINE_TYPES`. HTML and SVG are not among them and must not be added.
 
+## Translations
+
+The interface ships in English and German. Adding a language is two steps:
+
+1. Drop a `frontend/i18n/locales/<code>.json` file next to `en.json` — copy `en.json`
+   and translate the values. Keep the keys.
+2. List it in `frontend/nuxt.config.ts` under `i18n.locales`:
+   `{ code: 'fr', name: 'Français', language: 'fr', file: 'fr.json' }`.
+
+The language switcher in the header picks it up automatically, and the choice is
+remembered in a cookie. Backend messages localise from `backend/lang/<code>/`
+(`nextsearch.php` for our own strings, `validation.php` for form errors) — the frontend
+sends the chosen language in an `X-Locale` header. A new backend language needs those two
+files; without them Laravel falls back to English.
+
+Facet values that would otherwise be a fixed language (size buckets, "no extension") are
+stored as neutral keys and translated in the frontend (`sizeBucket.*`, `facet.*`).
+
 ## Lockfiles
 
 `npm install` on macOS writes no lockfile with Linux packages, so the Alpine build in the
 container then fails on missing platform variants. After every `npm install` that
-introduces new dependencies:
+introduces new dependencies, regenerate the lockfile **on top of the existing one** so npm
+keeps the resolved versions and only adds the missing platform packages:
 
 ```bash
 make lockfiles
 ```
+
+Do not delete `package-lock.json` and re-resolve from scratch — a fresh resolution can pull
+a newer transitive version that breaks the SPA build (the shell renders without its entry
+script → white screen).
 
 ## Style
 
 - Backend: Laravel Pint, default configuration.
 - Frontend: ESLint with `@nuxt/eslint`; `npx eslint . --fix` clears most of it.
 - Comments explain the why. What the code does is in the code.
-- Documentation and README are written in English. In-code comments and the German product
-  UI stay German; identifiers are English.
+- Documentation, README and in-code comments are written in English. User-facing strings
+  are never hardcoded — they live in the locale files. Identifiers are English.
 
 ## Pull requests
 

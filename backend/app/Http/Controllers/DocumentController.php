@@ -111,7 +111,7 @@ class DocumentController extends Controller
         $this->authorizeAccess($request, $document);
 
         if ($document->preview_key === null) {
-            abort(404, 'Für dieses Dokument gibt es kein Vorschaubild.');
+            abort(404, __('nextsearch.document.no_preview'));
         }
 
         $disk = Storage::disk((string) config('nextsearch.preview.disk'));
@@ -140,11 +140,11 @@ class DocumentController extends Controller
         $extension = $document->extension;
 
         if (! in_array($extension, self::RENDERED_EXTENSIONS, true)) {
-            abort(404, 'Für dieses Format gibt es keine In-App-Ansicht.');
+            abort(404, __('nextsearch.document.no_inapp_view'));
         }
 
         if ($document->size > self::RENDER_MAX_BYTES) {
-            abort(413, 'Die Datei ist für die Vorschau zu groß.');
+            abort(413, __('nextsearch.document.too_large'));
         }
 
         return match ($extension) {
@@ -217,7 +217,7 @@ class DocumentController extends Controller
         abort_unless(
             $request->user()->canAccessFolder($document->watched_folder_id),
             403,
-            'Für diesen Ordner besteht keine Freigabe.',
+            __('nextsearch.document.no_access'),
         );
     }
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-useHead({ title: 'Benutzer' })
+const { t } = useI18n()
+useHead({ title: () => t('admin.users.title') })
 
 interface ManagedUser {
   id: number
@@ -85,7 +86,7 @@ async function save() {
   } catch (e) {
     formError.value = e instanceof ApiError
       ? (Object.values(e.errors)[0]?.[0] || e.message)
-      : 'Speichern fehlgeschlagen.'
+      : t('admin.users.form.saveFailed')
   } finally {
     saving.value = false
   }
@@ -101,21 +102,21 @@ async function saveShares() {
 
     shareModal.value = false
     await load()
-    toast.add({ title: 'Freigaben gespeichert.', color: 'success' })
+    toast.add({ title: t('admin.users.sharesSaved'), color: 'success' })
   } finally {
     saving.value = false
   }
 }
 
 async function remove(user: ManagedUser) {
-  if (!confirm(`Konto "${user.email}" löschen?`)) return
+  if (!confirm(t('admin.users.deleteConfirm', { email: user.email }))) return
 
   try {
     await api.del(`/api/admin/users/${user.id}`)
     await load()
   } catch (e) {
     toast.add({
-      title: 'Löschen nicht möglich',
+      title: t('admin.users.deleteFailedTitle'),
       description: e instanceof ApiError ? e.message : undefined,
       color: 'error'
     })
@@ -128,6 +129,11 @@ function toggleFolder(uuid: string) {
     : [...selectedFolders.value, uuid]
 }
 
+const roleItems = computed(() => [
+  { label: t('admin.users.form.roleUserOption'), value: 'user' },
+  { label: t('admin.users.form.roleAdminOption'), value: 'admin' }
+])
+
 onMounted(load)
 </script>
 
@@ -136,16 +142,16 @@ onMounted(load)
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-semibold">
-          Benutzer
+          {{ t('admin.users.title') }}
         </h1>
         <p class="text-sm text-muted">
-          Konten und Ordnerfreigaben in NextSearch.
+          {{ t('admin.users.subtitle') }}
         </p>
       </div>
 
       <UButton
         icon="i-lucide-user-plus"
-        label="Benutzer anlegen"
+        :label="t('admin.users.add')"
         @click="openCreate"
       />
     </div>
@@ -154,8 +160,8 @@ onMounted(load)
       color="warning"
       variant="subtle"
       icon="i-lucide-shield-alert"
-      title="Freigaben gelten unabhängig von der Nextcloud"
-      description="NextSearch bildet die Dateirechte der Nextcloud nicht nach. Wer hier einen Ordner zugewiesen bekommt, sieht dessen Inhalte im Volltext und kann die Originale öffnen — auch wenn die Nextcloud selbst ihm den Zugriff verweigern würde."
+      :title="t('admin.users.warnTitle')"
+      :description="t('admin.users.warnDesc')"
     />
 
     <div
@@ -186,14 +192,14 @@ onMounted(load)
                 size="sm"
                 variant="subtle"
                 :color="user.is_admin ? 'primary' : 'neutral'"
-                :label="user.is_admin ? 'Administrator' : 'Benutzer'"
+                :label="user.is_admin ? t('admin.users.roleAdmin') : t('admin.users.roleUser')"
               />
               <UBadge
                 v-if="user.id === currentUser?.id"
                 size="sm"
                 color="neutral"
                 variant="outline"
-                label="Sie"
+                :label="t('admin.users.you')"
               />
             </div>
 
@@ -202,13 +208,13 @@ onMounted(load)
             </p>
             <p class="text-xs text-muted mt-1">
               <template v-if="user.is_admin">
-                Sieht alle Ordner.
+                {{ t('admin.users.seesAll') }}
               </template>
               <template v-else-if="user.folders.length === 0">
-                Kein Ordner freigegeben — die Suche bleibt leer.
+                {{ t('admin.users.noShare') }}
               </template>
               <template v-else>
-                Freigegeben: {{ user.folders.map(f => f.label).join(', ') }}
+                {{ t('admin.users.shared', { labels: user.folders.map(f => f.label).join(', ') }) }}
               </template>
             </p>
           </div>
@@ -220,7 +226,7 @@ onMounted(load)
               color="neutral"
               variant="outline"
               icon="i-lucide-folder-key"
-              label="Freigaben"
+              :label="t('admin.users.shares')"
               @click="openShares(user)"
             />
             <UButton
@@ -245,14 +251,14 @@ onMounted(load)
 
     <UModal
       v-model:open="userModal"
-      :title="editing ? 'Benutzer bearbeiten' : 'Benutzer anlegen'"
+      :title="editing ? t('admin.users.form.editTitle') : t('admin.users.form.addTitle')"
     >
       <template #body>
         <form
           class="space-y-4"
           @submit.prevent="save"
         >
-          <UFormField label="Name">
+          <UFormField :label="t('admin.users.form.name')">
             <UInput
               v-model="form.name"
               required
@@ -260,7 +266,7 @@ onMounted(load)
             />
           </UFormField>
 
-          <UFormField label="E-Mail">
+          <UFormField :label="t('admin.users.form.email')">
             <UInput
               v-model="form.email"
               type="email"
@@ -270,8 +276,8 @@ onMounted(load)
           </UFormField>
 
           <UFormField
-            label="Passwort"
-            :hint="editing ? 'Leer lassen, um es unverändert zu lassen' : 'Mindestens zwölf Zeichen'"
+            :label="t('admin.users.form.password')"
+            :hint="editing ? t('admin.users.form.passwordHintEdit') : t('admin.users.form.passwordHintNew')"
           >
             <UInput
               v-model="form.password"
@@ -282,13 +288,10 @@ onMounted(load)
             />
           </UFormField>
 
-          <UFormField label="Rolle">
+          <UFormField :label="t('admin.users.form.role')">
             <USelect
               v-model="form.role"
-              :items="[
-                { label: 'Benutzer — sieht nur freigegebene Ordner', value: 'user' },
-                { label: 'Administrator — sieht und verwaltet alles', value: 'admin' }
-              ]"
+              :items="roleItems"
               value-key="value"
               class="w-full"
             />
@@ -306,13 +309,13 @@ onMounted(load)
             <UButton
               color="neutral"
               variant="ghost"
-              label="Abbrechen"
+              :label="t('common.cancel')"
               @click="userModal = false"
             />
             <UButton
               type="submit"
               :loading="saving"
-              label="Speichern"
+              :label="t('common.save')"
             />
           </div>
         </form>
@@ -321,7 +324,7 @@ onMounted(load)
 
     <UModal
       v-model:open="shareModal"
-      :title="`Freigaben für ${editing?.name}`"
+      :title="t('admin.users.sharesTitle', { name: editing?.name })"
     >
       <template #body>
         <div class="space-y-4">
@@ -329,7 +332,7 @@ onMounted(load)
             v-if="folders.length === 0"
             class="text-sm text-muted"
           >
-            Es gibt noch keine überwachten Ordner.
+            {{ t('admin.users.noFolders') }}
           </p>
 
           <ul
@@ -360,12 +363,12 @@ onMounted(load)
             <UButton
               color="neutral"
               variant="ghost"
-              label="Abbrechen"
+              :label="t('common.cancel')"
               @click="shareModal = false"
             />
             <UButton
               :loading="saving"
-              label="Speichern"
+              :label="t('common.save')"
               @click="saveShares"
             />
           </div>

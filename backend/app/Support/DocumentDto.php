@@ -80,7 +80,8 @@ final readonly class DocumentDto
             'name' => $this->name,
             'path' => $this->path,
             'directory' => trim(dirname($this->path), '.'),
-            'extension' => $this->extension ?? 'ohne',
+            // Language-neutral marker; the frontend shows a translated label.
+            'extension' => $this->extension ?? 'none',
             'mime_type' => $this->mimeType,
             'size' => $this->size,
             'size_bucket' => self::sizeBucket($this->size),
@@ -100,14 +101,18 @@ final readonly class DocumentDto
         ];
     }
 
+    /**
+     * A language-neutral key, not a human label — the frontend translates it.
+     * These keys are indexed as facet values, so changing them needs a reindex.
+     */
     public static function sizeBucket(int $bytes): string
     {
         return match (true) {
-            $bytes < 100 * 1024 => 'bis 100 KB',
-            $bytes < 1024 * 1024 => '100 KB bis 1 MB',
-            $bytes < 10 * 1024 * 1024 => '1 bis 10 MB',
-            $bytes < 100 * 1024 * 1024 => '10 bis 100 MB',
-            default => 'über 100 MB',
+            $bytes < 100 * 1024 => 'upTo100kb',
+            $bytes < 1024 * 1024 => '100kbTo1mb',
+            $bytes < 10 * 1024 * 1024 => '1to10mb',
+            $bytes < 100 * 1024 * 1024 => '10to100mb',
+            default => 'over100mb',
         };
     }
 }

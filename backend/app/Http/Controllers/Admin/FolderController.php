@@ -55,7 +55,7 @@ class FolderController extends Controller
         }
 
         if (! $entry->isDirectory) {
-            return response()->json(['message' => 'Der angegebene Pfad ist kein Ordner.'], 422);
+            return response()->json(['message' => __('nextsearch.folder.not_a_directory')], 422);
         }
 
         $folder = $instance->folders()->create([
@@ -92,7 +92,7 @@ class FolderController extends Controller
         $images->delete($folder->image_key);
         $folder->delete();
 
-        return response()->json(['message' => 'Ordner entfernt.']);
+        return response()->json(['message' => __('nextsearch.folder.removed')]);
     }
 
     public function uploadImage(Request $request, WatchedFolder $folder, DirectoryImageService $images): JsonResponse
@@ -134,8 +134,8 @@ class FolderController extends Controller
         return response()->json([
             'run' => ['uuid' => $run->uuid, 'state' => $run->state],
             'message' => $run->wasRecentlyCreated
-                ? 'Durchlauf gestartet.'
-                : 'Für diesen Ordner läuft bereits ein Durchlauf.',
+                ? __('nextsearch.folder.run_started')
+                : __('nextsearch.folder.run_already'),
         ]);
     }
 

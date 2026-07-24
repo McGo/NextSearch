@@ -1,9 +1,9 @@
 import type { NitroFetchOptions } from 'nitropack'
 
 /**
- * Zugriff auf die Laravel-API. Läuft über denselben Origin wie die UI, deshalb
- * geht der Session-Cookie automatisch mit; für schreibende Anfragen wird der
- * XSRF-TOKEN-Cookie als Header nachgereicht.
+ * Access to the Laravel API. It runs on the same origin as the UI, so the
+ * session cookie goes along automatically; for writing requests the XSRF-TOKEN
+ * cookie is sent back as a header.
  */
 
 let csrfReady = false
@@ -28,13 +28,18 @@ export class ApiError extends Error {
     super(message)
   }
 
-  /** Erste Meldung zu einem Feld — für die Anzeige direkt am Eingabefeld. */
+  /** First message for a field — for display right at the input. */
   fieldError(field: string): string | undefined {
     return this.errors[field]?.[0]
   }
 }
 
 export function useApi() {
+  // useApi runs from places without a component setup context (e.g. the global
+  // auth middleware), where useI18n() would throw. The global i18n instance on
+  // nuxtApp works everywhere.
+  const i18n = useNuxtApp().$i18n
+
   async function request<T>(path: string, options: NitroFetchOptions<string> = {}): Promise<T> {
     const method = (options.method || 'GET').toString().toUpperCase()
 
@@ -49,7 +54,9 @@ export function useApi() {
         ...options,
         credentials: 'include',
         headers: {
-          Accept: 'application/json',
+          'Accept': 'application/json',
+          // Lets the backend localise its messages to the chosen UI language.
+          'X-Locale': i18n.locale.value,
           ...(token ? { 'X-XSRF-TOKEN': token } : {}),
           ...(options.headers as Record<string, string> | undefined)
         }
@@ -59,7 +66,7 @@ export function useApi() {
       const data = response?._data as { message?: string, errors?: Record<string, string[]> } | undefined
 
       throw new ApiError(
-        data?.message || 'Die Anfrage ist fehlgeschlagen.',
+        data?.message || i18n.t('common.requestFailed'),
         response?.status ?? 0,
         data?.errors ?? {}
       )
@@ -75,8 +82,8 @@ export function useApi() {
       request<T>(path, { method: 'PUT', body: body as Record<string, unknown> }),
     del: <T>(path: string) =>
       request<T>(path, { method: 'DELETE' }),
-    // Datei-Upload. ofetch setzt bei FormData den Content-Type samt boundary
-    // selbst — deshalb hier keinen mitgeben.
+    // File upload. With FormData, ofetch sets the Content-Type including the
+    // boundary itself — so we don't pass one here.
     upload: <T>(path: string, form: FormData) =>
       request<T>(path, { method: 'POST', body: form })
   }

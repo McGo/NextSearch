@@ -1,0 +1,263 @@
+{
+  "common": {
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "close": "Schließen",
+    "back": "Zurück",
+    "apply": "Übernehmen",
+    "done": "Fertig",
+    "requestFailed": "Die Anfrage ist fehlgeschlagen."
+  },
+  "nav": {
+    "search": "Suche",
+    "instances": "Instanzen",
+    "folders": "Ordner",
+    "users": "Benutzer",
+    "status": "Status",
+    "github": "Quelltext auf GitHub"
+  },
+  "userMenu": {
+    "changePassword": "Passwort ändern",
+    "logout": "Abmelden"
+  },
+  "footer": {
+    "note": "Freigaben werden in {app} gepflegt und gelten unabhängig von den Dateirechten der jeweiligen Nextcloud."
+  },
+  "language": {
+    "label": "Sprache"
+  },
+  "login": {
+    "subtitle": "Volltextsuche über Ihre Nextcloud-Ordner",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "remember": "Angemeldet bleiben",
+    "submit": "Anmelden",
+    "failed": "Die Anmeldung ist fehlgeschlagen."
+  },
+  "password": {
+    "title": "Passwort ändern",
+    "current": "Aktuelles Passwort",
+    "new": "Neues Passwort",
+    "newHint": "Mindestens zwölf Zeichen",
+    "repeat": "Neues Passwort wiederholen",
+    "submit": "Ändern",
+    "changed": "Passwort geändert.",
+    "failed": "Das Passwort ließ sich nicht ändern."
+  },
+  "search": {
+    "placeholder": "Volltextsuche über alle indizierten Dokumente",
+    "sortLabel": "Sortierung",
+    "sort": {
+      "relevance": "Relevanz",
+      "newest": "Neueste zuerst",
+      "oldest": "Älteste zuerst",
+      "largest": "Größte zuerst",
+      "name": "Name"
+    },
+    "results": "{count} Treffer | {count} Treffer",
+    "took": "in {ms} ms",
+    "filter": "Filter",
+    "filtersActive": "{count} Filter aktiv | {count} Filter aktiv",
+    "reset": "Zurücksetzen",
+    "noSharesTitle": "Für Sie ist noch kein Ordner freigegeben",
+    "noSharesDesc": "Bis ein Administrator Ihnen einen Ordner zuweist, bleibt die Suche leer.",
+    "facetsEmpty": "Filter erscheinen, sobald es Treffer gibt.",
+    "emptyWithQuery": "Zu dieser Suche gibt es nichts. Weniger Filter oder ein anderer Begriff helfen meist.",
+    "emptyNoQuery": "Noch nichts indiziert oder noch nichts gesucht.",
+    "failed": "Die Suche ist fehlgeschlagen.",
+    "showAll": "Alle {count} anzeigen",
+    "showLess": "Weniger"
+  },
+  "facet": {
+    "instance_name": "Instanz",
+    "folder_label": "Ordner",
+    "extension": "Dateityp",
+    "year": "Jahr",
+    "size_bucket": "Größe",
+    "ocr_used": "Texterkennung",
+    "ocrTrue": "per OCR erkannt",
+    "ocrFalse": "aus Textlayer",
+    "extensionNone": "ohne"
+  },
+  "sizeBucket": {
+    "upTo100kb": "bis 100 KB",
+    "100kbTo1mb": "100 KB bis 1 MB",
+    "1to10mb": "1 bis 10 MB",
+    "10to100mb": "10 bis 100 MB",
+    "over100mb": "über 100 MB"
+  },
+  "result": {
+    "ocr": "OCR",
+    "pages": "{count} Seite | {count} Seiten"
+  },
+  "document": {
+    "back": "Zurück zur Suche",
+    "loadFailed": "Das Dokument konnte nicht geladen werden.",
+    "openOriginal": "Original öffnen",
+    "download": "Herunterladen",
+    "openInNextcloud": "In Nextcloud anzeigen",
+    "noPreviewTitle": "Keine Vorschau im Browser",
+    "noPreviewDesc": "Dateien vom Typ {type} lassen sich hier nicht darstellen. Über den Knopf rechts laden Sie das Original herunter.",
+    "unavailableTitle": "Vorschau nicht verfügbar",
+    "unavailableDesc": "Der Inhalt ließ sich nicht darstellen. Über den Knopf rechts laden Sie das Original herunter.",
+    "ocrTitle": "Text stammt aus einer Texterkennung",
+    "ocrDesc": "Das Dokument hatte keinen Textlayer. Erkennungsfehler sind möglich.",
+    "meta": {
+      "folder": "Ordner",
+      "path": "Pfad",
+      "type": "Typ",
+      "size": "Größe",
+      "modified": "Geändert",
+      "indexed": "Indiziert",
+      "pages": "Seiten",
+      "author": "Autor",
+      "title": "Titel",
+      "sender": "Absender",
+      "recipient": "Empfänger",
+      "unknown": "unbekannt"
+    },
+    "email": {
+      "from": "Von",
+      "to": "An",
+      "subject": "Betreff",
+      "date": "Datum"
+    }
+  },
+  "image": {
+    "upload": "Bild hochladen",
+    "replace": "Bild ersetzen"
+  },
+  "admin": {
+    "instances": {
+      "title": "Nextcloud-Instanzen",
+      "subtitle": "NextSearch greift auf diese Instanzen ausschließlich lesend zu.",
+      "add": "Instanz hinzufügen",
+      "tipTitle": "Empfehlung zum Zugang",
+      "tipDesc": "Hinterlegen Sie ein Nextcloud-App-Passwort eines eigens angelegten Kontos, kein Kontopasswort. Es wird verschlüsselt gespeichert und in der Oberfläche nie wieder angezeigt.",
+      "none": "Noch keine Instanz hinterlegt.",
+      "healthOk": "erreichbar",
+      "healthFailed": "Fehler",
+      "healthUnknown": "ungeprüft",
+      "disabled": "deaktiviert",
+      "userLabel": "Benutzer {name}",
+      "counts": "{folders} Ordner · {documents} Dokumente",
+      "test": "Testen",
+      "foldersBtn": "Ordner",
+      "deleteConfirm": "Instanz \"{name}\" mit {documents} indizierten Dokumenten entfernen? In der Nextcloud selbst wird dabei nichts verändert.",
+      "testOk": "Verbindung steht",
+      "testFailed": "Verbindung fehlgeschlagen",
+      "form": {
+        "addTitle": "Instanz hinzufügen",
+        "editTitle": "Instanz bearbeiten",
+        "name": "Bezeichnung",
+        "nameHint": "Frei wählbar, taucht in den Suchergebnissen auf",
+        "baseUrl": "Basis-URL",
+        "baseUrlHint": "z. B. https://cloud.example.de",
+        "username": "Benutzername",
+        "appPassword": "App-Passwort",
+        "appPasswordHint": "Leer lassen, um das gespeicherte Passwort zu behalten",
+        "verifyTls": "TLS-Zertifikat prüfen",
+        "saveFailed": "Speichern fehlgeschlagen."
+      }
+    },
+    "folders": {
+      "title": "Überwachte Ordner",
+      "subtitle": "Jeder Ordner wird samt Unterverzeichnissen durchlaufen.",
+      "add": "Ordner hinzufügen",
+      "noInstanceTitle": "Noch keine Instanz hinterlegt",
+      "noInstanceDesc": "Legen Sie zuerst eine Nextcloud-Instanz an.",
+      "toInstances": "Zu den Instanzen",
+      "none": "Noch kein Ordner ausgewählt.",
+      "paused": "pausiert",
+      "meta": "{documents} Dokumente · alle {interval} Minuten · zuletzt {last}",
+      "never": "nie",
+      "excluded": "Ausgeschlossen: {patterns}",
+      "crawl": "Durchlauf",
+      "full": "Vollständig",
+      "deleteConfirm": "Ordner \"{label}\" nicht mehr überwachen? Die {documents} Einträge verschwinden aus dem Suchindex. Die Dateien in der Nextcloud bleiben unangetastet.",
+      "form": {
+        "title": "Ordner hinzufügen",
+        "instance": "Instanz",
+        "pick": "Ordner auswählen",
+        "label": "Bezeichnung",
+        "labelHint": "Taucht als Filter in der Suche auf",
+        "interval": "Intervall in Minuten",
+        "exclude": "Ausschlussmuster",
+        "excludeHint": "Ein Muster pro Zeile, z. B. *.tmp oder Archiv/*",
+        "saveFailed": "Speichern fehlgeschlagen."
+      }
+    },
+    "picker": {
+      "root": "Wurzelverzeichnis",
+      "empty": "Hier liegen keine weiteren Ordner. Mit „Übernehmen“ wählen Sie diese Ebene.",
+      "failed": "Der Ordner ließ sich nicht öffnen.",
+      "selected": "Ausgewählt"
+    },
+    "users": {
+      "title": "Benutzer",
+      "subtitle": "Konten und Ordnerfreigaben in NextSearch.",
+      "add": "Benutzer anlegen",
+      "warnTitle": "Freigaben gelten unabhängig von der Nextcloud",
+      "warnDesc": "NextSearch bildet die Dateirechte der Nextcloud nicht nach. Wer hier einen Ordner zugewiesen bekommt, sieht dessen Inhalte im Volltext und kann die Originale öffnen — auch wenn die Nextcloud selbst ihm den Zugriff verweigern würde.",
+      "roleAdmin": "Administrator",
+      "roleUser": "Benutzer",
+      "you": "Sie",
+      "seesAll": "Sieht alle Ordner.",
+      "noShare": "Kein Ordner freigegeben — die Suche bleibt leer.",
+      "shared": "Freigegeben: {labels}",
+      "shares": "Freigaben",
+      "deleteConfirm": "Konto \"{email}\" löschen?",
+      "deleteFailedTitle": "Löschen nicht möglich",
+      "sharesSaved": "Freigaben gespeichert.",
+      "noFolders": "Es gibt noch keine überwachten Ordner.",
+      "sharesTitle": "Freigaben für {name}",
+      "form": {
+        "addTitle": "Benutzer anlegen",
+        "editTitle": "Benutzer bearbeiten",
+        "name": "Name",
+        "email": "E-Mail",
+        "password": "Passwort",
+        "passwordHintEdit": "Leer lassen, um es unverändert zu lassen",
+        "passwordHintNew": "Mindestens zwölf Zeichen",
+        "role": "Rolle",
+        "roleUserOption": "Benutzer — sieht nur freigegebene Ordner",
+        "roleAdminOption": "Administrator — sieht und verwaltet alles",
+        "saveFailed": "Speichern fehlgeschlagen."
+      }
+    },
+    "status": {
+      "title": "Status",
+      "subtitle": "Dienste, Warteschlangen und die letzten Durchläufe.",
+      "searchIndex": "Suchindex",
+      "documents": "Dokumente",
+      "extraction": "Textextraktion",
+      "reachable": "erreichbar",
+      "unreachable": "nicht erreichbar",
+      "queue": "Warteschlange {name}",
+      "docState": {
+        "pending": "wartet",
+        "indexed": "indiziert",
+        "failed": "fehlgeschlagen",
+        "skipped": "übersprungen"
+      },
+      "runsTitle": "Letzte Durchläufe",
+      "noRuns": "Noch kein Durchlauf gelaufen.",
+      "runState": {
+        "completed": "fertig",
+        "failed": "abgebrochen",
+        "running": "läuft"
+      },
+      "runFull": "vollständig",
+      "startedAt": "gestartet {time}",
+      "finishedAt": "beendet {time}",
+      "openJobs": "{count} offen",
+      "seen": "{count} gesehen",
+      "new": "{count} neu",
+      "updated": "{count} geändert",
+      "skipped": "{count} übersprungen",
+      "removed": "{count} entfernt",
+      "failedCount": "{count} Fehler"
+    }
+  }
+}

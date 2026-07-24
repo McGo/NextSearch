@@ -10,7 +10,7 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($request->user()?->isAdmin(), 403, 'Dieser Bereich ist Administratoren vorbehalten.');
+        abort_unless($request->user()?->isAdmin(), 403, __('nextsearch.admin_only'));
 
         return $next($request);
     }

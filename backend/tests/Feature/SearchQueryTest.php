@@ -88,7 +88,7 @@ class SearchQueryTest extends TestCase
 
         $this->assertSame(2019, $indexed['year']);
         $this->assertSame('2019-03', $indexed['month']);
-        $this->assertSame('1 bis 10 MB', $indexed['size_bucket']);
+        $this->assertSame('1to10mb', $indexed['size_bucket']);
         $this->assertSame('Akten/2019', $indexed['directory']);
         // Meilisearch erlaubt in der Dokument-ID keine Bindestriche.
         $this->assertSame('11111111222233334444555555555555', $indexed['id']);
@@ -103,7 +103,7 @@ class SearchQueryTest extends TestCase
             size: 10, modifiedAt: null, text: '',
         );
 
-        $this->assertSame('ohne', $dto->toSearchDocument()['extension']);
+        $this->assertSame('none', $dto->toSearchDocument()['extension']);
         $this->assertNull($dto->toSearchDocument()['year']);
     }
 

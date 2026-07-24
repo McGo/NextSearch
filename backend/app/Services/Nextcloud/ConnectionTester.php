@@ -11,7 +11,7 @@ class ConnectionTester
     public function __construct(private readonly ReadOnlyWebDavClient $dav) {}
 
     /**
-     * Prüft die Instanz und schreibt das Ergebnis in den Health-Zustand.
+     * Checks the instance and writes the result into the health state.
      *
      * @return array{ok: bool, message: string, folders: int}
      */
@@ -25,11 +25,10 @@ class ConnectionTester
             return ['ok' => false, 'message' => $e->getMessage(), 'folders' => 0];
         }
 
-        $message = sprintf(
-            'Verbindung steht. %d Ordner im Wurzelverzeichnis von "%s" gefunden.',
-            count($directories),
-            $instance->username,
-        );
+        $message = __('nextsearch.connection.ok', [
+            'count' => count($directories),
+            'user' => $instance->username,
+        ]);
 
         $this->store($instance, NextcloudInstance::HEALTH_OK, $message);
 

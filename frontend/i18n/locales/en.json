@@ -1,0 +1,263 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "close": "Close",
+    "back": "Back",
+    "apply": "Apply",
+    "done": "Done",
+    "requestFailed": "The request failed."
+  },
+  "nav": {
+    "search": "Search",
+    "instances": "Instances",
+    "folders": "Folders",
+    "users": "Users",
+    "status": "Status",
+    "github": "Source on GitHub"
+  },
+  "userMenu": {
+    "changePassword": "Change password",
+    "logout": "Sign out"
+  },
+  "footer": {
+    "note": "Sharing is managed in {app} and applies independently of each Nextcloud's file permissions."
+  },
+  "language": {
+    "label": "Language"
+  },
+  "login": {
+    "subtitle": "Full-text search across your Nextcloud folders",
+    "email": "Email",
+    "password": "Password",
+    "remember": "Stay signed in",
+    "submit": "Sign in",
+    "failed": "Sign-in failed."
+  },
+  "password": {
+    "title": "Change password",
+    "current": "Current password",
+    "new": "New password",
+    "newHint": "At least twelve characters",
+    "repeat": "Repeat new password",
+    "submit": "Change",
+    "changed": "Password changed.",
+    "failed": "The password could not be changed."
+  },
+  "search": {
+    "placeholder": "Full-text search across all indexed documents",
+    "sortLabel": "Sort",
+    "sort": {
+      "relevance": "Relevance",
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "largest": "Largest first",
+      "name": "Name"
+    },
+    "results": "{count} result | {count} results",
+    "took": "in {ms} ms",
+    "filter": "Filter",
+    "filtersActive": "{count} filter active | {count} filters active",
+    "reset": "Reset",
+    "noSharesTitle": "No folder has been shared with you yet",
+    "noSharesDesc": "Until an administrator assigns you a folder, the search stays empty.",
+    "facetsEmpty": "Filters appear as soon as there are results.",
+    "emptyWithQuery": "Nothing matches this search. Fewer filters or a different term usually help.",
+    "emptyNoQuery": "Nothing indexed yet, or nothing searched yet.",
+    "failed": "The search failed.",
+    "showAll": "Show all {count}",
+    "showLess": "Less"
+  },
+  "facet": {
+    "instance_name": "Instance",
+    "folder_label": "Folder",
+    "extension": "File type",
+    "year": "Year",
+    "size_bucket": "Size",
+    "ocr_used": "Text recognition",
+    "ocrTrue": "recognised via OCR",
+    "ocrFalse": "from text layer",
+    "extensionNone": "none"
+  },
+  "sizeBucket": {
+    "upTo100kb": "up to 100 KB",
+    "100kbTo1mb": "100 KB to 1 MB",
+    "1to10mb": "1 to 10 MB",
+    "10to100mb": "10 to 100 MB",
+    "over100mb": "over 100 MB"
+  },
+  "result": {
+    "ocr": "OCR",
+    "pages": "{count} page | {count} pages"
+  },
+  "document": {
+    "back": "Back to search",
+    "loadFailed": "The document could not be loaded.",
+    "openOriginal": "Open original",
+    "download": "Download",
+    "openInNextcloud": "Show in Nextcloud",
+    "noPreviewTitle": "No preview in the browser",
+    "noPreviewDesc": "Files of type {type} can't be shown here. Use the button on the right to download the original.",
+    "unavailableTitle": "Preview unavailable",
+    "unavailableDesc": "The content could not be displayed. Use the button on the right to download the original.",
+    "ocrTitle": "Text comes from optical character recognition",
+    "ocrDesc": "The document had no text layer. Recognition errors are possible.",
+    "meta": {
+      "folder": "Folder",
+      "path": "Path",
+      "type": "Type",
+      "size": "Size",
+      "modified": "Modified",
+      "indexed": "Indexed",
+      "pages": "Pages",
+      "author": "Author",
+      "title": "Title",
+      "sender": "Sender",
+      "recipient": "Recipient",
+      "unknown": "unknown"
+    },
+    "email": {
+      "from": "From",
+      "to": "To",
+      "subject": "Subject",
+      "date": "Date"
+    }
+  },
+  "image": {
+    "upload": "Upload image",
+    "replace": "Replace image"
+  },
+  "admin": {
+    "instances": {
+      "title": "Nextcloud instances",
+      "subtitle": "NextSearch accesses these instances read-only.",
+      "add": "Add instance",
+      "tipTitle": "A note on access",
+      "tipDesc": "Use a Nextcloud app password of a dedicated account, not an account password. It is stored encrypted and never shown again in the interface.",
+      "none": "No instance configured yet.",
+      "healthOk": "reachable",
+      "healthFailed": "error",
+      "healthUnknown": "unchecked",
+      "disabled": "disabled",
+      "userLabel": "User {name}",
+      "counts": "{folders} folders · {documents} documents",
+      "test": "Test",
+      "foldersBtn": "Folders",
+      "deleteConfirm": "Remove instance \"{name}\" with {documents} indexed documents? Nothing is changed in Nextcloud itself.",
+      "testOk": "Connection works",
+      "testFailed": "Connection failed",
+      "form": {
+        "addTitle": "Add instance",
+        "editTitle": "Edit instance",
+        "name": "Label",
+        "nameHint": "Free to choose, shows up in search results",
+        "baseUrl": "Base URL",
+        "baseUrlHint": "e.g. https://cloud.example.com",
+        "username": "Username",
+        "appPassword": "App password",
+        "appPasswordHint": "Leave empty to keep the stored password",
+        "verifyTls": "Verify TLS certificate",
+        "saveFailed": "Saving failed."
+      }
+    },
+    "folders": {
+      "title": "Watched folders",
+      "subtitle": "Each folder is walked including its subfolders.",
+      "add": "Add folder",
+      "noInstanceTitle": "No instance configured yet",
+      "noInstanceDesc": "Add a Nextcloud instance first.",
+      "toInstances": "To the instances",
+      "none": "No folder selected yet.",
+      "paused": "paused",
+      "meta": "{documents} documents · every {interval} minutes · last {last}",
+      "never": "never",
+      "excluded": "Excluded: {patterns}",
+      "crawl": "Run",
+      "full": "Full",
+      "deleteConfirm": "Stop watching folder \"{label}\"? Its {documents} entries disappear from the search index. The files in Nextcloud are left untouched.",
+      "form": {
+        "title": "Add folder",
+        "instance": "Instance",
+        "pick": "Pick folder",
+        "label": "Label",
+        "labelHint": "Shows up as a filter in search",
+        "interval": "Interval in minutes",
+        "exclude": "Exclude patterns",
+        "excludeHint": "One pattern per line, e.g. *.tmp or Archive/*",
+        "saveFailed": "Saving failed."
+      }
+    },
+    "picker": {
+      "root": "Root directory",
+      "empty": "There are no further folders here. \"Apply\" picks this level.",
+      "failed": "The folder could not be opened.",
+      "selected": "Selected"
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Accounts and folder shares in NextSearch.",
+      "add": "Add user",
+      "warnTitle": "Shares apply independently of Nextcloud",
+      "warnDesc": "NextSearch does not mirror Nextcloud's file permissions. Whoever is assigned a folder here sees its contents in full text and can open the originals — even where Nextcloud itself would deny them access.",
+      "roleAdmin": "Administrator",
+      "roleUser": "User",
+      "you": "You",
+      "seesAll": "Sees all folders.",
+      "noShare": "No folder shared — search stays empty.",
+      "shared": "Shared: {labels}",
+      "shares": "Shares",
+      "deleteConfirm": "Delete account \"{email}\"?",
+      "deleteFailedTitle": "Deletion not possible",
+      "sharesSaved": "Shares saved.",
+      "noFolders": "There are no watched folders yet.",
+      "sharesTitle": "Shares for {name}",
+      "form": {
+        "addTitle": "Add user",
+        "editTitle": "Edit user",
+        "name": "Name",
+        "email": "Email",
+        "password": "Password",
+        "passwordHintEdit": "Leave empty to keep it unchanged",
+        "passwordHintNew": "At least twelve characters",
+        "role": "Role",
+        "roleUserOption": "User — sees only shared folders",
+        "roleAdminOption": "Administrator — sees and manages everything",
+        "saveFailed": "Saving failed."
+      }
+    },
+    "status": {
+      "title": "Status",
+      "subtitle": "Services, queues and the latest runs.",
+      "searchIndex": "Search index",
+      "documents": "documents",
+      "extraction": "Text extraction",
+      "reachable": "reachable",
+      "unreachable": "unreachable",
+      "queue": "Queue {name}",
+      "docState": {
+        "pending": "pending",
+        "indexed": "indexed",
+        "failed": "failed",
+        "skipped": "skipped"
+      },
+      "runsTitle": "Latest runs",
+      "noRuns": "No run yet.",
+      "runState": {
+        "completed": "done",
+        "failed": "aborted",
+        "running": "running"
+      },
+      "runFull": "full",
+      "startedAt": "started {time}",
+      "finishedAt": "finished {time}",
+      "openJobs": "{count} open",
+      "seen": "{count} seen",
+      "new": "{count} new",
+      "updated": "{count} changed",
+      "skipped": "{count} skipped",
+      "removed": "{count} removed",
+      "failedCount": "{count} errors"
+    }
+  }
+}

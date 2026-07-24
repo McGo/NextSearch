@@ -17,8 +17,8 @@ interface Directory {
   folders: DirectoryFolder[]
 }
 
-// Einmal geladen, für die Sitzung gehalten — Treffer und Facetten schlagen die
-// Bilder hier nach, ohne pro Eintrag eine Anfrage zu stellen.
+// Loaded once, kept for the session — hits and facets look up their images here
+// without a request per entry.
 const directory = ref<Directory | null>(null)
 const loading = ref<Promise<void> | null>(null)
 
@@ -43,7 +43,7 @@ export function useDirectory() {
     return loading.value
   }
 
-  // Suchtreffer tragen die folder_id — der eindeutige Schlüssel für das Bild.
+  // Search hits carry the folder_id — the unique key for the image.
   const folderImageById = computed(() => {
     const map: Record<number, string> = {}
     for (const folder of directory.value?.folders ?? []) {
@@ -52,9 +52,8 @@ export function useDirectory() {
     return map
   })
 
-  // Facetten laufen über die Beschriftung. Kommt eine Beschriftung mehrfach vor,
-  // teilt sie sich das Bild — bei getrennten Ordnern gleichen Namens selten und
-  // verschmerzbar.
+  // Facets go by label. If a label occurs more than once, they share the image
+  // — rare for separate folders of the same name, and tolerable.
   const folderImageByLabel = computed(() => {
     const map: Record<string, string> = {}
     for (const folder of directory.value?.folders ?? []) {

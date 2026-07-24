@@ -10,7 +10,13 @@ const ICONS: Record<string, string> = {
   epub: 'i-lucide-book-open'
 }
 
+// Maps an intl-friendly locale onto our language codes.
+const INTL_LOCALE: Record<string, string> = { en: 'en-GB', de: 'de-DE' }
+
 export function useFormat() {
+  const { locale, t } = useI18n()
+  const intl = computed(() => INTL_LOCALE[locale.value] ?? locale.value)
+
   const bytes = (value: number): string => {
     if (value < 1024) return `${value} B`
     const units = ['KB', 'MB', 'GB', 'TB']
@@ -22,19 +28,23 @@ export function useFormat() {
       unit++
     }
 
-    return `${size.toFixed(size < 10 ? 1 : 0).replace('.', ',')} ${units[unit]}`
+    const rounded = size.toFixed(size < 10 ? 1 : 0)
+    return `${new Intl.NumberFormat(intl.value).format(Number(rounded))} ${units[unit]}`
   }
+
+  const number = (value: number): string =>
+    new Intl.NumberFormat(intl.value).format(value)
 
   const date = (timestamp: number | string | null): string => {
     if (timestamp === null) return '—'
     const value = typeof timestamp === 'number' ? new Date(timestamp * 1000) : new Date(timestamp)
-    return value.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    return value.toLocaleDateString(intl.value, { day: '2-digit', month: '2-digit', year: 'numeric' })
   }
 
   const dateTime = (timestamp: number | string | null): string => {
     if (timestamp === null) return '—'
     const value = typeof timestamp === 'number' ? new Date(timestamp * 1000) : new Date(timestamp)
-    return value.toLocaleString('de-DE', {
+    return value.toLocaleString(intl.value, {
       day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
     })
   }
@@ -42,10 +52,14 @@ export function useFormat() {
   const icon = (extension: string | null): string =>
     (extension && ICONS[extension]) || 'i-lucide-file'
 
+  // Turns a stored facet value into a translated label. Most values pass
+  // through; a few carry language-neutral keys that need mapping.
   const facetValue = (facet: string, value: string): string => {
-    if (facet !== 'ocr_used') return value
-    return value === 'true' ? 'per OCR erkannt' : 'aus Textlayer'
+    if (facet === 'ocr_used') return value === 'true' ? t('facet.ocrTrue') : t('facet.ocrFalse')
+    if (facet === 'size_bucket') return t(`sizeBucket.${value}`)
+    if (facet === 'extension' && value === 'none') return t('facet.extensionNone')
+    return value
   }
 
-  return { bytes, date, dateTime, icon, facetValue }
+  return { bytes, number, date, dateTime, icon, facetValue }
 }

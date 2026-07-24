@@ -9,11 +9,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (!current) {
-    return navigateTo({ path: '/login', query: to.fullPath === '/' ? {} : { weiter: to.fullPath } })
+    return navigateTo({ path: '/login', query: to.fullPath === '/' ? {} : { next: to.fullPath } })
   }
 
-  // Der Admin-Bereich ist auch serverseitig gesperrt; das hier erspart nur den
-  // Umweg über eine 403-Antwort.
+  // The admin area is enforced on the server too; this only saves the detour
+  // through a 403 response.
   if (to.path.startsWith('/admin') && !user.value?.is_admin) {
     return navigateTo('/')
   }

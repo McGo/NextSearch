@@ -1,5 +1,6 @@
 <script setup lang="ts">
-useHead({ title: 'Suche' })
+const { t } = useI18n()
+useHead({ title: () => t('nav.search') })
 
 const { user } = useAuth()
 const { load: loadDirectory } = useDirectory()
@@ -8,15 +9,19 @@ const {
   activeFilterCount, run, toggleFilter, clearFilters
 } = useSearch()
 
+const sortItems = computed(() =>
+  SORT_VALUES.map(value => ({ value: value as string, label: t(`search.sort.${value}`) }))
+)
+
 onMounted(() => {
-  // Bilder für Treffer und Facetten; unabhängig vom Suchlauf.
+  // Images for hits and facets; independent of the search run.
   loadDirectory()
   run()
 })
 
 const hasNoShares = computed(() => user.value?.folder_count === 0)
 
-// Auf Mobil sitzen die Facetten in einer Schublade statt über den Treffern.
+// The facets live in a drawer on mobile instead of above the results.
 const filterDrawerOpen = ref(false)
 </script>
 
@@ -28,15 +33,15 @@ const filterDrawerOpen = ref(false)
       color="warning"
       variant="subtle"
       icon="i-lucide-folder-lock"
-      title="Für Sie ist noch kein Ordner freigegeben"
-      description="Bis ein Administrator Ihnen einen Ordner zuweist, bleibt die Suche leer."
+      :title="t('search.noSharesTitle')"
+      :description="t('search.noSharesDesc')"
     />
 
     <div class="flex gap-2 sm:gap-3">
       <UInput
         v-model="query"
         icon="i-lucide-search"
-        placeholder="Volltextsuche über alle indizierten Dokumente"
+        :placeholder="t('search.placeholder')"
         size="lg"
         autofocus
         class="flex-1 min-w-0"
@@ -44,7 +49,7 @@ const filterDrawerOpen = ref(false)
 
       <USelect
         v-model="sort"
-        :items="SORT_OPTIONS"
+        :items="sortItems"
         value-key="value"
         size="lg"
         class="w-32 sm:w-44 lg:w-48 shrink-0"
@@ -52,8 +57,7 @@ const filterDrawerOpen = ref(false)
     </div>
 
     <div class="mt-6 grid grid-cols-1 lg:grid-cols-[16rem_1fr] gap-8">
-      <!-- Facettenleiste: auf Desktop fest an der Seite, auf Mobil in der
-           Schublade weiter unten. -->
+      <!-- Facet panel: fixed to the side on desktop, in the drawer on mobile. -->
       <FacetPanel
         class="hidden lg:block"
         :facets="result?.facets ?? []"
@@ -64,8 +68,8 @@ const filterDrawerOpen = ref(false)
       />
 
       <section class="space-y-4">
-        <!-- Mobile Steuerzeile: Filter-Knopf und Trefferzahl direkt über den
-             Ergebnissen, damit man nicht erst an den Filtern vorbeiscrollt. -->
+        <!-- Mobile control row: filter button and hit count right above the
+             results, so you don't scroll past the filters first. -->
         <div class="flex items-center justify-between gap-3 lg:hidden">
           <UButton
             color="neutral"
@@ -74,7 +78,7 @@ const filterDrawerOpen = ref(false)
             :disabled="!result || result.facets.length === 0"
             @click="filterDrawerOpen = true"
           >
-            Filter
+            {{ t('search.filter') }}
             <UBadge
               v-if="activeFilterCount > 0"
               size="sm"
@@ -93,15 +97,15 @@ const filterDrawerOpen = ref(false)
               name="i-lucide-loader-circle"
               class="animate-spin size-4 align-middle"
             />
-            <template v-else>{{ result.total.toLocaleString('de-DE') }} Treffer</template>
+            <template v-else>{{ t('search.results', { count: result.total }, result.total) }}</template>
           </span>
         </div>
 
-        <!-- Auf Desktop trägt diese Zeile die Trefferzahl. -->
+        <!-- On desktop this row carries the hit count. -->
         <div class="hidden lg:flex items-center justify-between text-sm text-muted">
           <span v-if="result">
-            {{ result.total.toLocaleString('de-DE') }} Treffer
-            <template v-if="result.took_ms !== null"> in {{ result.took_ms }} ms</template>
+            {{ t('search.results', { count: result.total }, result.total) }}
+            <template v-if="result.took_ms !== null"> {{ t('search.took', { ms: result.took_ms }) }}</template>
           </span>
           <UIcon
             v-if="pending"
@@ -139,10 +143,10 @@ const filterDrawerOpen = ref(false)
           />
           <p class="mt-2 text-sm text-muted">
             <template v-if="query || activeFilterCount">
-              Zu dieser Suche gibt es nichts. Weniger Filter oder ein anderer Begriff helfen meist.
+              {{ t('search.emptyWithQuery') }}
             </template>
             <template v-else>
-              Noch nichts indiziert oder noch nichts gesucht.
+              {{ t('search.emptyNoQuery') }}
             </template>
           </p>
         </div>
@@ -157,12 +161,11 @@ const filterDrawerOpen = ref(false)
       </section>
     </div>
 
-    <!-- Mobile Filter-Schublade. Dieselbe Facettenleiste wie am Desktop, die
-         Filter greifen sofort — hinter der Schublade aktualisiert sich die
-         Trefferliste bereits. -->
+    <!-- Mobile filter drawer. The same facet panel as on desktop; filters apply
+         at once — the result list already updates behind the drawer. -->
     <USlideover
       v-model:open="filterDrawerOpen"
-      title="Filter"
+      :title="t('search.filter')"
       side="left"
       :ui="{ content: 'lg:hidden' }"
     >
@@ -180,7 +183,7 @@ const filterDrawerOpen = ref(false)
         <UButton
           block
           color="neutral"
-          label="Fertig"
+          :label="t('common.done')"
           @click="filterDrawerOpen = false"
         />
       </template>

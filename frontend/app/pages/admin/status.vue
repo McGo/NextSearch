@@ -1,5 +1,6 @@
 <script setup lang="ts">
-useHead({ title: 'Status' })
+const { t } = useI18n()
+useHead({ title: () => t('admin.status.title') })
 
 interface IndexRun {
   uuid: string
@@ -28,7 +29,7 @@ interface Status {
 }
 
 const api = useApi()
-const { dateTime } = useFormat()
+const { dateTime, number } = useFormat()
 
 const status = ref<Status | null>(null)
 const pending = ref(true)
@@ -42,7 +43,7 @@ async function load() {
   }
 }
 
-// Solange etwas läuft, lohnt sich der Blick alle fünf Sekunden.
+// While something is running, a glance every five seconds is worthwhile.
 let timer: ReturnType<typeof setInterval> | undefined
 
 onMounted(() => {
@@ -52,11 +53,13 @@ onMounted(() => {
 
 onUnmounted(() => clearInterval(timer))
 
-const documentStates: Record<string, string> = {
-  pending: 'wartet',
-  indexed: 'indiziert',
-  failed: 'fehlgeschlagen',
-  skipped: 'übersprungen'
+function docStateLabel(state: string): string {
+  const known = ['pending', 'indexed', 'failed', 'skipped']
+  return known.includes(state) ? t(`admin.status.docState.${state}`) : state
+}
+
+function runStateLabel(state: IndexRun['state']): string {
+  return t(`admin.status.runState.${state}`)
 }
 </script>
 
@@ -64,10 +67,10 @@ const documentStates: Record<string, string> = {
   <UContainer class="py-8 space-y-6">
     <div>
       <h1 class="text-xl font-semibold">
-        Status
+        {{ t('admin.status.title') }}
       </h1>
       <p class="text-sm text-muted">
-        Dienste, Warteschlangen und die letzten Durchläufe.
+        {{ t('admin.status.subtitle') }}
       </p>
     </div>
 
@@ -85,25 +88,25 @@ const documentStates: Record<string, string> = {
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         <UCard>
           <p class="text-xs text-muted">
-            Suchindex
+            {{ t('admin.status.searchIndex') }}
           </p>
           <p class="text-xl font-semibold tabular-nums">
-            {{ (status.services.search.numberOfDocuments ?? 0).toLocaleString('de-DE') }}
+            {{ number(status.services.search.numberOfDocuments ?? 0) }}
           </p>
           <p class="text-xs text-muted">
-            Dokumente
+            {{ t('admin.status.documents') }}
           </p>
         </UCard>
 
         <UCard>
           <p class="text-xs text-muted">
-            Textextraktion
+            {{ t('admin.status.extraction') }}
           </p>
           <p class="text-xl font-semibold">
             <UBadge
               variant="subtle"
               :color="status.services.tika ? 'success' : 'error'"
-              :label="status.services.tika ? 'erreichbar' : 'nicht erreichbar'"
+              :label="status.services.tika ? t('admin.status.reachable') : t('admin.status.unreachable')"
             />
           </p>
         </UCard>
@@ -113,7 +116,7 @@ const documentStates: Record<string, string> = {
           :key="queue"
         >
           <p class="text-xs text-muted">
-            Warteschlange {{ queue }}
+            {{ t('admin.status.queue', { name: queue }) }}
           </p>
           <p class="text-xl font-semibold tabular-nums">
             {{ size }}
@@ -127,20 +130,20 @@ const documentStates: Record<string, string> = {
           :key="state"
           variant="subtle"
           :color="state === 'failed' ? 'error' : state === 'indexed' ? 'success' : 'neutral'"
-          :label="`${count.toLocaleString('de-DE')} ${documentStates[state] ?? state}`"
+          :label="`${number(count)} ${docStateLabel(state)}`"
         />
       </div>
 
       <div class="space-y-2">
         <h2 class="font-medium">
-          Letzte Durchläufe
+          {{ t('admin.status.runsTitle') }}
         </h2>
 
         <p
           v-if="status.runs.length === 0"
           class="text-sm text-muted"
         >
-          Noch kein Durchlauf gelaufen.
+          {{ t('admin.status.noRuns') }}
         </p>
 
         <UCard
@@ -156,41 +159,41 @@ const documentStates: Record<string, string> = {
                   size="sm"
                   variant="subtle"
                   :color="run.state === 'completed' ? 'success' : run.state === 'failed' ? 'error' : 'info'"
-                  :label="run.state === 'completed' ? 'fertig' : run.state === 'failed' ? 'abgebrochen' : 'läuft'"
+                  :label="runStateLabel(run.state)"
                 />
                 <UBadge
                   v-if="run.full"
                   size="sm"
                   color="neutral"
                   variant="outline"
-                  label="vollständig"
+                  :label="t('admin.status.runFull')"
                 />
               </div>
 
               <p class="text-xs text-muted">
-                {{ run.instance }} · gestartet {{ dateTime(run.started_at) }}
+                {{ run.instance }} · {{ t('admin.status.startedAt', { time: dateTime(run.started_at) }) }}
                 <template v-if="run.finished_at">
-                  · beendet {{ dateTime(run.finished_at) }}
+                  · {{ t('admin.status.finishedAt', { time: dateTime(run.finished_at) }) }}
                 </template>
                 <template v-if="run.state === 'running'">
-                  · {{ run.pending_jobs }} offen
+                  · {{ t('admin.status.openJobs', { count: run.pending_jobs }) }}
                 </template>
               </p>
             </div>
 
             <div class="flex flex-wrap gap-3 text-xs tabular-nums">
-              <span>{{ run.files_seen }} gesehen</span>
-              <span class="text-success">{{ run.files_new }} neu</span>
-              <span>{{ run.files_updated }} geändert</span>
-              <span>{{ run.files_skipped }} übersprungen</span>
-              <span>{{ run.files_removed }} entfernt</span>
+              <span>{{ t('admin.status.seen', { count: run.files_seen }) }}</span>
+              <span class="text-success">{{ t('admin.status.new', { count: run.files_new }) }}</span>
+              <span>{{ t('admin.status.updated', { count: run.files_updated }) }}</span>
+              <span>{{ t('admin.status.skipped', { count: run.files_skipped }) }}</span>
+              <span>{{ t('admin.status.removed', { count: run.files_removed }) }}</span>
               <button
                 v-if="run.files_failed > 0"
                 type="button"
                 class="text-error underline"
                 @click="expanded = expanded === run.uuid ? null : run.uuid"
               >
-                {{ run.files_failed }} Fehler
+                {{ t('admin.status.failedCount', { count: run.files_failed }) }}
               </button>
             </div>
           </div>

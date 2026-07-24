@@ -73,7 +73,7 @@ class InstanceController extends Controller
         $images->delete($instance->image_key);
         $instance->delete();
 
-        return response()->json(['message' => 'Instanz entfernt.']);
+        return response()->json(['message' => __('nextsearch.instance.removed')]);
     }
 
     public function test(NextcloudInstance $instance, ConnectionTester $tester): JsonResponse

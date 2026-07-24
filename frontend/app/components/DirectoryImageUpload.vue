@@ -10,12 +10,13 @@ const emit = defineEmits<{ changed: [] }>()
 
 const api = useApi()
 const toast = useToast()
+const { t } = useI18n()
 const fileInput = ref<HTMLInputElement | null>(null)
 const busy = ref(false)
 
-// Ein Zeitstempel hängt an der Bild-URL, damit der Browser nach dem Austausch
-// nicht das alte Bild aus dem Cache zeigt.
-const version = ref(Date.now())
+// A timestamp is appended to the image URL so the browser doesn't show the old
+// image from cache after a replace.
+const version = ref(0)
 const displayUrl = computed(() =>
   props.currentUrl ? `${props.currentUrl}?v=${version.value}` : null
 )
@@ -29,11 +30,11 @@ async function onPick(event: Event) {
     const form = new FormData()
     form.append('image', file)
     await api.upload(props.uploadPath, form)
-    version.value = Date.now()
+    version.value += 1
     emit('changed')
   } catch (e) {
     toast.add({
-      title: 'Upload fehlgeschlagen',
+      title: t('admin.instances.form.saveFailed'),
       description: e instanceof ApiError ? (Object.values(e.errors)[0]?.[0] || e.message) : undefined,
       color: 'error'
     })
@@ -76,7 +77,7 @@ async function remove() {
         color="neutral"
         variant="outline"
         icon="i-lucide-upload"
-        :label="currentUrl ? 'Bild ersetzen' : 'Bild hochladen'"
+        :label="currentUrl ? t('image.replace') : t('image.upload')"
         :loading="busy"
         @click="fileInput?.click()"
       />

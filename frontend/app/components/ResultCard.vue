@@ -3,6 +3,7 @@ import type { SearchHit } from '~/composables/useSearch'
 
 const props = defineProps<{ hit: SearchHit }>()
 
+const { t } = useI18n()
 const { bytes, date, icon } = useFormat()
 const { folderImageById, instanceImageByName } = useDirectory()
 const previewFailed = ref(false)
@@ -11,29 +12,26 @@ const previewUrl = computed(() =>
   props.hit.has_preview ? `/api/documents/${props.hit.uuid}/preview` : null
 )
 
-// Herkunfts-Bild: erst der Ordner, sonst die Instanz.
-const originImage = computed(() =>
-  folderImageById.value[props.hit.folder_id]
-  ?? instanceImageByName.value[props.hit.instance_name]
-  ?? null
-)
+// Each origin part carries its own image next to its own name.
+const instanceImage = computed(() => instanceImageByName.value[props.hit.instance_name] ?? null)
+const folderImage = computed(() => folderImageById.value[props.hit.folder_id] ?? null)
 </script>
 
 <template>
-  <!-- v-html ist hier Absicht: DocumentSearch::highlight() escaped den Text aus
-       den indizierten Dateien und setzt danach ausschließlich <mark>-Tags. -->
+  <!-- v-html is intentional here: DocumentSearch::highlight() escapes the text
+       from the indexed files and then inserts only <mark> tags. -->
   <!-- eslint-disable vue/no-v-html -->
   <NuxtLink
     :to="`/documents/${hit.uuid}`"
     class="flex gap-4 rounded-lg border border-default p-4 transition hover:border-primary hover:bg-elevated/50"
   >
-    <!-- Vorschau, sonst eine Typ-Kachel: .eml, .md und .txt lassen sich nicht
-         sinnvoll rendern. -->
+    <!-- Preview, otherwise a type tile: .eml, .md and .txt can't be rendered
+         usefully. -->
     <div class="shrink-0 w-20 h-28 rounded border border-default bg-elevated overflow-hidden flex items-center justify-center">
       <img
         v-if="previewUrl && !previewFailed"
         :src="previewUrl"
-        :alt="`Vorschau von ${hit.name}`"
+        :alt="hit.name"
         class="w-full h-full object-cover object-top"
         loading="lazy"
         @error="previewFailed = true"
@@ -51,15 +49,25 @@ const originImage = computed(() =>
         v-html="hit.highlighted_name || hit.name"
       />
 
-      <p class="flex items-center gap-1.5 text-xs text-muted truncate">
+      <p class="flex items-center gap-1 text-xs text-muted truncate">
         <img
-          v-if="originImage"
-          :src="originImage"
+          v-if="instanceImage"
+          :src="instanceImage"
+          :alt="hit.instance_name"
+          class="size-4 shrink-0 rounded object-cover"
+          loading="lazy"
+        >
+        <span class="shrink-0">{{ hit.instance_name }}</span>
+        <span class="shrink-0 opacity-60">·</span>
+        <img
+          v-if="folderImage"
+          :src="folderImage"
           :alt="hit.folder_label"
           class="size-4 shrink-0 rounded object-cover"
           loading="lazy"
         >
-        <span class="truncate">{{ hit.instance_name }} · {{ hit.folder_label }} · {{ hit.directory || '/' }}</span>
+        <span class="shrink-0">{{ hit.folder_label }}</span>
+        <span class="truncate">· {{ hit.directory || '/' }}</span>
       </p>
 
       <p
@@ -83,12 +91,12 @@ const originImage = computed(() =>
           color="warning"
           variant="subtle"
           icon="i-lucide-scan-text"
-          label="OCR"
+          :label="t('result.ocr')"
         />
         <span
           v-if="hit.page_count"
           class="text-xs text-muted"
-        >{{ hit.page_count }} Seiten</span>
+        >{{ t('result.pages', { count: hit.page_count }, hit.page_count) }}</span>
       </div>
     </div>
   </NuxtLink>

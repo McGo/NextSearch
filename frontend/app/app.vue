@@ -2,10 +2,11 @@
 const config = useRuntimeConfig()
 const { user, isAdmin, logout } = useAuth()
 const route = useRoute()
+const { t, locale, locales, setLocale } = useI18n()
 
 useHead({
   titleTemplate: title => (title ? `${title} · ${config.public.appName}` : config.public.appName),
-  htmlAttrs: { lang: 'de' },
+  htmlAttrs: { lang: () => locale.value },
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
   link: [{ rel: 'icon', href: '/favicon.ico' }]
 })
@@ -14,15 +15,32 @@ const showChrome = computed(() => route.path !== '/login')
 const passwordModalOpen = ref(false)
 
 const navigation = computed(() => [
-  { label: 'Suche', to: '/', icon: 'i-lucide-search' },
+  { label: t('nav.search'), to: '/', icon: 'i-lucide-search' },
   ...(isAdmin.value
     ? [
-        { label: 'Instanzen', to: '/admin/instances', icon: 'i-lucide-cloud' },
-        { label: 'Ordner', to: '/admin/folders', icon: 'i-lucide-folder-tree' },
-        { label: 'Benutzer', to: '/admin/users', icon: 'i-lucide-users' },
-        { label: 'Status', to: '/admin/status', icon: 'i-lucide-activity' }
+        { label: t('nav.instances'), to: '/admin/instances', icon: 'i-lucide-cloud' },
+        { label: t('nav.folders'), to: '/admin/folders', icon: 'i-lucide-folder-tree' },
+        { label: t('nav.users'), to: '/admin/users', icon: 'i-lucide-users' },
+        { label: t('nav.status'), to: '/admin/status', icon: 'i-lucide-activity' }
       ]
     : [])
+])
+
+// One entry per configured locale; contributors extend this by adding a locale.
+const languageItems = computed(() =>
+  locales.value.map(l => ({
+    label: l.name ?? l.code,
+    icon: l.code === locale.value ? 'i-lucide-check' : undefined,
+    onSelect: () => setLocale(l.code)
+  }))
+)
+
+const userMenuItems = computed(() => [
+  [{ label: user.value?.email ?? '', type: 'label' as const }],
+  [
+    { label: t('userMenu.changePassword'), icon: 'i-lucide-key-round', onSelect: () => { passwordModalOpen.value = true } },
+    { label: t('userMenu.logout'), icon: 'i-lucide-log-out', onSelect: () => logout() }
+  ]
 ])
 </script>
 
@@ -45,15 +63,31 @@ const navigation = computed(() => [
       <UNavigationMenu :items="navigation" />
 
       <template #right>
+        <UButton
+          v-if="config.public.repoUrl"
+          :to="config.public.repoUrl"
+          target="_blank"
+          rel="noopener"
+          color="neutral"
+          variant="ghost"
+          icon="i-simple-icons-github"
+          :aria-label="t('nav.github')"
+        />
+
+        <UDropdownMenu :items="languageItems">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-languages"
+            :aria-label="t('language.label')"
+          />
+        </UDropdownMenu>
+
         <UColorModeButton />
 
         <UDropdownMenu
           v-if="user"
-          :items="[[
-            { label: user.email, type: 'label' },
-            { label: 'Passwort ändern', icon: 'i-lucide-key-round', onSelect: () => { passwordModalOpen = true } },
-            { label: 'Abmelden', icon: 'i-lucide-log-out', onSelect: () => logout() }
-          ]]"
+          :items="userMenuItems"
         >
           <UButton
             color="neutral"
@@ -84,8 +118,7 @@ const navigation = computed(() => [
     <UFooter v-if="showChrome">
       <template #left>
         <p class="text-xs text-muted">
-          Freigaben werden in {{ config.public.appName }} gepflegt und gelten unabhängig
-          von den Dateirechten der jeweiligen Nextcloud.
+          {{ t('footer.note', { app: config.public.appName }) }}
         </p>
       </template>
     </UFooter>

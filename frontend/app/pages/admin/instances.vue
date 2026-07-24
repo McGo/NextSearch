@@ -1,5 +1,6 @@
 <script setup lang="ts">
-useHead({ title: 'Nextcloud-Instanzen' })
+const { t } = useI18n()
+useHead({ title: () => t('admin.instances.title') })
 
 interface Instance {
   uuid: string
@@ -18,7 +19,7 @@ interface Instance {
 
 const api = useApi()
 const toast = useToast()
-const { dateTime } = useFormat()
+const { dateTime, number } = useFormat()
 
 const instances = ref<Instance[]>([])
 const pending = ref(true)
@@ -80,7 +81,7 @@ async function save() {
   } catch (e) {
     formError.value = e instanceof ApiError
       ? (Object.values(e.errors)[0]?.[0] || e.message)
-      : 'Speichern fehlgeschlagen.'
+      : t('admin.instances.form.saveFailed')
   } finally {
     saving.value = false
   }
@@ -92,7 +93,7 @@ async function test(instance: Instance) {
   )
 
   toast.add({
-    title: result.ok ? 'Verbindung steht' : 'Verbindung fehlgeschlagen',
+    title: result.ok ? t('admin.instances.testOk') : t('admin.instances.testFailed'),
     description: result.message,
     color: result.ok ? 'success' : 'error'
   })
@@ -101,12 +102,18 @@ async function test(instance: Instance) {
 }
 
 async function remove(instance: Instance) {
-  if (!confirm(`Instanz "${instance.name}" mit ${instance.documents_count} indizierten Dokumenten entfernen? In der Nextcloud selbst wird dabei nichts verändert.`)) {
+  if (!confirm(t('admin.instances.deleteConfirm', { name: instance.name, documents: instance.documents_count }))) {
     return
   }
 
   await api.del(`/api/admin/instances/${instance.uuid}`)
   await load()
+}
+
+function healthLabel(state: Instance['health_state']) {
+  return state === 'ok'
+    ? t('admin.instances.healthOk')
+    : state === 'failed' ? t('admin.instances.healthFailed') : t('admin.instances.healthUnknown')
 }
 
 onMounted(load)
@@ -117,16 +124,16 @@ onMounted(load)
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-semibold">
-          Nextcloud-Instanzen
+          {{ t('admin.instances.title') }}
         </h1>
         <p class="text-sm text-muted">
-          NextSearch greift auf diese Instanzen ausschließlich lesend zu.
+          {{ t('admin.instances.subtitle') }}
         </p>
       </div>
 
       <UButton
         icon="i-lucide-plus"
-        label="Instanz hinzufügen"
+        :label="t('admin.instances.add')"
         @click="openCreate"
       />
     </div>
@@ -135,8 +142,8 @@ onMounted(load)
       color="info"
       variant="subtle"
       icon="i-lucide-info"
-      title="Empfehlung zum Zugang"
-      description="Hinterlegen Sie ein Nextcloud-App-Passwort eines eigens angelegten Kontos, kein Kontopasswort. Das Passwort wird verschlüsselt gespeichert und in der Oberfläche nie wieder angezeigt."
+      :title="t('admin.instances.tipTitle')"
+      :description="t('admin.instances.tipDesc')"
     />
 
     <div
@@ -158,7 +165,7 @@ onMounted(load)
         class="size-8 text-muted"
       />
       <p class="mt-2 text-sm text-muted">
-        Noch keine Instanz hinterlegt.
+        {{ t('admin.instances.none') }}
       </p>
     </div>
 
@@ -180,19 +187,19 @@ onMounted(load)
                 size="sm"
                 variant="subtle"
                 :color="instance.health_state === 'ok' ? 'success' : instance.health_state === 'failed' ? 'error' : 'neutral'"
-                :label="instance.health_state === 'ok' ? 'erreichbar' : instance.health_state === 'failed' ? 'Fehler' : 'ungeprüft'"
+                :label="healthLabel(instance.health_state)"
               />
               <UBadge
                 v-if="!instance.enabled"
                 size="sm"
                 color="neutral"
                 variant="subtle"
-                label="deaktiviert"
+                :label="t('admin.instances.disabled')"
               />
             </div>
 
             <p class="text-sm text-muted break-all">
-              {{ instance.base_url }} · Benutzer {{ instance.username }}
+              {{ instance.base_url }} · {{ t('admin.instances.userLabel', { name: instance.username }) }}
             </p>
             <p
               v-if="instance.health_message"
@@ -204,7 +211,7 @@ onMounted(load)
               </template>
             </p>
             <p class="text-xs text-muted mt-1">
-              {{ instance.folders_count }} Ordner · {{ instance.documents_count.toLocaleString('de-DE') }} Dokumente
+              {{ t('admin.instances.counts', { folders: instance.folders_count, documents: number(instance.documents_count) }) }}
             </p>
 
             <DirectoryImageUpload
@@ -223,7 +230,7 @@ onMounted(load)
               color="neutral"
               variant="outline"
               icon="i-lucide-plug-zap"
-              label="Testen"
+              :label="t('admin.instances.test')"
               @click="test(instance)"
             />
             <UButton
@@ -231,7 +238,7 @@ onMounted(load)
               color="neutral"
               variant="outline"
               icon="i-lucide-folder-plus"
-              label="Ordner"
+              :label="t('admin.instances.foldersBtn')"
               :to="`/admin/folders?instance=${instance.uuid}`"
             />
             <UButton
@@ -255,7 +262,7 @@ onMounted(load)
 
     <UModal
       v-model:open="modalOpen"
-      :title="editing ? 'Instanz bearbeiten' : 'Instanz hinzufügen'"
+      :title="editing ? t('admin.instances.form.editTitle') : t('admin.instances.form.addTitle')"
     >
       <template #body>
         <form
@@ -263,8 +270,8 @@ onMounted(load)
           @submit.prevent="save"
         >
           <UFormField
-            label="Bezeichnung"
-            hint="Frei wählbar, taucht in den Suchergebnissen auf"
+            :label="t('admin.instances.form.name')"
+            :hint="t('admin.instances.form.nameHint')"
           >
             <UInput
               v-model="form.name"
@@ -274,8 +281,8 @@ onMounted(load)
           </UFormField>
 
           <UFormField
-            label="Basis-URL"
-            hint="z. B. https://cloud.example.de"
+            :label="t('admin.instances.form.baseUrl')"
+            :hint="t('admin.instances.form.baseUrlHint')"
           >
             <UInput
               v-model="form.base_url"
@@ -285,7 +292,7 @@ onMounted(load)
             />
           </UFormField>
 
-          <UFormField label="Benutzername">
+          <UFormField :label="t('admin.instances.form.username')">
             <UInput
               v-model="form.username"
               required
@@ -294,8 +301,8 @@ onMounted(load)
           </UFormField>
 
           <UFormField
-            label="App-Passwort"
-            :hint="editing ? 'Leer lassen, um das gespeicherte Passwort zu behalten' : undefined"
+            :label="t('admin.instances.form.appPassword')"
+            :hint="editing ? t('admin.instances.form.appPasswordHint') : undefined"
           >
             <UInput
               v-model="form.app_password"
@@ -308,7 +315,7 @@ onMounted(load)
 
           <UCheckbox
             v-model="form.verify_tls"
-            label="TLS-Zertifikat prüfen"
+            :label="t('admin.instances.form.verifyTls')"
           />
 
           <UAlert
@@ -323,13 +330,13 @@ onMounted(load)
             <UButton
               color="neutral"
               variant="ghost"
-              label="Abbrechen"
+              :label="t('common.cancel')"
               @click="modalOpen = false"
             />
             <UButton
               type="submit"
               :loading="saving"
-              label="Speichern"
+              :label="t('common.save')"
             />
           </div>
         </form>

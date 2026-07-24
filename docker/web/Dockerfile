@@ -2,13 +2,13 @@ FROM node:24-alpine AS build
 
 WORKDIR /src
 COPY frontend/package.json frontend/package-lock.json ./
-# --ignore-scripts: das postinstall ruft `nuxt prepare`, und die Konfiguration
-# liegt zu diesem Zeitpunkt noch nicht im Image. `nuxt build` bereitet ohnehin
-# selbst vor.
+# --ignore-scripts: the postinstall calls `nuxt prepare`, and the configuration
+# isn't in the image at that point yet. Prepare runs explicitly below, once the
+# source is present.
 RUN npm ci --ignore-scripts
 
 COPY frontend/ ./
-RUN npm run build
+RUN npx nuxt prepare && npm run build
 
 # ---------------------------------------------------------------------------
 FROM node:24-alpine AS runtime

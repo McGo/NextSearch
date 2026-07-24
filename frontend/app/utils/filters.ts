@@ -1,9 +1,9 @@
 export type FilterState = Record<string, string[]>
 
 /**
- * Der Filterzustand steht in der URL, damit eine Suche teilbar ist und der
- * Zurück-Knopf funktioniert. JSON in base64 ist unhübsch, aber robust — die
- * Alternative wären verschachtelte Query-Parameter mit eigenem Parser.
+ * The filter state lives in the URL so a search is shareable and the back
+ * button works. JSON in base64 is ugly but robust — the alternative would be
+ * nested query parameters with a parser of their own.
  */
 export function encodeFilters(filters: FilterState): string | undefined {
   const cleaned = Object.fromEntries(
@@ -12,11 +12,11 @@ export function encodeFilters(filters: FilterState): string | undefined {
 
   if (Object.keys(cleaned).length === 0) return undefined
 
-  // btoa kann nur Latin-1; Umlaute in Ordnernamen sind der Normalfall.
+  // btoa only handles Latin-1; non-ASCII in folder names is the norm.
   return btoa(unescape(encodeURIComponent(JSON.stringify(cleaned))))
 }
 
-/** Kaputte oder veraltete Werte in der URL führen zu keinem Filter, nicht zu einem Fehler. */
+/** Broken or stale URL values yield no filter rather than an error. */
 export function decodeFilters(raw?: string | null): FilterState {
   if (!raw) return {}
 

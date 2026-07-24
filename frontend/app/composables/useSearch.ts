@@ -36,31 +36,19 @@ export interface SearchResult {
   took_ms: number | null
 }
 
-export const FACET_LABELS: Record<string, string> = {
-  instance_name: 'Instanz',
-  folder_label: 'Ordner',
-  extension: 'Dateityp',
-  year: 'Jahr',
-  size_bucket: 'Größe',
-  ocr_used: 'Texterkennung'
-}
-
-export const SORT_OPTIONS = [
-  { value: 'relevance', label: 'Relevanz' },
-  { value: 'newest', label: 'Neueste zuerst' },
-  { value: 'oldest', label: 'Älteste zuerst' },
-  { value: 'largest', label: 'Größte zuerst' },
-  { value: 'name', label: 'Name' }
-]
+// Sort values in display order. Labels come from the locale files
+// (search.sort.<value>), built where the select is rendered.
+export const SORT_VALUES = ['relevance', 'newest', 'oldest', 'largest', 'name'] as const
 
 /**
- * Hält Suchbegriff, Filter, Sortierung und Seite — und spiegelt sie in die URL,
- * damit eine Suche teilbar und über den Zurück-Knopf erreichbar bleibt.
+ * Holds the query, filters, sort and page — and mirrors them into the URL so a
+ * search stays shareable and reachable via the back button.
  */
 export function useSearch() {
   const api = useApi()
   const route = useRoute()
   const router = useRouter()
+  const { t } = useI18n()
 
   const query = ref((route.query.q as string) || '')
   const sort = ref((route.query.sort as string) || 'relevance')
@@ -89,9 +77,9 @@ export function useSearch() {
     error.value = null
 
     try {
-      // Nur senden, was gesetzt ist. Leere Parameter macht Laravel zu null,
-      // und die Facetten reisen als JSON-String, weil verschachtelte Objekte
-      // sich sonst nicht verlässlich in den Query-String serialisieren lassen.
+      // Only send what is set. Laravel turns empty params into null, and the
+      // facets travel as a JSON string because nested objects don't serialize
+      // reliably into a query string.
       const params: Record<string, string | number> = {
         sort: sort.value,
         page: page.value
@@ -101,7 +89,7 @@ export function useSearch() {
 
       result.value = await api.get<SearchResult>('/api/search', params)
     } catch (e) {
-      error.value = e instanceof ApiError ? e.message : 'Die Suche ist fehlgeschlagen.'
+      error.value = e instanceof ApiError ? e.message : t('search.failed')
       result.value = null
     } finally {
       pending.value = false
@@ -125,8 +113,7 @@ export function useSearch() {
 
   const activeFilterCount = computed(() => countFilters(filters.value))
 
-  // Tippen soll nicht jede Taste zum Backend schicken; Filter und Sortierung
-  // dagegen wirken sofort.
+  // Typing shouldn't fire a request per keystroke; filters and sort act at once.
   let debounce: ReturnType<typeof setTimeout> | undefined
 
   watch(query, () => {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-useHead({ title: 'Überwachte Ordner' })
+const { t } = useI18n()
+useHead({ title: () => t('admin.folders.title') })
 
 interface Folder {
   uuid: string
@@ -23,7 +24,7 @@ interface InstanceOption {
 const api = useApi()
 const toast = useToast()
 const route = useRoute()
-const { dateTime } = useFormat()
+const { dateTime, number } = useFormat()
 
 const folders = ref<Folder[]>([])
 const instances = ref<InstanceOption[]>([])
@@ -67,7 +68,7 @@ function openCreate() {
   modalOpen.value = true
 }
 
-// Ohne eigene Bezeichnung nimmt der Ordnername den Platz ein.
+// Without an explicit label the folder name takes its place.
 watch(() => form.remote_path, (value) => {
   if (!form.label && value) {
     form.label = value.split('/').pop() || value
@@ -95,7 +96,7 @@ async function save() {
   } catch (e) {
     formError.value = e instanceof ApiError
       ? (Object.values(e.errors)[0]?.[0] || e.message)
-      : 'Speichern fehlgeschlagen.'
+      : t('admin.folders.form.saveFailed')
   } finally {
     saving.value = false
   }
@@ -116,13 +117,15 @@ async function toggle(folder: Folder) {
 }
 
 async function remove(folder: Folder) {
-  if (!confirm(`Ordner "${folder.label}" nicht mehr überwachen? Die ${folder.documents_count} Einträge verschwinden aus dem Suchindex. Die Dateien in der Nextcloud bleiben unangetastet.`)) {
+  if (!confirm(t('admin.folders.deleteConfirm', { label: folder.label, documents: folder.documents_count }))) {
     return
   }
 
   await api.del(`/api/admin/folders/${folder.uuid}`)
   await load()
 }
+
+const instanceItems = computed(() => instances.value.map(i => ({ label: i.name, value: i.uuid })))
 
 onMounted(load)
 </script>
@@ -132,16 +135,16 @@ onMounted(load)
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-xl font-semibold">
-          Überwachte Ordner
+          {{ t('admin.folders.title') }}
         </h1>
         <p class="text-sm text-muted">
-          Jeder Ordner wird samt Unterverzeichnissen durchlaufen.
+          {{ t('admin.folders.subtitle') }}
         </p>
       </div>
 
       <UButton
         icon="i-lucide-plus"
-        label="Ordner hinzufügen"
+        :label="t('admin.folders.add')"
         :disabled="instances.length === 0"
         @click="openCreate"
       />
@@ -152,9 +155,9 @@ onMounted(load)
       color="warning"
       variant="subtle"
       icon="i-lucide-cloud-off"
-      title="Noch keine Instanz hinterlegt"
-      description="Legen Sie zuerst eine Nextcloud-Instanz an."
-      :actions="[{ label: 'Zu den Instanzen', to: '/admin/instances', color: 'neutral', variant: 'outline' }]"
+      :title="t('admin.folders.noInstanceTitle')"
+      :description="t('admin.folders.noInstanceDesc')"
+      :actions="[{ label: t('admin.folders.toInstances'), to: '/admin/instances', color: 'neutral', variant: 'outline' }]"
     />
 
     <div
@@ -186,7 +189,7 @@ onMounted(load)
                 size="sm"
                 color="neutral"
                 variant="subtle"
-                label="pausiert"
+                :label="t('admin.folders.paused')"
               />
             </div>
 
@@ -194,15 +197,17 @@ onMounted(load)
               {{ folder.instance.name }} · <span class="font-mono">{{ folder.remote_path }}</span>
             </p>
             <p class="text-xs text-muted mt-1">
-              {{ folder.documents_count.toLocaleString('de-DE') }} Dokumente ·
-              alle {{ folder.interval_minutes }} Minuten ·
-              zuletzt {{ folder.last_crawled_at ? dateTime(folder.last_crawled_at) : 'nie' }}
+              {{ t('admin.folders.meta', {
+                documents: number(folder.documents_count),
+                interval: folder.interval_minutes,
+                last: folder.last_crawled_at ? dateTime(folder.last_crawled_at) : t('admin.folders.never')
+              }) }}
             </p>
             <p
               v-if="folder.exclude_patterns.length"
               class="text-xs text-muted"
             >
-              Ausgeschlossen: {{ folder.exclude_patterns.join(', ') }}
+              {{ t('admin.folders.excluded', { patterns: folder.exclude_patterns.join(', ') }) }}
             </p>
 
             <DirectoryImageUpload
@@ -221,7 +226,7 @@ onMounted(load)
               color="neutral"
               variant="outline"
               icon="i-lucide-refresh-cw"
-              label="Durchlauf"
+              :label="t('admin.folders.crawl')"
               @click="reindex(folder, false)"
             />
             <UButton
@@ -229,7 +234,7 @@ onMounted(load)
               color="neutral"
               variant="ghost"
               icon="i-lucide-rotate-ccw"
-              label="Vollständig"
+              :label="t('admin.folders.full')"
               @click="reindex(folder, true)"
             />
             <UButton
@@ -260,29 +265,29 @@ onMounted(load)
         class="size-8 text-muted"
       />
       <p class="mt-2 text-sm text-muted">
-        Noch kein Ordner ausgewählt.
+        {{ t('admin.folders.none') }}
       </p>
     </div>
 
     <UModal
       v-model:open="modalOpen"
-      title="Ordner hinzufügen"
+      :title="t('admin.folders.form.title')"
     >
       <template #body>
         <form
           class="space-y-4"
           @submit.prevent="save"
         >
-          <UFormField label="Instanz">
+          <UFormField :label="t('admin.folders.form.instance')">
             <USelect
               v-model="form.instance"
-              :items="instances.map(i => ({ label: i.name, value: i.uuid }))"
+              :items="instanceItems"
               value-key="value"
               class="w-full"
             />
           </UFormField>
 
-          <UFormField label="Ordner auswählen">
+          <UFormField :label="t('admin.folders.form.pick')">
             <FolderPicker
               v-if="form.instance"
               v-model="form.remote_path"
@@ -291,8 +296,8 @@ onMounted(load)
           </UFormField>
 
           <UFormField
-            label="Bezeichnung"
-            hint="Taucht als Filter in der Suche auf"
+            :label="t('admin.folders.form.label')"
+            :hint="t('admin.folders.form.labelHint')"
           >
             <UInput
               v-model="form.label"
@@ -301,7 +306,7 @@ onMounted(load)
             />
           </UFormField>
 
-          <UFormField label="Intervall in Minuten">
+          <UFormField :label="t('admin.folders.form.interval')">
             <UInput
               v-model.number="form.interval_minutes"
               type="number"
@@ -311,8 +316,8 @@ onMounted(load)
           </UFormField>
 
           <UFormField
-            label="Ausschlussmuster"
-            hint="Ein Muster pro Zeile, z. B. *.tmp oder Archiv/*"
+            :label="t('admin.folders.form.exclude')"
+            :hint="t('admin.folders.form.excludeHint')"
           >
             <UTextarea
               v-model="form.exclude_patterns"
@@ -333,14 +338,14 @@ onMounted(load)
             <UButton
               color="neutral"
               variant="ghost"
-              label="Abbrechen"
+              :label="t('common.cancel')"
               @click="modalOpen = false"
             />
             <UButton
               type="submit"
               :loading="saving"
               :disabled="!form.remote_path"
-              label="Übernehmen"
+              :label="t('common.apply')"
             />
           </div>
         </form>

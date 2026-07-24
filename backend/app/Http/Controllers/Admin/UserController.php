@@ -83,12 +83,12 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user): JsonResponse
     {
-        abort_if($user->is($request->user()), 422, 'Das eigene Konto lässt sich nicht löschen.');
+        abort_if($user->is($request->user()), 422, __('nextsearch.user.cannot_delete_self'));
         $this->guardLastAdmin($user, User::ROLE_USER);
 
         $user->delete();
 
-        return response()->json(['message' => 'Konto entfernt.']);
+        return response()->json(['message' => __('nextsearch.user.removed')]);
     }
 
     /**
@@ -114,7 +114,7 @@ class UserController extends Controller
             ->whereKeyNot($user->id)
             ->count();
 
-        abort_if($remaining === 0, 422, 'Es muss mindestens ein Administrator übrig bleiben.');
+        abort_if($remaining === 0, 422, __('nextsearch.user.last_admin'));
     }
 
     /**
