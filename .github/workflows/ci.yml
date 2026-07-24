@@ -19,11 +19,11 @@ jobs:
           extensions: pdo_sqlite, sqlite3, gd, intl, zip, bcmath
           coverage: none
 
-      - name: Abhängigkeiten
+      - name: Dependencies
         working-directory: backend
         run: composer install --prefer-dist --no-interaction --no-progress
 
-      - name: Stil
+      - name: Lint
         working-directory: backend
         run: ./vendor/bin/pint --test
 
@@ -44,22 +44,22 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Abhängigkeiten
+      - name: Dependencies
         working-directory: frontend
         run: npm ci --ignore-scripts
 
-      # Erzeugt .nuxt/ inklusive der von @nuxt/eslint generierten Config, die
-      # das Lint braucht. Der postinstall-Prepare wird durch --ignore-scripts
-      # übersprungen, deshalb hier ausdrücklich.
-      - name: Nuxt vorbereiten
+      # Generates .nuxt/ including the config from @nuxt/eslint that the lint
+      # needs. The postinstall prepare is skipped by --ignore-scripts, so it is
+      # run explicitly here.
+      - name: Prepare Nuxt
         working-directory: frontend
         run: npx nuxt prepare
 
-      - name: Stil
+      - name: Lint
         working-directory: frontend
         run: npm run lint
 
-      - name: Typen
+      - name: Types
         working-directory: frontend
         run: npx nuxt typecheck
 
@@ -68,15 +68,15 @@ jobs:
         run: npm run build
 
   images:
-    name: Images bauen
+    name: Build images
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      # Prüft, dass beide Dockerfiles durchlaufen — ohne sie zu veröffentlichen.
-      - name: App-Image
+      # Checks that both Dockerfiles build — without publishing them.
+      - name: App image
         run: docker build -f docker/app/Dockerfile -t nextsearch/app:ci .
 
-      - name: Web-Image
+      - name: Web image
         run: docker build -f docker/web/Dockerfile -t nextsearch/web:ci .

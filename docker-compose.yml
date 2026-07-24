@@ -61,7 +61,10 @@ x-app-base: &app-base
   build:
     context: .
     dockerfile: docker/app/Dockerfile
-  image: nextsearch/app:local
+  # Local builds tag this. In production, set APP_IMAGE to the published image
+  # (mirkohaaser/nextsearch-app:<version>) and `docker compose pull` — no build
+  # needed. See docs/hosting.md.
+  image: ${APP_IMAGE:-nextsearch/app:local}
   environment: *app-env
   volumes:
     - app_storage:/app/storage
@@ -75,13 +78,14 @@ x-app-base: &app-base
   restart: unless-stopped
 
 services:
-  # Einziger Dienst mit veröffentlichtem Port. Nitro proxied /api an `app`,
-  # dadurch teilen UI und API eine Origin und die Session-Cookies greifen.
+  # The only service with a published port. Nitro proxies /api to `app`, so the
+  # UI and API share an origin and the session cookies work.
   web:
     build:
       context: .
       dockerfile: docker/web/Dockerfile
-    image: nextsearch/web:local
+    # See APP_IMAGE above — WEB_IMAGE is the published web image in production.
+    image: ${WEB_IMAGE:-nextsearch/web:local}
     environment:
       NUXT_PUBLIC_APP_NAME: ${APP_NAME:-NextSearch}
       NUXT_BACKEND_URL: http://app:8080
