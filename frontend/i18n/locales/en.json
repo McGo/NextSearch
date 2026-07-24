@@ -186,8 +186,11 @@
         "interval": "Interval in minutes",
         "exclude": "Exclude patterns",
         "excludeHint": "One pattern per line, e.g. *.tmp or Archive/*",
-        "saveFailed": "Saving failed."
-      }
+        "saveFailed": "Saving failed.",
+        "editTitle": "Edit folder",
+        "location": "Location"
+      },
+      "rename": "Rename"
     },
     "picker": {
       "root": "Root directory",

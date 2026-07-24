@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Stufe 1 — Abhängigkeiten
+# Stage 1 — dependencies
 # ---------------------------------------------------------------------------
 FROM composer:2 AS vendor
 
@@ -16,7 +16,7 @@ COPY backend/ ./
 RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
 
 # ---------------------------------------------------------------------------
-# Stufe 2 — Laufzeit
+# Stage 2 — runtime
 # ---------------------------------------------------------------------------
 FROM dunglas/frankenphp:1.12-php8.4 AS runtime
 
@@ -48,8 +48,8 @@ RUN chmod +x /usr/local/bin/app-entrypoint
 WORKDIR /app
 COPY --from=vendor /app /app
 
-# FrankenPHP serviert unverschlüsselt auf 8080 — TLS und Port-Freigabe sind
-# Sache des Betreibers, nach außen geht ohnehin nur der Nuxt-Container.
+# FrankenPHP serves unencrypted on 8080 — TLS and port exposure are the
+# operator's concern; only the Nuxt container faces the outside anyway.
 ENV SERVER_NAME=":8080" \
     FRANKENPHP_CONFIG="" \
     CADDY_GLOBAL_OPTIONS="auto_https off"

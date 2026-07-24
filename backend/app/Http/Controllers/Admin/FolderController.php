@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exceptions\NextcloudException;
 use App\Http\Controllers\Controller;
+use App\Jobs\RelabelFolderDocumentsJob;
 use App\Models\Document;
 use App\Models\NextcloudInstance;
 use App\Models\WatchedFolder;
@@ -81,7 +82,15 @@ class FolderController extends Controller
             'exclude_patterns.*' => ['string', 'max:200'],
         ]);
 
+        $renamed = array_key_exists('label', $data) && $data['label'] !== $folder->label;
+
         $folder->update($data);
+
+        // The label lives on every document in the search index. Rather than
+        // re-index, push just the new label onto them.
+        if ($renamed) {
+            RelabelFolderDocumentsJob::dispatch($folder->id, $folder->label);
+        }
 
         return response()->json(['folder' => $this->present($folder->fresh('instance'))]);
     }

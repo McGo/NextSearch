@@ -32,6 +32,9 @@ const pending = ref(true)
 const modalOpen = ref(false)
 const saving = ref(false)
 const formError = ref<string | null>(null)
+// Non-null while editing an existing folder — the modal then renames instead
+// of creating, and the instance and path stay fixed (a folder can't be moved).
+const editingUuid = ref<string | null>(null)
 
 const form = reactive({
   instance: (route.query.instance as string) || '',
@@ -57,12 +60,26 @@ async function load() {
 }
 
 function openCreate() {
+  editingUuid.value = null
   Object.assign(form, {
     instance: (route.query.instance as string) || instances.value[0]?.uuid || '',
     label: '',
     remote_path: '',
     interval_minutes: 15,
     exclude_patterns: ''
+  })
+  formError.value = null
+  modalOpen.value = true
+}
+
+function openEdit(folder: Folder) {
+  editingUuid.value = folder.uuid
+  Object.assign(form, {
+    instance: folder.instance.uuid,
+    label: folder.label,
+    remote_path: folder.remote_path,
+    interval_minutes: folder.interval_minutes,
+    exclude_patterns: folder.exclude_patterns.join('\n')
   })
   formError.value = null
   modalOpen.value = true
@@ -79,17 +96,29 @@ async function save() {
   saving.value = true
   formError.value = null
 
+  const excludePatterns = form.exclude_patterns
+    .split('\n')
+    .map(pattern => pattern.trim())
+    .filter(Boolean)
+
   try {
-    await api.post('/api/admin/folders', {
-      instance: form.instance,
-      label: form.label,
-      remote_path: form.remote_path,
-      interval_minutes: form.interval_minutes,
-      exclude_patterns: form.exclude_patterns
-        .split('\n')
-        .map(pattern => pattern.trim())
-        .filter(Boolean)
-    })
+    if (editingUuid.value) {
+      // Instance and path are fixed — only the label, interval and excludes
+      // can change. A new label relabels the folder's hits in the index.
+      await api.put(`/api/admin/folders/${editingUuid.value}`, {
+        label: form.label,
+        interval_minutes: form.interval_minutes,
+        exclude_patterns: excludePatterns
+      })
+    } else {
+      await api.post('/api/admin/folders', {
+        instance: form.instance,
+        label: form.label,
+        remote_path: form.remote_path,
+        interval_minutes: form.interval_minutes,
+        exclude_patterns: excludePatterns
+      })
+    }
 
     modalOpen.value = false
     await load()
@@ -241,6 +270,14 @@ onMounted(load)
               size="sm"
               color="neutral"
               variant="ghost"
+              icon="i-lucide-pencil"
+              :aria-label="t('admin.folders.rename')"
+              @click="openEdit(folder)"
+            />
+            <UButton
+              size="sm"
+              color="neutral"
+              variant="ghost"
               :icon="folder.enabled ? 'i-lucide-pause' : 'i-lucide-play'"
               @click="toggle(folder)"
             />
@@ -271,29 +308,42 @@ onMounted(load)
 
     <UModal
       v-model:open="modalOpen"
-      :title="t('admin.folders.form.title')"
+      :title="editingUuid ? t('admin.folders.form.editTitle') : t('admin.folders.form.title')"
     >
       <template #body>
         <form
           class="space-y-4"
           @submit.prevent="save"
         >
-          <UFormField :label="t('admin.folders.form.instance')">
-            <USelect
-              v-model="form.instance"
-              :items="instanceItems"
-              value-key="value"
-              class="w-full"
-            />
-          </UFormField>
+          <template v-if="editingUuid">
+            <!-- A folder can't be moved — instance and path stay put; only the
+                 label and settings are editable here. -->
+            <UFormField :label="t('admin.folders.form.location')">
+              <p class="text-sm text-muted break-all">
+                {{ instances.find(i => i.uuid === form.instance)?.name }} ·
+                <span class="font-mono">{{ form.remote_path }}</span>
+              </p>
+            </UFormField>
+          </template>
 
-          <UFormField :label="t('admin.folders.form.pick')">
-            <FolderPicker
-              v-if="form.instance"
-              v-model="form.remote_path"
-              :instance-uuid="form.instance"
-            />
-          </UFormField>
+          <template v-else>
+            <UFormField :label="t('admin.folders.form.instance')">
+              <USelect
+                v-model="form.instance"
+                :items="instanceItems"
+                value-key="value"
+                class="w-full"
+              />
+            </UFormField>
+
+            <UFormField :label="t('admin.folders.form.pick')">
+              <FolderPicker
+                v-if="form.instance"
+                v-model="form.remote_path"
+                :instance-uuid="form.instance"
+              />
+            </UFormField>
+          </template>
 
           <UFormField
             :label="t('admin.folders.form.label')"

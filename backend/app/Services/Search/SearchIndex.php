@@ -77,6 +77,28 @@ class SearchIndex
     }
 
     /**
+     * Partial-updates just the folder label on the given documents. Used when a
+     * folder is renamed: the facet and the hit subline follow the new name
+     * without re-fetching or re-processing the files.
+     *
+     * @param  list<string>  $uuids
+     */
+    public function relabelDocuments(array $uuids, string $label): void
+    {
+        if ($uuids === []) {
+            return;
+        }
+
+        $documents = array_map(fn (string $uuid) => [
+            'id' => str_replace('-', '', $uuid),
+            'folder_label' => $label,
+        ], $uuids);
+
+        // updateDocuments merges the given fields, leaving the rest untouched.
+        $this->client->index($this->name())->updateDocuments($documents, 'id');
+    }
+
+    /**
      * Removes all documents of a folder — on deletion or reset.
      */
     public function forgetFolder(int $folderId): void

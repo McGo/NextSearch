@@ -186,8 +186,11 @@
         "interval": "Intervall in Minuten",
         "exclude": "Ausschlussmuster",
         "excludeHint": "Ein Muster pro Zeile, z. B. *.tmp oder Archiv/*",
-        "saveFailed": "Speichern fehlgeschlagen."
-      }
+        "saveFailed": "Speichern fehlgeschlagen.",
+        "editTitle": "Ordner bearbeiten",
+        "location": "Speicherort"
+      },
+      "rename": "Umbenennen"
     },
     "picker": {
       "root": "Wurzelverzeichnis",
