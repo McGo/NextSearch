@@ -78,7 +78,8 @@
     "ocr_used": "Texterkennung",
     "ocrTrue": "per OCR erkannt",
     "ocrFalse": "aus Textlayer",
-    "extensionNone": "ohne"
+    "extensionNone": "ohne",
+    "path_segments": "Ordner (Pfad)"
   },
   "sizeBucket": {
     "upTo100kb": "bis 100 KB",

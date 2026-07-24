@@ -12,7 +12,7 @@ class DocumentSearch
 {
     /** Facets the interface offers as the filter panel. */
     public const FACETS = [
-        'instance_name', 'folder_label', 'extension', 'year', 'size_bucket', 'ocr_used',
+        'instance_name', 'folder_label', 'path_segments', 'extension', 'year', 'size_bucket', 'ocr_used',
     ];
 
     /**

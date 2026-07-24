@@ -33,11 +33,14 @@ class SearchIndex
         }
 
         $this->client->index($this->name())->updateSettings([
-            'searchableAttributes' => ['name', 'title', 'content', 'path', 'author'],
+            // path_segments sits high so a folder name in the query ranks the
+            // documents in that folder well.
+            'searchableAttributes' => ['name', 'title', 'path_segments', 'content', 'path', 'author'],
 
             // folder_id carries the access check, the rest are the facets.
             'filterableAttributes' => [
                 'folder_id', 'instance_id', 'instance_name', 'folder_label',
+                'path_segments',
                 'extension', 'mime_type', 'year', 'month', 'size_bucket',
                 'author', 'language', 'ocr_used', 'has_preview',
             ],

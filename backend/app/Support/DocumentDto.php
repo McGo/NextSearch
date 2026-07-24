@@ -80,6 +80,10 @@ final readonly class DocumentDto
             'name' => $this->name,
             'path' => $this->path,
             'directory' => trim(dirname($this->path), '.'),
+            // Every folder in the path as its own value — so a document can be
+            // found and filtered by any folder it sits under, not just its
+            // watched-folder label.
+            'path_segments' => self::pathSegments($this->path),
             // Language-neutral marker; the frontend shows a translated label.
             'extension' => $this->extension ?? 'none',
             'mime_type' => $this->mimeType,
@@ -99,6 +103,23 @@ final readonly class DocumentDto
 
             'content' => mb_substr($this->text, 0, $limit),
         ];
+    }
+
+    /**
+     * The folder components of a path, without the file name.
+     * "Akten/2019/rechnung.pdf" → ["Akten", "2019"].
+     *
+     * @return list<string>
+     */
+    public static function pathSegments(string $path): array
+    {
+        $directory = trim(dirname($path), '.');
+
+        if ($directory === '' || $directory === '/') {
+            return [];
+        }
+
+        return array_values(array_filter(explode('/', trim($directory, '/')), fn ($s) => $s !== ''));
     }
 
     /**

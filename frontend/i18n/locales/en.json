@@ -78,7 +78,8 @@
     "ocr_used": "Text recognition",
     "ocrTrue": "recognised via OCR",
     "ocrFalse": "from text layer",
-    "extensionNone": "none"
+    "extensionNone": "none",
+    "path_segments": "Folder (path)"
   },
   "sizeBucket": {
     "upTo100kb": "up to 100 KB",
