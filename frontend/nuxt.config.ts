@@ -16,6 +16,24 @@ export default defineNuxtConfig({
     enabled: false
   },
 
+  // Installable as a home-screen app (PWA). The manifest, icons and the small
+  // service worker live in public/; the SW is registered by plugins/pwa.client.
+  app: {
+    head: {
+      link: [
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }
+      ],
+      meta: [
+        { name: 'theme-color', content: '#2563eb' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
+        { name: 'apple-mobile-web-app-title', content: 'NextSearch' }
+      ]
+    }
+  },
+
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
