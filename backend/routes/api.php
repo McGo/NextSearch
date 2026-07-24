@@ -65,6 +65,7 @@ Route::prefix('api')->group(function () {
 
             Route::post('/branding/logo', [BrandingController::class, 'upload']);
             Route::delete('/branding/logo', [BrandingController::class, 'destroy']);
+            Route::put('/branding/name', [BrandingController::class, 'updateName']);
 
             Route::apiResource('instances', InstanceController::class)
                 ->parameters(['instances' => 'instance'])

@@ -1,6 +1,7 @@
 interface BrandingState {
   has_logo: boolean
   logo_url: string | null
+  site_name: string | null
 }
 
 /**
@@ -9,7 +10,7 @@ interface BrandingState {
  */
 export function useBranding() {
   const api = useApi()
-  const state = useState<BrandingState>('branding', () => ({ has_logo: false, logo_url: null }))
+  const state = useState<BrandingState>('branding', () => ({ has_logo: false, logo_url: null, site_name: null }))
   const loaded = useState<boolean>('branding-loaded', () => false)
 
   async function load(force = false) {

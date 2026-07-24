@@ -69,6 +69,26 @@ class BrandingTest extends TestCase
     }
 
     #[Test]
+    public function an_admin_sets_and_clears_the_site_name(): void
+    {
+        Storage::fake($this->disk());
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)
+            ->putJson('/api/admin/branding/name', ['name' => 'Acme Search'])
+            ->assertOk()
+            ->assertJsonPath('site_name', 'Acme Search');
+
+        $this->getJson('/api/branding')->assertJsonPath('site_name', 'Acme Search');
+
+        // Clearing falls back to the configured default, never to empty.
+        $this->actingAs($admin)
+            ->putJson('/api/admin/branding/name', ['name' => ''])
+            ->assertOk()
+            ->assertJsonPath('site_name', config('app.name'));
+    }
+
+    #[Test]
     public function a_normal_user_may_not_upload_a_logo(): void
     {
         $user = User::factory()->create(['role' => User::ROLE_USER]);

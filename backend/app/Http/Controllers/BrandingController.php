@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Services\Directory\BrandingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,7 +46,22 @@ class BrandingController extends Controller
         return response()->json([
             'has_logo' => $version !== null,
             'logo_url' => $version !== null ? "/api/branding/logo?v={$version}" : null,
+            // The stored site name, or the configured default if none is set.
+            'site_name' => Setting::get('branding.site_name') ?: config('app.name'),
         ]);
+    }
+
+    public function updateName(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['nullable', 'string', 'max:60'],
+        ]);
+
+        $name = trim((string) ($data['name'] ?? ''));
+        // Empty clears the override and falls back to the configured default.
+        Setting::put('branding.site_name', $name !== '' ? $name : null);
+
+        return response()->json($this->show()->getData(true));
     }
 
     public function logo(): StreamedResponse

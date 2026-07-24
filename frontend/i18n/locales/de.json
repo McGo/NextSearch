@@ -20,7 +20,9 @@
   },
   "userMenu": {
     "changePassword": "Passwort ändern",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "admin": "Verwaltung",
+    "userManagement": "Benutzerverwaltung"
   },
   "footer": {
     "note": "Freigaben werden in {app} gepflegt und gelten unabhängig von den Dateirechten der jeweiligen Nextcloud."
@@ -294,14 +296,23 @@
     "settings": {
       "title": "Einstellungen",
       "subtitle": "Erscheinungsbild dieser Installation.",
+      "brand": {
+        "title": "Branding",
+        "desc": "Name und Logo im Header sowie Favicon und App-Icons."
+      },
+      "name": {
+        "label": "Seitenname",
+        "hint": "Erscheint im Header und im Browser-Tab. Leer nimmt den Standard.",
+        "saved": "Name gespeichert.",
+        "failed": "Der Name ließ sich nicht speichern."
+      },
       "logo": {
-        "title": "Logo",
-        "desc": "Ersetzt das NextSearch-Zeichen im Header, das Favicon und die App-Icons auf dem Homescreen.",
-        "saved": "Logo gespeichert.",
-        "failed": "Das Logo ließ sich nicht speichern.",
-        "removed": "Logo entfernt.",
+        "label": "Logo",
+        "hint": "PNG, JPG oder WebP, bis 4 MB. Ersetzt das Zeichen neben dem Namen; Favicon und App-Icons werden daraus abgeleitet.",
         "reset": "Auf Standard zurücksetzen",
-        "hint": "PNG, JPG oder WebP, bis 4 MB. Ein breites Logo passt in den Header; ein etwa quadratisches macht sich als Favicon und App-Icon am besten."
+        "saved": "Logo gespeichert.",
+        "removed": "Logo entfernt.",
+        "failed": "Das Logo ließ sich nicht speichern."
       }
     }
   },

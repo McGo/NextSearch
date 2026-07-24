@@ -7,8 +7,12 @@ const { state: branding, load: loadBranding } = useBranding()
 
 onMounted(loadBranding)
 
+// The site name comes from branding (admin-editable), falling back to the
+// configured default.
+const siteName = computed(() => branding.value.site_name || config.public.appName)
+
 useHead({
-  titleTemplate: title => (title ? `${title} · ${config.public.appName}` : config.public.appName),
+  titleTemplate: title => (title ? `${title} · ${siteName.value}` : siteName.value),
   htmlAttrs: { lang: () => locale.value },
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
   // Favicon follows the uploaded logo (with cache-busting), else the default.
@@ -29,9 +33,7 @@ const navigation = computed(() => [
     ? [
         { label: t('nav.instances'), to: '/admin/instances', icon: 'i-lucide-cloud' },
         { label: t('nav.folders'), to: '/admin/folders', icon: 'i-lucide-folder-tree' },
-        { label: t('nav.users'), to: '/admin/users', icon: 'i-lucide-users' },
-        { label: t('nav.status'), to: '/admin/status', icon: 'i-lucide-activity' },
-        { label: t('nav.settings'), to: '/admin/settings', icon: 'i-lucide-settings' }
+        { label: t('nav.status'), to: '/admin/status', icon: 'i-lucide-activity' }
       ]
     : [])
 ])
@@ -57,7 +59,17 @@ const languageItems = computed(() =>
 const userMenuItems = computed(() => [
   [{ label: user.value?.email ?? '', type: 'label' as const }],
   [
-    { label: t('userMenu.changePassword'), icon: 'i-lucide-key-round', onSelect: () => { passwordModalOpen.value = true } },
+    { label: t('userMenu.changePassword'), icon: 'i-lucide-key-round', onSelect: () => { passwordModalOpen.value = true } }
+  ],
+  // Admin management, its own group with a heading, below the account actions.
+  ...(isAdmin.value
+    ? [[
+        { label: t('userMenu.admin'), type: 'label' as const },
+        { label: t('userMenu.userManagement'), icon: 'i-lucide-users', to: '/admin/users' },
+        { label: t('nav.settings'), icon: 'i-lucide-settings', to: '/admin/settings' }
+      ]]
+    : []),
+  [
     { label: t('userMenu.logout'), icon: 'i-lucide-log-out', onSelect: () => logout() }
   ]
 ])
@@ -74,16 +86,15 @@ const userMenuItems = computed(() => [
           <img
             v-if="branding.has_logo && branding.logo_url"
             :src="branding.logo_url"
-            :alt="config.public.appName"
-            class="h-7 w-auto max-w-[200px] object-contain"
+            :alt="siteName"
+            class="h-7 w-auto max-w-[160px] object-contain"
           >
-          <template v-else>
-            <UIcon
-              name="i-lucide-file-search"
-              class="size-5 text-primary"
-            />
-            {{ config.public.appName }}
-          </template>
+          <UIcon
+            v-else
+            name="i-lucide-file-search"
+            class="size-5 text-primary"
+          />
+          {{ siteName }}
         </NuxtLink>
       </template>
 

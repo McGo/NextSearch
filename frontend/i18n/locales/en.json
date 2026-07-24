@@ -20,7 +20,9 @@
   },
   "userMenu": {
     "changePassword": "Change password",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "admin": "Administration",
+    "userManagement": "User management"
   },
   "footer": {
     "note": "Sharing is managed in {app} and applies independently of each Nextcloud's file permissions."
@@ -294,14 +296,23 @@
     "settings": {
       "title": "Settings",
       "subtitle": "Appearance of this installation.",
+      "brand": {
+        "title": "Branding",
+        "desc": "The name and logo shown in the header, plus the favicon and app icons."
+      },
+      "name": {
+        "label": "Site name",
+        "hint": "Shown in the header and the browser tab. Empty uses the default.",
+        "saved": "Name saved.",
+        "failed": "The name could not be saved."
+      },
       "logo": {
-        "title": "Logo",
-        "desc": "Replaces the NextSearch mark in the header, the favicon and the app icons on the home screen.",
-        "saved": "Logo saved.",
-        "failed": "The logo could not be saved.",
-        "removed": "Logo removed.",
+        "label": "Logo",
+        "hint": "PNG, JPG or WebP, up to 4 MB. Replaces the mark next to the name; the favicon and app icons are derived from it.",
         "reset": "Reset to default",
-        "hint": "PNG, JPG or WebP, up to 4 MB. A wide logo fits the header; a roughly square one looks best as favicon and app icon."
+        "saved": "Logo saved.",
+        "removed": "Logo removed.",
+        "failed": "The logo could not be saved."
       }
     }
   },
