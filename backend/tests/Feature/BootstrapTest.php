@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Der Bootstrap läuft bei jedem Start des App-Containers. Er darf dabei kein
- * bestehendes Konto überschreiben.
+ * The bootstrap runs on every start of the app container. It must not overwrite
+ * an existing account in the process.
  */
 class BootstrapTest extends TestCase
 {
@@ -54,7 +54,7 @@ class BootstrapTest extends TestCase
 
         $this->assertTrue(
             Hash::check('selbst-gesetztes-passwort', $existing->password),
-            'Ein in der Oberfläche geändertes Passwort darf der Bootstrap nicht zurücksetzen.',
+            'The bootstrap must not reset a password changed in the interface.',
         );
         $this->assertSame(1, User::query()->where('email', 'chef@example.de')->count());
     }

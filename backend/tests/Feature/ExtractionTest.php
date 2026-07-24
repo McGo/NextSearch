@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Tika läuft in einem eigenen Container; hier wird nur geprüft, dass der Client
- * die richtigen Anfragen stellt und die Antworten richtig deutet.
+ * Tika runs in its own container; here we only check that the client makes the
+ * right requests and interprets the responses correctly.
  */
 class ExtractionTest extends TestCase
 {
@@ -29,7 +29,7 @@ class ExtractionTest extends TestCase
         $this->assertSame('Rechnung', $result->metadata['title']);
         $this->assertSame(3, $result->metadata['page_count']);
 
-        // Genau zwei Anfragen: Metadaten und Text. Kein zweiter Textlauf.
+        // Exactly two requests: metadata and text. No second text pass.
         Http::assertSentCount(2);
     }
 

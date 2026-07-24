@@ -21,8 +21,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Unveränderte Dateien dürfen keinen Verarbeitungsjob auslösen — sonst würde
- * jeder Durchlauf den gesamten Bestand erneut durch Tika schicken.
+ * Unchanged files must not trigger a processing job — otherwise every run
+ * would send the whole corpus through Tika again.
  */
 class DeltaDetectionTest extends TestCase
 {
@@ -35,7 +35,7 @@ class DeltaDetectionTest extends TestCase
 
         $this->assertTrue($document->matchesRemote('abc', 100));
         $this->assertFalse($document->matchesRemote('xyz', 100), 'Neue ETag muss neu verarbeitet werden.');
-        $this->assertFalse($document->matchesRemote('abc', 200), 'Andere Größe muss neu verarbeitet werden.');
+        $this->assertFalse($document->matchesRemote('abc', 200), 'A different size must be reprocessed.');
         $this->assertFalse($document->matchesRemote(null, 100), 'Ohne ETag bleibt nur neu verarbeiten.');
     }
 
@@ -116,8 +116,8 @@ class DeltaDetectionTest extends TestCase
     }
 
     /**
-     * Benutzername und Basis-URL müssen zu den href-Angaben im Testdokument
-     * passen — sonst schneidet der Parser den Pfad-Präfix nicht ab.
+     * Username and base URL must match the href values in the test document —
+     * otherwise the parser won't strip the path prefix.
      */
     private function folder(): WatchedFolder
     {

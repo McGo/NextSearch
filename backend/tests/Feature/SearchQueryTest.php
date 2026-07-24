@@ -27,8 +27,7 @@ class SearchQueryTest extends TestCase
             'year' => ['2019'],
         ]);
 
-        // Verschachtelte Arrays sind in Meilisearch ein ODER, die äußere Ebene
-        // ein UND.
+        // Nested arrays are an OR in Meilisearch, the outer level an AND.
         $this->assertContains(['extension = "pdf"', 'extension = "docx"'], $options['filter']);
         $this->assertContains(['year = "2019"'], $options['filter']);
     }
@@ -91,7 +90,7 @@ class SearchQueryTest extends TestCase
         $this->assertSame('1to10mb', $indexed['size_bucket']);
         $this->assertSame('Akten/2019', $indexed['directory']);
         $this->assertSame(['Akten', '2019'], $indexed['path_segments']);
-        // Meilisearch erlaubt in der Dokument-ID keine Bindestriche.
+        // Meilisearch allows no hyphens in the document ID.
         $this->assertSame('11111111222233334444555555555555', $indexed['id']);
     }
 

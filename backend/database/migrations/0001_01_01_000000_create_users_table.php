@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            // Zwei Rollen reichen: `admin` verwaltet Instanzen, Ordner und
-            // Nutzer und sieht alles; `user` sieht nur freigegebene Ordner.
+            // Two roles are enough: `admin` manages instances, folders and
+            // users and sees everything; `user` only sees shared folders.
             $table->string('role', 16)->default('user')->index();
             $table->rememberToken();
             $table->timestamps();

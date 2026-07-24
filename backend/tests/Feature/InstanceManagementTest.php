@@ -25,7 +25,7 @@ class InstanceManagementTest extends TestCase
         $this->assertSame('geheim-123', Crypt::decryptString($stored));
         $this->assertSame('geheim-123', $instance->fresh()->app_password);
 
-        // Auch nicht über die API.
+        // Not via the API either.
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)

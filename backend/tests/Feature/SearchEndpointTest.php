@@ -10,8 +10,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Prüft den HTTP-Weg der Suche — genau das, was ein reiner Dienst-Test nicht
- * abdeckt: die Serialisierung aus dem Frontend und Laravels Eingabe-Aufbereitung.
+ * Tests the HTTP path of the search — exactly what a pure service test doesn't
+ * cover: the serialization from the frontend and Laravel's input handling.
  */
 class SearchEndpointTest extends TestCase
 {
@@ -34,8 +34,8 @@ class SearchEndpointTest extends TestCase
     #[Test]
     public function an_empty_query_on_page_load_does_not_fail_validation(): void
     {
-        // Das Frontend ruft die Suche beim Laden mit leerem Feld auf. Laravels
-        // ConvertEmptyStringsToNull macht daraus null — das muss durchgehen.
+        // The frontend calls the search on load with an empty field. Laravel's
+        // ConvertEmptyStringsToNull turns that into null — that must pass.
         $this->fakeIndex();
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
@@ -70,7 +70,7 @@ class SearchEndpointTest extends TestCase
         $this->fakeIndex();
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
-        // Kaputtes JSON oder ein leeres Objekt dürfen keinen Fehler auslösen.
+        // Broken JSON or an empty object must not raise an error.
         $this->actingAs($admin)->getJson('/api/search?filters=kein-json')->assertOk();
         $this->actingAs($admin)->getJson('/api/search?filters='.urlencode('{}'))->assertOk();
     }

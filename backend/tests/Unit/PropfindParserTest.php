@@ -27,7 +27,7 @@ class PropfindParserTest extends TestCase
         $this->assertSame('Akten/Bericht 2019.pdf', $file->path);
         $this->assertSame('Bericht 2019.pdf', $file->name);
         $this->assertSame('pdf', $file->extension());
-        // ETag ohne Anführungszeichen und ohne W/-Präfix.
+        // ETag without quotes and without a W/ prefix.
         $this->assertSame('7f2c9a', $file->etag);
         $this->assertSame(48213, $file->size);
         $this->assertSame('application/pdf', $file->contentType);

@@ -63,8 +63,8 @@ class DocumentSearch
             'attributesToCrop' => ['content'],
             'cropLength' => 40,
             'cropMarker' => ' … ',
-            // Bewusst keine HTML-Tags: der Ausschnitt stammt aus fremden
-            // Dateiinhalten und wird erst nach dem Escapen zu Markup gemacht.
+            // Deliberately no HTML tags: the snippet comes from foreign file
+            // contents and only becomes markup after escaping.
             'highlightPreTag' => self::MARK_OPEN,
             'highlightPostTag' => self::MARK_CLOSE,
             // The full text itself doesn't travel over the wire, only the
@@ -112,8 +112,8 @@ class DocumentSearch
                 continue;
             }
 
-            // Mehrere Werte derselben Facette werden verodert, verschiedene
-            // Facetten verundet — so verhalten sich Facettenfilter erwartbar.
+            // Several values of the same facet are ORed, different facets are
+            // ANDed — that's how facet filters are expected to behave.
             $clauses[] = array_map(
                 fn (string $value) => sprintf('%s = %s', $facet, $this->quote($value)),
                 array_values($values),
@@ -146,8 +146,8 @@ class DocumentSearch
     }
 
     /**
-     * Erst alles escapen, dann die Platzhalter zu <mark> machen. Was aus einer
-     * indizierten Datei kommt, darf im Browser kein Markup werden.
+     * Escape everything first, then turn the placeholders into <mark>. Whatever
+     * comes from an indexed file must never become markup in the browser.
      */
     private function highlight(string $value): string
     {

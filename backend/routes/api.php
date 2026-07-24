@@ -23,7 +23,7 @@ Route::prefix('api')->group(function () {
     // For the container health check. Says nothing about signed-in users.
     Route::get('/health', fn () => response()->json(['status' => 'ok']));
 
-    // Setzt den XSRF-TOKEN-Cookie, den das Frontend vor dem Login braucht.
+    // Sets the XSRF-TOKEN cookie the frontend needs before logging in.
     Route::get('/auth/csrf', fn () => response()->noContent());
 
     Route::post('/auth/login', [SessionController::class, 'login']);

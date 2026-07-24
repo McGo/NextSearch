@@ -32,8 +32,8 @@ class DocumentContentTest extends TestCase
             'size' => 200,
         ]);
 
-        // Rohdatei mit eingebettetem HTML und einem javascript:-Link — beides
-        // muss unschädlich gemacht werden.
+        // Raw file with embedded HTML and a javascript: link — both must be
+        // rendered harmless.
         $raw = "# Besprechung\n\nText mit <script>alert(1)</script> und "
             .'[bös](javascript:alert(2)) und [ok](https://example.de).';
 

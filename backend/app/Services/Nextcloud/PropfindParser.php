@@ -7,7 +7,7 @@ use SimpleXMLElement;
 use Throwable;
 
 /**
- * Wandelt eine WebDAV-Multistatus-Antwort in RemoteEntry-Objekte.
+ * Turns a WebDAV multistatus response into RemoteEntry objects.
  */
 class PropfindParser
 {
@@ -16,8 +16,8 @@ class PropfindParser
     private const NS_OC = 'http://owncloud.org/ns';
 
     /**
-     * @param  string  $pathPrefix  Pfadanteil der WebDAV-Wurzel, der von den
-     *                              `href`-Angaben abgeschnitten wird.
+     * @param  string  $pathPrefix  path portion of the WebDAV root that is
+     *                              stripped from the `href` values.
      * @return list<RemoteEntry>
      */
     public function parse(string $xml, string $pathPrefix = ''): array
@@ -103,7 +103,7 @@ class PropfindParser
 
     private function stripPrefix(string $href, string $prefix): string
     {
-        // Nextcloud liefert je nach Konfiguration absolute URLs oder Pfade.
+        // Depending on configuration, Nextcloud returns absolute URLs or paths.
         $path = parse_url($href, PHP_URL_PATH) ?: $href;
 
         if ($prefix !== '' && str_starts_with($path, $prefix)) {

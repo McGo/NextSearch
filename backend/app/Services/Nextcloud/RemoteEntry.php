@@ -5,7 +5,7 @@ namespace App\Services\Nextcloud;
 use Carbon\CarbonImmutable;
 
 /**
- * Ein Eintrag aus einer PROPFIND-Antwort — Datei oder Ordner.
+ * An entry from a PROPFIND response — file or folder.
  */
 final readonly class RemoteEntry
 {

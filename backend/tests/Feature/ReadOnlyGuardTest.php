@@ -15,9 +15,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Die zentrale Zusage von NextSearch: Nextcloud-Dateien werden gelesen, nie
- * verändert. Diese Tests prüfen das an der einzigen Stelle, an der überhaupt
- * mit einer Nextcloud gesprochen wird.
+ * The central promise of NextSearch: Nextcloud files are read, never modified.
+ * These tests verify that at the only place where any communication with a
+ * Nextcloud happens at all.
  */
 class ReadOnlyGuardTest extends TestCase
 {
@@ -72,7 +72,7 @@ class ReadOnlyGuardTest extends TestCase
 
         try {
             $handler(new Request('DELETE', 'https://cloud.example/remote.php/dav/files/x/a.pdf'), []);
-            $this->fail('Ein DELETE hätte die Middleware nicht passieren dürfen.');
+            $this->fail('A DELETE should not have passed the middleware.');
         } catch (WriteAttemptException) {
             $this->assertFalse($reached, 'Der Request wurde trotz Riegel weitergereicht.');
         }

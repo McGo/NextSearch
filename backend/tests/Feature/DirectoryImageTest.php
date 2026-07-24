@@ -37,7 +37,7 @@ class DirectoryImageTest extends TestCase
         $this->assertNotNull($instance->image_key);
         Storage::disk('s3')->assertExists($instance->image_key);
 
-        // Das Bild ist danach abrufbar — auch für einen normalen Nutzer.
+        // The image is retrievable afterwards — even for a normal user.
         $user = User::factory()->create(['role' => User::ROLE_USER]);
 
         $this->actingAs($user)

@@ -28,7 +28,7 @@ class IndexRunner
             'trigger' => $trigger,
             'full' => $full,
             'started_at' => now(),
-            // Der Wurzel-Crawl ist der erste offene Job.
+            // The root crawl is the first outstanding job.
             'pending_jobs' => 1,
         ]);
 

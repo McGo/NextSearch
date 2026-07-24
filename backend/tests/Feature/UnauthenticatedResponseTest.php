@@ -7,9 +7,9 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Hinter dem Nitro-Proxy kommt nicht immer ein sauberer Accept-Header an.
- * Unangemeldete Anfragen müssen trotzdem als 401-JSON zurückkommen und dürfen
- * nicht auf eine nicht existierende Login-Route umgeleitet werden.
+ * Behind the Nitro proxy a clean Accept header doesn't always arrive.
+ * Unauthenticated requests must still come back as 401 JSON and must not be
+ * redirected to a non-existent login route.
  */
 class UnauthenticatedResponseTest extends TestCase
 {
@@ -18,8 +18,8 @@ class UnauthenticatedResponseTest extends TestCase
     #[Test]
     public function a_protected_route_without_a_session_returns_401_json_even_without_an_accept_header(): void
     {
-        // Bewusst ohne getJson und ohne X-Requested-With — so, wie es nach dem
-        // Proxy ankommen kann.
+        // Deliberately without getJson and without X-Requested-With — the way
+        // it can arrive after the proxy.
         $this->get('/api/search?q=test')
             ->assertStatus(401)
             ->assertJson(['message' => 'Unauthenticated.']);

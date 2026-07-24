@@ -54,8 +54,8 @@ class ReadOnlyWebDavClient
     ) {}
 
     /**
-     * Ein Verzeichnis auflisten (eine Ebene). Nextcloud lehnt
-     * `Depth: infinity` ab, tiefere Ebenen holt der Aufrufer rekursiv.
+     * List a directory (one level). Nextcloud rejects `Depth: infinity`, so
+     * the caller fetches deeper levels recursively.
      *
      * @return list<RemoteEntry>
      */
@@ -71,7 +71,7 @@ class ReadOnlyWebDavClient
             $this->davPathPrefix($instance),
         );
 
-        // Der erste Eintrag ist das angefragte Verzeichnis selbst.
+        // The first entry is the requested directory itself.
         $requested = trim($path, '/');
 
         return array_values(array_filter(
@@ -150,7 +150,7 @@ class ReadOnlyWebDavClient
     }
 
     /**
-     * Der Riegel. Wirft, bevor irgendetwas das Netz erreicht.
+     * The bolt. Throws before anything reaches the network.
      */
     public static function assertReadOnly(string $method): void
     {
@@ -237,8 +237,8 @@ class ReadOnlyWebDavClient
     }
 
     /**
-     * Der Pfadanteil der WebDAV-Wurzel, den die `href`-Angaben in der Antwort
-     * voranstellen und der beim Parsen abgeschnitten wird.
+     * The path portion of the WebDAV root that the `href` values in the
+     * response prepend and that is stripped off when parsing.
      */
     private function davPathPrefix(NextcloudInstance $instance): string
     {

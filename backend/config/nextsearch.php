@@ -51,11 +51,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Textextraktion (Apache Tika)
+    | Text extraction (Apache Tika)
     |--------------------------------------------------------------------------
     |
-    | OCR greift nur bei PDFs ohne Textlayer und bei Bilddateien. Sie kostet
-    | spürbar Rechenzeit, deshalb ist sie abschaltbar.
+    | OCR only kicks in for PDFs without a text layer and for image files. It
+    | costs noticeable processing time, so it can be turned off.
     |
     */
 
@@ -65,14 +65,14 @@ return [
         'ocr' => [
             'enabled' => filter_var(env('TIKA_OCR_ENABLED', true), FILTER_VALIDATE_BOOL),
             'languages' => (string) env('TIKA_OCR_LANGUAGES', 'deu+eng'),
-            // Weniger Zeichen als das gilt als „kein brauchbarer Textlayer".
+            // Fewer characters than this counts as "no usable text layer".
             'min_characters' => 64,
         ],
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Vorschaubilder
+    | Preview images
     |--------------------------------------------------------------------------
     */
 

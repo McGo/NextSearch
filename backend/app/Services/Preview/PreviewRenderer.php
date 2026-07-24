@@ -82,7 +82,7 @@ class PreviewRenderer
     }
 
     /**
-     * Die erste Seite als PNG, dann auf Zielbreite gebracht.
+     * The first page as PNG, then scaled to the target width.
      */
     private function fromPdf(string $file, string $workDir): ?string
     {
@@ -110,7 +110,7 @@ class PreviewRenderer
     }
 
     /**
-     * Gotenberg wandelt die Office-Datei nach PDF, danach greift der PDF-Pfad.
+     * Gotenberg converts the Office file to PDF, then the PDF path takes over.
      */
     private function fromOffice(string $file, string $extension, string $workDir): ?string
     {

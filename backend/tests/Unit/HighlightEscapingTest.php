@@ -9,8 +9,8 @@ use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
 /**
- * Der Textausschnitt stammt aus fremden Dateien und landet im Browser in einem
- * v-html. Alles außer der Hervorhebung selbst muss escaped sein.
+ * The snippet comes from foreign files and ends up in a v-html in the browser.
+ * Everything except the highlight itself must be escaped.
  */
 class HighlightEscapingTest extends TestCase
 {

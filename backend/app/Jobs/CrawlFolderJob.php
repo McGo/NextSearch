@@ -211,7 +211,7 @@ class CrawlFolderJob implements ShouldQueue
 
     public function failed(Throwable $e): void
     {
-        Log::error('Crawl fehlgeschlagen', [
+        Log::error('Crawl failed', [
             'folder' => $this->folder->uuid,
             'sub_path' => $this->subPath,
             'message' => $e->getMessage(),

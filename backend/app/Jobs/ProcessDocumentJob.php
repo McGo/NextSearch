@@ -63,9 +63,9 @@ class ProcessDocumentJob implements ShouldQueue
             try {
                 $previewKey = $previews->render($tempFile, $document->extension, $document->uuid);
             } catch (Throwable $e) {
-                // Eine fehlgeschlagene Vorschau ist kein Grund, den Treffer
-                // nicht zu indizieren — der Text ist das Wesentliche.
-                Log::warning('Vorschau fehlgeschlagen', [
+                // A failed preview is no reason not to index the hit — the
+                // text is what matters.
+                Log::warning('Preview failed', [
                     'document' => $document->uuid,
                     'message' => $e->getMessage(),
                 ]);
@@ -100,8 +100,8 @@ class ProcessDocumentJob implements ShouldQueue
     }
 
     /**
-     * Der Volltext liegt im Objektspeicher, nicht in der Datenbank. Gebraucht
-     * wird er beim Neuaufbau des Index, ohne die Dateien erneut zu holen.
+     * The full text lives in object storage, not in the database. It is needed
+     * when rebuilding the index, without fetching the files again.
      */
     private function storeText(string $uuid, string $text): ?string
     {
@@ -126,7 +126,7 @@ class ProcessDocumentJob implements ShouldQueue
 
     public function failed(Throwable $e): void
     {
-        Log::error('Verarbeitung fehlgeschlagen', [
+        Log::error('Processing failed', [
             'document' => $this->document->uuid,
             'message' => $e->getMessage(),
         ]);

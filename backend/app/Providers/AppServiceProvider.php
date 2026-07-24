@@ -22,8 +22,8 @@ class AppServiceProvider extends ServiceProvider
         Model::shouldBeStrict(! $this->app->isProduction());
         Model::unguard(false);
 
-        // Hinter dem Nuxt-Proxy erzeugt Laravel sonst http-URLs, obwohl der
-        // Betreiber davor TLS terminiert.
+        // Behind the Nuxt proxy Laravel would otherwise build http URLs, even
+        // though the operator terminates TLS in front of it.
         if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }

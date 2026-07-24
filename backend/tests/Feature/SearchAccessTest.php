@@ -13,8 +13,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Der Ordnerfilter wird serverseitig gesetzt. Er darf sich weder durch Parameter
- * aus dem Request noch durch eine leere Freigabeliste aushebeln lassen.
+ * The folder filter is set server-side. It must not be defeatable by request
+ * parameters, nor by an empty share list.
  */
 class SearchAccessTest extends TestCase
 {
@@ -59,8 +59,8 @@ class SearchAccessTest extends TestCase
         $user = User::factory()->create(['role' => User::ROLE_USER]);
 
         $index = Mockery::mock(SearchIndex::class);
-        // Ohne Freigabe darf gar keine Abfrage rausgehen — ein leerer Filter
-        // wäre hier gleichbedeutend mit „alles sehen".
+        // Without a share no query may go out at all — an empty filter would
+        // mean "see everything" here.
         $index->shouldNotReceive('search');
 
         $result = (new DocumentSearch($index))->search($user, 'rechnung');

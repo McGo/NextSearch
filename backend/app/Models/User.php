@@ -35,9 +35,8 @@ class User extends Authenticatable
     }
 
     /**
-     * Ordner, die diesem Nutzer in NextSearch freigegeben sind. Mit den
-     * Dateirechten der Nextcloud hat das nichts zu tun — siehe
-     * docs/permissions.md.
+     * Folders shared with this user in NextSearch. This has nothing to do with
+     * the file permissions in Nextcloud — see docs/permissions.md.
      *
      * @return BelongsToMany<WatchedFolder, $this>
      */

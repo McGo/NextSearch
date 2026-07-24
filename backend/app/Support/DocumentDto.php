@@ -6,8 +6,8 @@ use App\Models\Document;
 use Carbon\CarbonInterface;
 
 /**
- * Die einzige Schnittstelle zwischen Extraktion und Suchindex. Was hier nicht
- * drinsteht, landet auch nicht im Index.
+ * The only interface between extraction and the search index. Whatever isn't
+ * here doesn't land in the index either.
  */
 final readonly class DocumentDto
 {

@@ -11,10 +11,10 @@ use Illuminate\Support\Collection;
 class IndexCommand extends Command
 {
     protected $signature = 'nextsearch:index
-        {--instance= : UUID oder Name einer Instanz}
-        {--folder= : UUID eines überwachten Ordners}
-        {--full : Delta-Erkennung übergehen und alles neu verarbeiten}
-        {--due-only : Nur Ordner, deren Intervall abgelaufen ist}';
+        {--instance= : UUID or name of an instance}
+        {--folder= : UUID of a watched folder}
+        {--full : Skip delta detection and reprocess everything}
+        {--due-only : Only folders whose interval has elapsed}';
 
     protected $description = 'Crawl and index the watched folders';
 

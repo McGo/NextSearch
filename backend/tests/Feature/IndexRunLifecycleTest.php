@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Ein Durchlauf gilt als fertig, wenn kein Job mehr offen ist. Bei mehreren
- * Workern darf genau einer den Abschluss auslösen.
+ * A run counts as finished once no job is outstanding. With several workers
+ * exactly one may trigger the completion.
  */
 class IndexRunLifecycleTest extends TestCase
 {
@@ -54,7 +54,7 @@ class IndexRunLifecycleTest extends TestCase
         $run->settleJob();
         $finishedAt = $run->refresh()->finished_at;
 
-        // Ein verspäteter Nachzügler darf den Zähler nicht ins Negative treiben.
+        // A late straggler must not drive the counter negative.
         $run->settleJob();
         $run->refresh();
 
@@ -83,7 +83,7 @@ class IndexRunLifecycleTest extends TestCase
 
         $this->assertFalse($fresh->isDue());
         $this->assertTrue($overdue->isDue());
-        $this->assertFalse($paused->isDue(), 'Ein pausierter Ordner wird nie fällig.');
+        $this->assertFalse($paused->isDue(), 'A paused folder never becomes due.');
     }
 
     private function makeRun(?WatchedFolder $folder = null): IndexRun

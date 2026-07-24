@@ -7,19 +7,18 @@ use Illuminate\Http\Client\PendingRequest;
 use RuntimeException;
 
 /**
- * Spricht mit dem Tika-Server. Das `-full`-Image bringt Tesseract mit, OCR ist
- * dort also eine Frage von Headern, nicht von einem weiteren Dienst.
+ * Talks to the Tika server. The `-full` image ships with Tesseract, so OCR is
+ * a matter of headers there, not of another service.
  */
 class TikaClient
 {
     public function __construct(private readonly HttpFactory $http) {}
 
     /**
-     * Text und Metadaten aus einer lokalen Datei ziehen.
+     * Pull text and metadata from a local file.
      *
-     * PDFs bekommen zuerst einen Durchlauf ohne OCR. Kommt dabei kaum Text
-     * heraus, hat das Dokument keinen Textlayer und wird ein zweites Mal mit
-     * OCR verarbeitet.
+     * PDFs get a first pass without OCR. If that yields hardly any text, the
+     * document has no text layer and is processed a second time with OCR.
      */
     public function extract(string $file, ?string $mimeType = null): ExtractionResult
     {
@@ -70,7 +69,7 @@ class TikaClient
             ->put('/tika');
 
         if ($response->status() === 422) {
-            // Tika kennt das Format nicht — kein Fehler, nur kein Text.
+            // Tika doesn't know the format — not an error, just no text.
             return '';
         }
 
@@ -132,7 +131,7 @@ class TikaClient
             'language' => $pick(['dc:language', 'language']),
             'producer' => $pick(['pdf:producer', 'producer']),
             'page_count' => $pageCount !== null ? (int) $pageCount : null,
-            // Bei .eml sind das die interessanten Felder.
+            // For .eml these are the interesting fields.
             'mail_from' => $pick(['Message-From', 'dc:creator']),
             'mail_to' => $pick(['Message-To']),
             'mail_subject' => $pick(['dc:title', 'subject']),
@@ -155,8 +154,8 @@ class TikaClient
             $headers['X-Tika-PDFOcrStrategy'] = 'ocr_only';
             $headers['X-Tika-OCRLanguage'] = (string) config('nextsearch.tika.ocr.languages');
         } else {
-            // Ohne diesen Header versucht Tika je nach Version von sich aus OCR
-            // und macht den ersten, schnellen Durchlauf teuer.
+            // Without this header some Tika versions run OCR on their own,
+            // making the first, fast pass expensive.
             $headers['X-Tika-PDFOcrStrategy'] = 'no_ocr';
             $headers['X-Tika-OCRskipOcr'] = 'true';
         }
