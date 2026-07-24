@@ -277,7 +277,15 @@
       "indexStage": {
         "title": "Search index",
         "desc": "Meilisearch. Once a document lands here it is findable."
-      }
+      },
+      "clear": "Clear",
+      "runDelta": "changes only",
+      "runTypeHint": "A full run reprocesses every file; a changes-only run touches just what changed since last time.",
+      "clearConfirmTitle": "Clear the {queue} queue?",
+      "clearConfirmBody": "{count} queued jobs will be discarded. Documents already in the index stay untouched — anything not yet processed is picked up again on the next run.",
+      "clearConfirmAction": "Clear queue",
+      "cleared": "{count} jobs cleared.",
+      "clearFailed": "Could not clear the queue."
     }
   },
   "indexing": {

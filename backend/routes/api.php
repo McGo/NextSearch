@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\FolderController;
 use App\Http\Controllers\Admin\InstanceController;
+use App\Http\Controllers\Admin\QueueController;
 use App\Http\Controllers\Admin\StatusController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\SessionController;
@@ -53,6 +54,7 @@ Route::prefix('api')->group(function () {
 
         Route::middleware('admin')->prefix('admin')->group(function () {
             Route::get('/status', StatusController::class);
+            Route::post('/queues/{queue}/clear', [QueueController::class, 'clear']);
 
             Route::apiResource('instances', InstanceController::class)
                 ->parameters(['instances' => 'instance'])

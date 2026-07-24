@@ -277,7 +277,15 @@
       "indexStage": {
         "title": "Suchindex",
         "desc": "Meilisearch. Sobald ein Dokument hier ankommt, ist es auffindbar."
-      }
+      },
+      "clear": "Leeren",
+      "runDelta": "nur Änderungen",
+      "runTypeHint": "Ein vollständiger Lauf verarbeitet jede Datei neu; ein Änderungs-Lauf fasst nur an, was sich seit dem letzten Mal geändert hat.",
+      "clearConfirmTitle": "Warteschlange {queue} leeren?",
+      "clearConfirmBody": "{count} wartende Jobs werden verworfen. Bereits indizierte Dokumente bleiben unberührt — noch nicht Verarbeitetes wird beim nächsten Durchlauf wieder aufgegriffen.",
+      "clearConfirmAction": "Warteschlange leeren",
+      "cleared": "{count} Jobs entfernt.",
+      "clearFailed": "Die Warteschlange ließ sich nicht leeren."
     }
   },
   "indexing": {

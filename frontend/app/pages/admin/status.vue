@@ -29,11 +29,51 @@ interface Status {
 }
 
 const api = useApi()
+const toast = useToast()
 const { dateTime, number } = useFormat()
 
 const status = ref<Status | null>(null)
 const pending = ref(true)
 const expanded = ref<string | null>(null)
+
+// Clearing a stuck queue — the target ('crawl' | 'process') doubles as the
+// open state of the confirmation modal.
+const clearTarget = ref<'crawl' | 'process' | null>(null)
+const clearing = ref(false)
+
+const clearModalOpen = computed({
+  get: () => clearTarget.value !== null,
+  set: (open: boolean) => { if (!open) clearTarget.value = null }
+})
+
+const clearTargetLabel = computed(() =>
+  clearTarget.value === 'crawl'
+    ? t('admin.status.crawlStage.title')
+    : t('admin.status.processStage.title')
+)
+
+const clearTargetCount = computed(() =>
+  clearTarget.value ? (status.value?.queues[clearTarget.value] ?? 0) : 0
+)
+
+async function confirmClear() {
+  if (!clearTarget.value) return
+  clearing.value = true
+
+  try {
+    const res = await api.post<{ removed: number }>(`/api/admin/queues/${clearTarget.value}/clear`)
+    toast.add({ title: t('admin.status.cleared', { count: res.removed }), color: 'success' })
+    clearTarget.value = null
+    await load()
+  } catch (e) {
+    toast.add({
+      title: e instanceof ApiError ? e.message : t('admin.status.clearFailed'),
+      color: 'error'
+    })
+  } finally {
+    clearing.value = false
+  }
+}
 
 async function load() {
   try {
@@ -134,6 +174,16 @@ function runStateLabel(state: IndexRun['state']): string {
             <p class="mt-2 text-xs text-muted leading-relaxed">
               {{ t('admin.status.crawlStage.desc') }}
             </p>
+            <UButton
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-trash-2"
+              class="mt-2 -ml-1.5"
+              :disabled="status.queues.crawl === 0"
+              :label="t('admin.status.clear')"
+              @click="clearTarget = 'crawl'"
+            />
           </div>
 
           <PipelineArrow />
@@ -171,6 +221,16 @@ function runStateLabel(state: IndexRun['state']): string {
                 :label="status.services.tika ? t('admin.status.reachable') : t('admin.status.unreachable')"
               />
             </p>
+            <UButton
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-trash-2"
+              class="mt-2 -ml-1.5"
+              :disabled="status.queues.process === 0"
+              :label="t('admin.status.clear')"
+              @click="clearTarget = 'process'"
+            />
           </div>
 
           <PipelineArrow />
@@ -206,9 +266,14 @@ function runStateLabel(state: IndexRun['state']): string {
       </div>
 
       <div class="space-y-2">
-        <h2 class="font-medium">
-          {{ t('admin.status.runsTitle') }}
-        </h2>
+        <div>
+          <h2 class="font-medium">
+            {{ t('admin.status.runsTitle') }}
+          </h2>
+          <p class="text-xs text-muted">
+            {{ t('admin.status.runTypeHint') }}
+          </p>
+        </div>
 
         <p
           v-if="status.runs.length === 0"
@@ -233,11 +298,10 @@ function runStateLabel(state: IndexRun['state']): string {
                   :label="runStateLabel(run.state)"
                 />
                 <UBadge
-                  v-if="run.full"
                   size="sm"
-                  color="neutral"
                   variant="outline"
-                  :label="t('admin.status.runFull')"
+                  :color="run.full ? 'warning' : 'neutral'"
+                  :label="run.full ? t('admin.status.runFull') : t('admin.status.runDelta')"
                 />
               </div>
 
@@ -284,5 +348,32 @@ function runStateLabel(state: IndexRun['state']): string {
         </UCard>
       </div>
     </template>
+
+    <UModal
+      v-model:open="clearModalOpen"
+      :title="t('admin.status.clearConfirmTitle', { queue: clearTargetLabel })"
+    >
+      <template #body>
+        <p class="text-sm text-muted">
+          {{ t('admin.status.clearConfirmBody', { count: number(clearTargetCount), queue: clearTargetLabel }) }}
+        </p>
+
+        <div class="mt-6 flex justify-end gap-2">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :label="t('common.cancel')"
+            @click="clearModalOpen = false"
+          />
+          <UButton
+            color="error"
+            icon="i-lucide-trash-2"
+            :loading="clearing"
+            :label="t('admin.status.clearConfirmAction')"
+            @click="confirmClear"
+          />
+        </div>
+      </template>
+    </UModal>
   </UContainer>
 </template>
