@@ -259,5 +259,9 @@
       "removed": "{count} entfernt",
       "failedCount": "{count} Fehler"
     }
+  },
+  "indexing": {
+    "title": "Indexierung läuft",
+    "desc": "Neue Dokumente werden noch verarbeitet. Die Treffer füllen sich weiter — {pending} in der Warteschlange, {indexed} bislang indiziert."
   }
 }

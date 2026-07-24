@@ -259,5 +259,9 @@
       "removed": "{count} removed",
       "failedCount": "{count} errors"
     }
+  },
+  "indexing": {
+    "title": "Indexing in progress",
+    "desc": "New documents are still being processed. Results keep filling in — {pending} queued, {indexed} indexed so far."
   }
 }

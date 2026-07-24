@@ -13,6 +13,13 @@ const sortItems = computed(() =>
   SORT_VALUES.map(value => ({ value: value as string, label: t(`search.sort.${value}`) }))
 )
 
+// While indexing runs, keep pulling in freshly indexed documents: refresh the
+// directory (new folders/images) and re-run the search when a crawl finishes.
+const { status: indexing } = useIndexingStatus(() => {
+  loadDirectory(true)
+  run()
+})
+
 onMounted(() => {
   // Images for hits and facets; independent of the search run.
   loadDirectory()
@@ -35,6 +42,17 @@ const filterDrawerOpen = ref(false)
       icon="i-lucide-folder-lock"
       :title="t('search.noSharesTitle')"
       :description="t('search.noSharesDesc')"
+    />
+
+    <UAlert
+      v-if="indexing?.running"
+      class="mb-6"
+      color="info"
+      variant="subtle"
+      icon="i-lucide-loader-circle"
+      :ui="{ icon: 'animate-spin' }"
+      :title="t('indexing.title')"
+      :description="t('indexing.desc', { pending: indexing.pending, indexed: indexing.indexed })"
     />
 
     <div class="flex gap-2 sm:gap-3">

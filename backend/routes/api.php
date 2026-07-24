@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\IndexingStatusController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,7 @@ Route::prefix('api')->group(function () {
         Route::put('/auth/password', [SessionController::class, 'changePassword']);
 
         Route::get('/search', SearchController::class);
+        Route::get('/indexing-status', IndexingStatusController::class);
 
         Route::get('/documents/{document}', [DocumentController::class, 'show']);
         Route::get('/documents/{document}/raw', [DocumentController::class, 'raw']);
