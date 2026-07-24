@@ -11,6 +11,7 @@
         "http-interop/http-factory-guzzle": "^1.2",
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
+        "league/commonmark": "^2.8",
         "league/flysystem-aws-s3-v3": "^3.35",
         "meilisearch/meilisearch-php": "^1.16"
     },

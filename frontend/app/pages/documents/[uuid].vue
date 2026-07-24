@@ -41,11 +41,49 @@ const INLINE_TYPES = [
 
 const embeddable = computed(() => INLINE_TYPES.includes(document.value?.mime_type ?? ''))
 
+/**
+ * Formate, die die App selbst rendert (siehe DocumentController::content):
+ * Markdown gerendert, E-Mail als Kopf plus Text.
+ */
+const RENDERED_EXTENSIONS = ['md', 'markdown', 'eml', 'msg', 'txt']
+
+interface RenderedContent {
+  type: 'markdown' | 'email' | 'text'
+  html?: string
+  text?: string
+  from?: string | null
+  to?: string | null
+  subject?: string | null
+  date?: string | null
+  body?: string
+}
+
+const rendered = ref<RenderedContent | null>(null)
+const contentPending = ref(false)
+
+// Nur rendern, was der Browser nicht ohnehin selbst einbettet (txt streamt
+// als text/plain bereits inline).
+const renderInApp = computed(() =>
+  !embeddable.value && RENDERED_EXTENSIONS.includes(document.value?.extension ?? '')
+)
+
 onMounted(async () => {
   try {
     const response = await api.get<{ document: DocumentDetail }>(`/api/documents/${uuid}`)
     document.value = response.document
     useHead({ title: response.document.name })
+
+    if (renderInApp.value) {
+      contentPending.value = true
+      try {
+        rendered.value = await api.get<RenderedContent>(`/api/documents/${uuid}/content`)
+      } catch {
+        // Kein Beinbruch — der Download-Knopf bleibt.
+        rendered.value = null
+      } finally {
+        contentPending.value = false
+      }
+    }
   } catch (e) {
     error.value = e instanceof ApiError
       ? e.message
@@ -144,6 +182,96 @@ const metadataRows = computed(() => {
           />
         </div>
 
+        <!-- Von der App gerenderte Formate: Markdown und E-Mail. -->
+        <div
+          v-else-if="renderInApp"
+          class="rounded-lg border border-default bg-elevated/40 p-5 min-h-40"
+        >
+          <div
+            v-if="contentPending"
+            class="flex justify-center py-16"
+          >
+            <UIcon
+              name="i-lucide-loader-circle"
+              class="animate-spin size-5 text-muted"
+            />
+          </div>
+
+          <!-- E-Mail: Kopf plus Textkörper. Der Body ist reiner Text, deshalb
+               ungefährlich. -->
+          <div
+            v-else-if="rendered?.type === 'email'"
+            class="space-y-4"
+          >
+            <dl class="space-y-1 text-sm border-b border-default pb-3">
+              <div
+                v-if="rendered.from"
+                class="flex gap-2"
+              >
+                <dt class="w-20 shrink-0 text-muted">
+                  Von
+                </dt>
+                <dd class="min-w-0 break-words">
+                  {{ rendered.from }}
+                </dd>
+              </div>
+              <div
+                v-if="rendered.to"
+                class="flex gap-2"
+              >
+                <dt class="w-20 shrink-0 text-muted">
+                  An
+                </dt>
+                <dd class="min-w-0 break-words">
+                  {{ rendered.to }}
+                </dd>
+              </div>
+              <div
+                v-if="rendered.subject"
+                class="flex gap-2"
+              >
+                <dt class="w-20 shrink-0 text-muted">
+                  Betreff
+                </dt>
+                <dd class="min-w-0 break-words font-medium">
+                  {{ rendered.subject }}
+                </dd>
+              </div>
+              <div
+                v-if="rendered.date"
+                class="flex gap-2"
+              >
+                <dt class="w-20 shrink-0 text-muted">
+                  Datum
+                </dt>
+                <dd class="min-w-0 break-words">
+                  {{ rendered.date }}
+                </dd>
+              </div>
+            </dl>
+            <pre class="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed">{{ rendered.body }}</pre>
+          </div>
+
+          <!-- Markdown: im Backend HTML-sicher gerendert (kein rohes HTML,
+               keine unsicheren Links), darf hier ohne weitere Bereinigung in
+               ein v-html. -->
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div
+            v-else-if="rendered?.type === 'markdown'"
+            class="md-body"
+            v-html="rendered.html"
+          />
+
+          <UAlert
+            v-else
+            color="neutral"
+            variant="subtle"
+            icon="i-lucide-download"
+            title="Vorschau nicht verfügbar"
+            description="Der Inhalt ließ sich nicht darstellen. Über den Knopf rechts laden Sie das Original herunter."
+          />
+        </div>
+
         <UAlert
           v-else
           color="neutral"
@@ -211,3 +339,71 @@ const metadataRows = computed(() => {
     </div>
   </UContainer>
 </template>
+
+<style scoped>
+/* Schlichte Auszeichnung für gerendertes Markdown — bewusst ohne
+   Typography-Plugin, damit keine zusätzliche Abhängigkeit nötig ist. */
+.md-body {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.md-body :deep(h1),
+.md-body :deep(h2),
+.md-body :deep(h3) {
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 1.2em 0 0.5em;
+}
+.md-body :deep(h1) { font-size: 1.4em; }
+.md-body :deep(h2) { font-size: 1.2em; }
+.md-body :deep(h3) { font-size: 1.05em; }
+.md-body :deep(p),
+.md-body :deep(ul),
+.md-body :deep(ol),
+.md-body :deep(blockquote),
+.md-body :deep(table) {
+  margin: 0.6em 0;
+}
+.md-body :deep(ul),
+.md-body :deep(ol) {
+  padding-left: 1.4em;
+}
+.md-body :deep(ul) { list-style: disc; }
+.md-body :deep(ol) { list-style: decimal; }
+.md-body :deep(a) {
+  color: var(--ui-primary);
+  text-decoration: underline;
+}
+.md-body :deep(code) {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  background: var(--ui-bg-elevated);
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+}
+.md-body :deep(pre) {
+  background: var(--ui-bg-elevated);
+  padding: 0.8em 1em;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+.md-body :deep(pre code) {
+  background: transparent;
+  padding: 0;
+}
+.md-body :deep(blockquote) {
+  border-left: 3px solid var(--ui-border);
+  padding-left: 1em;
+  color: var(--ui-text-muted);
+}
+.md-body :deep(table) {
+  border-collapse: collapse;
+  width: 100%;
+}
+.md-body :deep(th),
+.md-body :deep(td) {
+  border: 1px solid var(--ui-border);
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
+</style>

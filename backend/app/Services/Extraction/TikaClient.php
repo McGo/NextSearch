@@ -136,6 +136,7 @@ class TikaClient
             'mail_from' => $pick(['Message-From', 'dc:creator']),
             'mail_to' => $pick(['Message-To']),
             'mail_subject' => $pick(['dc:title', 'subject']),
+            'mail_date' => $pick(['Message:Raw-Header:Date', 'dcterms:created', 'Creation-Date']),
         ], fn ($value) => $value !== null);
     }
 

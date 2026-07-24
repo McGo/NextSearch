@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
+use App\Services\Content\MarkdownRenderer;
 use App\Services\Nextcloud\ReadOnlyWebDavClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,6 +23,12 @@ class DocumentController extends Controller
         'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp',
         'text/plain',
     ];
+
+    /** Formate, die die App selbst rendert statt sie durchzureichen. */
+    private const RENDERED_EXTENSIONS = ['md', 'markdown', 'eml', 'msg', 'txt'];
+
+    /** Rohdatei-Höchstgröße für das In-App-Rendering. Darüber: nur Download. */
+    private const RENDER_MAX_BYTES = 2 * 1024 * 1024;
 
     public function show(Request $request, Document $document): JsonResponse
     {
@@ -117,6 +124,78 @@ class DocumentController extends Controller
             // sich das Bild unter demselben Schlüssel — daher kurz cachen.
             'Cache-Control' => 'private, max-age=300',
         ]);
+    }
+
+    /**
+     * Liefert den lesbar aufbereiteten Inhalt für Formate, die die App selbst
+     * darstellt — Markdown gerendert, E-Mail als Kopf plus Textkörper. Der
+     * Browser bekommt kein fremdes Markup zum Ausführen: Markdown wird
+     * HTML-sicher gerendert, der E-Mail-Text als reiner Text geliefert.
+     */
+    public function content(Request $request, Document $document, ReadOnlyWebDavClient $dav, MarkdownRenderer $markdown): JsonResponse
+    {
+        $this->authorizeAccess($request, $document);
+        $document->load('instance');
+
+        $extension = $document->extension;
+
+        if (! in_array($extension, self::RENDERED_EXTENSIONS, true)) {
+            abort(404, 'Für dieses Format gibt es keine In-App-Ansicht.');
+        }
+
+        if ($document->size > self::RENDER_MAX_BYTES) {
+            abort(413, 'Die Datei ist für die Vorschau zu groß.');
+        }
+
+        return match ($extension) {
+            'eml', 'msg' => response()->json([
+                'type' => 'email',
+                'from' => $document->metadata['mail_from'] ?? $document->metadata['author'] ?? null,
+                'to' => $document->metadata['mail_to'] ?? null,
+                'subject' => $document->metadata['mail_subject'] ?? $document->metadata['title'] ?? $document->name,
+                'date' => $document->metadata['mail_date'] ?? null,
+                'body' => $this->storedText($document),
+            ]),
+            'md', 'markdown' => response()->json([
+                'type' => 'markdown',
+                'html' => $markdown->toHtml($this->rawText($dav, $document)),
+            ]),
+            default => response()->json([
+                'type' => 'text',
+                'text' => $this->rawText($dav, $document),
+            ]),
+        };
+    }
+
+    /**
+     * Der bereits extrahierte Textkörper aus dem Objektspeicher — für die
+     * E-Mail reicht das, Tika hat MIME und Kodierung schon aufgelöst.
+     */
+    private function storedText(Document $document): string
+    {
+        if ($document->text_key === null) {
+            return '';
+        }
+
+        $disk = Storage::disk((string) config('nextsearch.preview.disk'));
+
+        return $disk->exists($document->text_key) ? (string) $disk->get($document->text_key) : '';
+    }
+
+    /**
+     * Die Rohdatei frisch von der Nextcloud — für Markdown, damit Überschriften
+     * und Listen erhalten bleiben, die die Text-Normalisierung sonst glättet.
+     */
+    private function rawText(ReadOnlyWebDavClient $dav, Document $document): string
+    {
+        $stream = $dav->openStream($document->instance, $document->remote_path);
+        $raw = (string) $stream->getContents();
+        $stream->close();
+
+        // Robust gegen fehlerhaft deklarierte Kodierungen; der Index ist ohnehin UTF-8.
+        return mb_check_encoding($raw, 'UTF-8')
+            ? $raw
+            : mb_convert_encoding($raw, 'UTF-8', 'UTF-8, ISO-8859-1, Windows-1252');
     }
 
     /**

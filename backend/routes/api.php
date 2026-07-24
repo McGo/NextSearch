@@ -33,6 +33,7 @@ Route::prefix('api')->group(function () {
         Route::get('/documents/{document}', [DocumentController::class, 'show']);
         Route::get('/documents/{document}/raw', [DocumentController::class, 'raw']);
         Route::get('/documents/{document}/preview', [DocumentController::class, 'preview']);
+        Route::get('/documents/{document}/content', [DocumentController::class, 'content']);
 
         Route::middleware('admin')->prefix('admin')->group(function () {
             Route::get('/status', StatusController::class);
