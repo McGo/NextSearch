@@ -60,8 +60,8 @@ class PropfindParser
 
         $path = trim($this->stripPrefix($href, $pathPrefix), '/');
 
-        // Nur der 200er-Propstat trägt die tatsächlich gelieferten Properties;
-        // nicht unterstützte Properties landen in einem 404er-Propstat.
+        // Only the 200 propstat carries the properties actually returned;
+        // unsupported properties land in a 404 propstat.
         $props = $this->okProperties($dav);
 
         if ($props === null) {
@@ -125,7 +125,7 @@ class PropfindParser
     }
 
     /**
-     * ETags kommen in Anführungszeichen und teils mit W/-Präfix.
+     * ETags come in quotes and sometimes with a W/ prefix.
      */
     private function normalizeEtag(?string $etag): ?string
     {

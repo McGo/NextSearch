@@ -9,11 +9,11 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 /**
- * Erzeugt das Vorschaubild der ersten Seite.
+ * Produces the preview image of the first page.
  *
- * PDF geht direkt durch pdftoppm, Bilder durch GD, Office-Dateien nehmen den
- * Umweg über Gotenberg nach PDF. Formate ohne sinnvolles Rendering — .eml, .md,
- * .txt — bekommen keine Datei; die Oberfläche zeigt dort eine Typ-Kachel.
+ * PDF goes straight through pdftoppm, images through GD, Office files take the
+ * detour via Gotenberg to PDF. Formats without a useful rendering — .eml, .md,
+ * .txt — get no file; the interface shows a type tile there.
  */
 class PreviewRenderer
 {
@@ -32,9 +32,9 @@ class PreviewRenderer
     }
 
     /**
-     * Rendert und legt das Ergebnis im Objektspeicher ab.
+     * Renders and stores the result in object storage.
      *
-     * @return string|null Der Ablageschlüssel, oder null wenn nichts zu rendern war.
+     * @return string|null The storage key, or null if there was nothing to render.
      */
     public function render(string $sourceFile, ?string $extension, string $uuid): ?string
     {
@@ -127,7 +127,7 @@ class PreviewRenderer
 
         if (! $response->successful()) {
             throw new RuntimeException(sprintf(
-                'Gotenberg antwortete mit %d bei der Umwandlung nach PDF.',
+                'Gotenberg responded with %d while converting to PDF.',
                 $response->status(),
             ));
         }
@@ -138,8 +138,8 @@ class PreviewRenderer
     }
 
     /**
-     * Skaliert auf die Zielbreite und schreibt WebP. GD reicht dafür; Formate,
-     * die GD nicht liest (etwa TIFF), liefern still kein Vorschaubild.
+     * Scales to the target width and writes WebP. GD is enough for that; formats
+     * GD can't read (TIFF, say) silently yield no preview image.
      */
     private function toWebp(string $file, string $workDir): ?string
     {
@@ -163,7 +163,7 @@ class PreviewRenderer
             }
         }
 
-        // Transparenz auf Weiß legen, sonst wird die Vorschau in der Liste grau.
+        // Put transparency on white, otherwise the preview turns grey in the list.
         $canvas = imagecreatetruecolor(imagesx($source), imagesy($source));
         imagefill($canvas, 0, 0, imagecolorallocate($canvas, 255, 255, 255));
         imagecopy($canvas, $source, 0, 0, 0, 0, imagesx($source), imagesy($source));
@@ -194,7 +194,7 @@ class PreviewRenderer
         $dir = sys_get_temp_dir().'/nextsearch-preview-'.$uuid;
 
         if (! is_dir($dir) && ! mkdir($dir, 0700, true) && ! is_dir($dir)) {
-            throw new RuntimeException(sprintf('Arbeitsverzeichnis "%s" nicht anlegbar.', $dir));
+            throw new RuntimeException(sprintf('Work directory "%s" could not be created.', $dir));
         }
 
         return $dir;

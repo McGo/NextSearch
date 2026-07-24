@@ -24,7 +24,7 @@ class Document extends Model
 
     public const STATE_FAILED = 'failed';
 
-    /** Format bewusst nicht unterstützt oder Datei zu groß. */
+    /** Format deliberately unsupported or file too large. */
     public const STATE_SKIPPED = 'skipped';
 
     /**
@@ -72,8 +72,8 @@ class Document extends Model
     }
 
     /**
-     * Unverändert heißt: gleiche ETag und gleiche Größe. Die ETag allein würde
-     * reichen, die Größe kostet nichts und fängt Sonderfälle ab.
+     * Unchanged means: same ETag and same size. The ETag alone would do; the
+     * size costs nothing and catches edge cases.
      */
     public function matchesRemote(?string $etag, int $size): bool
     {

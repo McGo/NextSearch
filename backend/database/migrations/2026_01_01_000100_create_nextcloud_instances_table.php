@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('base_url');
             $table->string('username');
-            // Verschlüsselt über den APP_KEY (siehe Model-Cast). Empfohlen wird
-            // ein Nextcloud-App-Passwort, kein Kontopasswort.
+            // Encrypted via the APP_KEY (see the model cast). Recommended is a
+            // Nextcloud app password, not an account password.
             $table->text('app_password');
             $table->boolean('verify_tls')->default(true);
             $table->boolean('enabled')->default(true);

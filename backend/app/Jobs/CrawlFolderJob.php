@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Läuft eine Verzeichnisebene ab und stößt für Unterordner erneut sich selbst
- * an. Nextcloud beantwortet `Depth: infinity` nicht, also Ebene für Ebene.
+ * Walks one directory level and re-dispatches itself for subfolders. Nextcloud
+ * does not answer `Depth: infinity`, so it goes level by level.
  *
- * Jeder dispatchte Job wird im Lauf mitgezählt; wer den Zähler auf null bringt,
- * schließt den Lauf ab.
+ * Every dispatched job is counted in the run; whoever brings the counter to
+ * zero closes the run.
  */
 class CrawlFolderJob implements ShouldQueue
 {
@@ -30,7 +30,7 @@ class CrawlFolderJob implements ShouldQueue
     public int $timeout = 900;
 
     /**
-     * @param  string  $subPath  Pfad relativ zum überwachten Ordner. Leer = dessen Wurzel.
+     * @param  string  $subPath  Path relative to the watched folder. Empty = its root.
      */
     public function __construct(
         public WatchedFolder $folder,
@@ -126,9 +126,9 @@ class CrawlFolderJob implements ShouldQueue
     }
 
     /**
-     * Dateien, die in diesem Durchlauf nicht mehr auftauchten, sind entfernt
-     * oder umbenannt worden und fliegen aus Datenbank und Index. Betrachtet wird
-     * nur die direkte Ebene — Unterordner räumt ihr eigener Job auf.
+     * Files that no longer appeared in this run have been removed or renamed and
+     * are dropped from the database and the index. Only the direct level is
+     * considered — subfolders are cleaned up by their own job.
      *
      * @param  list<string>  $seenPaths
      */
@@ -202,8 +202,7 @@ class CrawlFolderJob implements ShouldQueue
     }
 
     /**
-     * Ordnernamen dürfen % und _ enthalten, LIKE darf sie nicht als Platzhalter
-     * verstehen.
+     * Folder names may contain % and _; LIKE must not read them as wildcards.
      */
     private function escapeLike(string $value): string
     {

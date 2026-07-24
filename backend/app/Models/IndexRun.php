@@ -19,7 +19,7 @@ class IndexRun extends Model
 
     public const STATE_FAILED = 'failed';
 
-    /** Höchstens so viele Fehler werden pro Lauf festgehalten. */
+    /** At most this many errors are kept per run. */
     public const MAX_ERRORS = 50;
 
     /**
@@ -54,8 +54,8 @@ class IndexRun extends Model
     }
 
     /**
-     * Zähler laufen atomar hoch, weil mehrere Worker parallel auf denselben
-     * Lauf schreiben.
+     * Counters increment atomically because several workers write to the same
+     * run in parallel.
      */
     public function bump(string $counter, int $by = 1): void
     {
@@ -63,8 +63,8 @@ class IndexRun extends Model
     }
 
     /**
-     * Vor jedem Dispatch hochzählen — sonst fällt der Zähler zwischendurch auf
-     * null und der Lauf gilt vorzeitig als fertig.
+     * Increment before every dispatch — otherwise the counter drops to zero in
+     * between and the run is considered finished prematurely.
      */
     public function trackJobs(int $count = 1): void
     {
@@ -72,9 +72,9 @@ class IndexRun extends Model
     }
 
     /**
-     * Nach jedem erledigten Job herunterzählen. Der Worker, dessen Dekrement
-     * die Null erreicht, schließt den Lauf ab — dank RETURNING sieht genau
-     * einer die Null, auch wenn mehrere gleichzeitig fertig werden.
+     * Decrement after every finished job. The worker whose decrement reaches
+     * zero closes the run — thanks to RETURNING exactly one sees the zero, even
+     * when several finish at the same time.
      */
     public function settleJob(): void
     {

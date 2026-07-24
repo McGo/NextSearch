@@ -71,8 +71,8 @@ class WatchedFolder extends Model
     }
 
     /**
-     * Pfad ohne führenden und abschließenden Slash — so wird er überall
-     * zusammengesetzt.
+     * Path without a leading or trailing slash — that's how it is assembled
+     * everywhere.
      */
     public function normalizedPath(): string
     {

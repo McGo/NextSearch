@@ -7,9 +7,9 @@ use Meilisearch\Client;
 use Meilisearch\Exceptions\ApiException;
 
 /**
- * Alles, was NextSearch mit Meilisearch macht. Der Dienst hängt ohne
- * Port-Freigabe im internen Netz und wird nie an den Browser durchgereicht —
- * jede Suche läuft über das Backend, das den Ordnerfilter setzt.
+ * Everything NextSearch does with Meilisearch. The service sits on the internal
+ * network with no published port and is never passed through to the browser —
+ * every search runs through the backend, which sets the folder filter.
  */
 class SearchIndex
 {
@@ -21,8 +21,8 @@ class SearchIndex
     }
 
     /**
-     * Legt den Index an und setzt seine Einstellungen. Idempotent, läuft bei
-     * jedem Start des App-Containers.
+     * Creates the index and sets its settings. Idempotent, runs on every start
+     * of the app container.
      */
     public function configure(): void
     {
@@ -35,7 +35,7 @@ class SearchIndex
         $this->client->index($this->name())->updateSettings([
             'searchableAttributes' => ['name', 'title', 'content', 'path', 'author'],
 
-            // folder_id trägt die Zugriffsprüfung, der Rest sind die Facetten.
+            // folder_id carries the access check, the rest are the facets.
             'filterableAttributes' => [
                 'folder_id', 'instance_id', 'instance_name', 'folder_label',
                 'extension', 'mime_type', 'year', 'month', 'size_bucket',
@@ -74,7 +74,7 @@ class SearchIndex
     }
 
     /**
-     * Entfernt alle Dokumente eines Ordners — beim Löschen oder Zurücksetzen.
+     * Removes all documents of a folder — on deletion or reset.
      */
     public function forgetFolder(int $folderId): void
     {

@@ -79,8 +79,7 @@ script → white screen).
 - Backend: Laravel Pint, default configuration.
 - Frontend: ESLint with `@nuxt/eslint`; `npx eslint . --fix` clears most of it.
 - Comments explain the why. What the code does is in the code.
-- Documentation, README, identifiers and new code comments are written in English.
-  (Some older backend comments are still German and are being migrated.)
+- Documentation, README, identifiers and code comments are written in English.
 - User-facing strings are never hardcoded — they live in the locale files.
 
 ## Pull requests

@@ -10,16 +10,16 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Bilder von Instanzen und Ordnern sowie ihre Zuordnung für die Oberfläche.
- * Erreichbar für jeden angemeldeten Nutzer — die Bilder sind vom Administrator
- * gewählte Kennzeichen, kein Dokumenteninhalt. Der Upload dagegen ist den
- * Administratoren vorbehalten (siehe Admin-Controller).
+ * Images of instances and folders and their mapping for the interface.
+ * Reachable by every signed-in user — the images are markers the administrator
+ * chose, not document content. Uploading, by contrast, is reserved for
+ * administrators (see the admin controllers).
  */
 class DirectoryController extends Controller
 {
     /**
-     * Sichtbare Instanzen und Ordner mit ihrer Bild-URL. Grundlage dafür, dass
-     * Suchtreffer und Facetten die passenden Bilder zeigen.
+     * Visible instances and folders with their image URL. The basis for search
+     * hits and facets to show the matching images.
      */
     public function index(Request $request): JsonResponse
     {

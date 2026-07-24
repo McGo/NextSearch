@@ -13,10 +13,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class DocumentController extends Controller
 {
     /**
-     * Nur diese Typen werden im Browser eingebettet. Alles andere geht als
-     * Download raus — eine HTML- oder SVG-Datei aus einer fremden Nextcloud
-     * würde sonst im Kontext dieser Anwendung ausgeführt und käme an die
-     * Sitzung des Nutzers.
+     * Only these types are embedded in the browser. Everything else goes out as
+     * a download — an HTML or SVG file from a foreign Nextcloud would otherwise
+     * run in this application's context and reach the user's session.
      */
     private const INLINE_TYPES = [
         'application/pdf',
@@ -24,10 +23,10 @@ class DocumentController extends Controller
         'text/plain',
     ];
 
-    /** Formate, die die App selbst rendert statt sie durchzureichen. */
+    /** Formats the app renders itself instead of passing them through. */
     private const RENDERED_EXTENSIONS = ['md', 'markdown', 'eml', 'msg', 'txt'];
 
-    /** Rohdatei-Höchstgröße für das In-App-Rendering. Darüber: nur Download. */
+    /** Max raw-file size for in-app rendering. Above it: download only. */
     private const RENDER_MAX_BYTES = 2 * 1024 * 1024;
 
     public function show(Request $request, Document $document): JsonResponse
@@ -52,8 +51,8 @@ class DocumentController extends Controller
                 'has_preview' => $document->preview_key !== null,
                 'instance' => ['name' => $document->instance->name, 'uuid' => $document->instance->uuid],
                 'folder' => ['label' => $document->folder->label, 'uuid' => $document->folder->uuid],
-                // Ein Deep-Link in die Nextcloud, falls der Nutzer dort ohnehin
-                // ein Konto hat. Er ist ein Angebot, kein Ersatz für /raw.
+                // A deep link into Nextcloud, in case the user has an account
+                // there anyway. It's an offer, not a replacement for /raw.
                 'nextcloud_url' => rtrim($document->instance->base_url, '/')
                     .'/index.php/apps/files/?dir='.rawurlencode('/'.trim(dirname($document->remote_path), '.')),
             ],
@@ -61,8 +60,8 @@ class DocumentController extends Controller
     }
 
     /**
-     * Reicht das Originaldokument durch. Die Nextcloud-Zugangsdaten bleiben
-     * serverseitig — wer hier sucht, braucht selbst kein Nextcloud-Konto.
+     * Streams the original document through. The Nextcloud credentials stay on
+     * the server — whoever searches here needs no Nextcloud account of their own.
      */
     public function raw(Request $request, Document $document, ReadOnlyWebDavClient $dav): StreamedResponse
     {
@@ -93,7 +92,7 @@ class DocumentController extends Controller
                     addslashes($this->asciiName($document->name)),
                     rawurlencode($document->name),
                 ),
-                // Kein Erraten des Typs, egal was in der Datei steht.
+                // No type sniffing, no matter what's in the file.
                 'X-Content-Type-Options' => 'nosniff',
                 'Cache-Control' => 'private, max-age=0, no-store',
             ],
@@ -101,10 +100,10 @@ class DocumentController extends Controller
     }
 
     /**
-     * Das Vorschaubild läuft durch das Backend statt über eine signierte
-     * S3-URL: der Objektspeicher hat bewusst keinen offenen Port, eine
-     * presigned URL auf http://minio:9000 wäre vom Browser aus nicht
-     * erreichbar. Die Bilder sind klein, das fällt nicht ins Gewicht.
+     * The preview image runs through the backend rather than a signed S3 URL:
+     * the object store deliberately has no open port, and a presigned URL to
+     * http://minio:9000 would be unreachable from the browser. The images are
+     * small, so it doesn't matter.
      */
     public function preview(Request $request, Document $document): StreamedResponse
     {
@@ -120,17 +119,17 @@ class DocumentController extends Controller
 
         return $disk->response($document->preview_key, headers: [
             'Content-Type' => 'image/webp',
-            // Der Schlüssel enthält die UUID; ändert sich das Dokument, ändert
-            // sich das Bild unter demselben Schlüssel — daher kurz cachen.
+            // The key contains the UUID; if the document changes, the image
+            // changes under the same key — so cache it briefly.
             'Cache-Control' => 'private, max-age=300',
         ]);
     }
 
     /**
-     * Liefert den lesbar aufbereiteten Inhalt für Formate, die die App selbst
-     * darstellt — Markdown gerendert, E-Mail als Kopf plus Textkörper. Der
-     * Browser bekommt kein fremdes Markup zum Ausführen: Markdown wird
-     * HTML-sicher gerendert, der E-Mail-Text als reiner Text geliefert.
+     * Returns the readable content for formats the app renders itself — Markdown
+     * rendered, email as headers plus body. The browser gets no foreign markup
+     * to execute: Markdown is rendered HTML-safe, the email text delivered as
+     * plain text.
      */
     public function content(Request $request, Document $document, ReadOnlyWebDavClient $dav, MarkdownRenderer $markdown): JsonResponse
     {
@@ -168,8 +167,8 @@ class DocumentController extends Controller
     }
 
     /**
-     * Der bereits extrahierte Textkörper aus dem Objektspeicher — für die
-     * E-Mail reicht das, Tika hat MIME und Kodierung schon aufgelöst.
+     * The already extracted body from object storage — enough for the email;
+     * Tika has already resolved MIME and encoding.
      */
     private function storedText(Document $document): string
     {
@@ -183,8 +182,8 @@ class DocumentController extends Controller
     }
 
     /**
-     * Die Rohdatei frisch von der Nextcloud — für Markdown, damit Überschriften
-     * und Listen erhalten bleiben, die die Text-Normalisierung sonst glättet.
+     * The raw file fresh from Nextcloud — for Markdown, so headings and lists
+     * survive that the text normalisation would otherwise flatten.
      */
     private function rawText(ReadOnlyWebDavClient $dav, Document $document): string
     {
@@ -192,14 +191,14 @@ class DocumentController extends Controller
         $raw = (string) $stream->getContents();
         $stream->close();
 
-        // Robust gegen fehlerhaft deklarierte Kodierungen; der Index ist ohnehin UTF-8.
+        // Robust against wrongly declared encodings; the index is UTF-8 anyway.
         return mb_check_encoding($raw, 'UTF-8')
             ? $raw
             : mb_convert_encoding($raw, 'UTF-8', 'UTF-8, ISO-8859-1, Windows-1252');
     }
 
     /**
-     * Rückfallname für Clients, die den RFC-5987-Teil nicht auswerten.
+     * Fallback name for clients that don't evaluate the RFC 5987 part.
      */
     private function asciiName(string $name): string
     {
@@ -209,8 +208,8 @@ class DocumentController extends Controller
     }
 
     /**
-     * Die Freigaben werden ausschließlich in NextSearch gepflegt; die
-     * Dateirechte der Nextcloud spielen hier keine Rolle.
+     * Shares are maintained solely in NextSearch; Nextcloud's file permissions
+     * play no role here.
      */
     private function authorizeAccess(Request $request, Document $document): void
     {

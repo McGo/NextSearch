@@ -28,8 +28,8 @@ return [
         'default_interval_minutes' => (int) env('INDEX_DEFAULT_INTERVAL_MINUTES', 15),
         'max_file_size' => (int) env('INDEX_MAX_FILE_SIZE_MB', 100) * 1024 * 1024,
 
-        // Alles andere wird beim Durchlauf übersprungen und als `skipped`
-        // vermerkt. Leer lassen heißt: die Vorgabe unten gilt.
+        // Everything else is skipped during the crawl and marked `skipped`.
+        // Leaving it empty means the default below applies.
         'extensions' => array_values(array_filter(array_map(
             'trim',
             explode(',', (string) env('INDEX_EXTENSIONS', '')),
@@ -40,12 +40,12 @@ return [
             'png', 'jpg', 'jpeg', 'tif', 'tiff',
         ],
 
-        // Ordner, die nie betreten werden. Ergänzt die Ausschlussmuster, die
-        // pro Ordner in der UI gepflegt werden.
+        // Folders that are never entered. Complements the exclude patterns
+        // maintained per folder in the UI.
         'ignored_directories' => ['.git', 'node_modules', '.trashbin', '.versions'],
 
-        // Volltext, der pro Dokument in den Index geht. Alles darüber wird
-        // abgeschnitten, damit einzelne Ausreißer den Index nicht sprengen.
+        // Full text that goes into the index per document. Anything beyond is
+        // truncated so single outliers don't blow up the index.
         'max_indexed_characters' => 1_000_000,
     ],
 
@@ -88,8 +88,8 @@ return [
             'timeout' => (int) env('GOTENBERG_TIMEOUT', 120),
         ],
 
-        // Formate ohne sinnvolles Rendering bekommen keine Datei; die
-        // Oberfläche zeigt dort eine Typ-Kachel.
+        // Formats without a useful rendering get no file; the interface shows
+        // a type tile there.
         'renderable' => [
             'pdf' => 'pdf',
             'png' => 'image', 'jpg' => 'image', 'jpeg' => 'image',

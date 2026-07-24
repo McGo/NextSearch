@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Freigaben werden ausschließlich in NextSearch gepflegt. Die Dateirechte
-     * der Nextcloud spielen hier keine Rolle — siehe docs/permissions.md.
+     * Shares are maintained solely in NextSearch. Nextcloud's file permissions
+     * play no role here — see docs/permissions.md.
      */
     public function up(): void
     {

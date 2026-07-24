@@ -16,8 +16,8 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->string('label');
-            // Pfad relativ zum WebDAV-Wurzelverzeichnis des Instanz-Benutzers,
-            // ohne führenden Slash, z. B. "Dokumente/Rechnungen".
+            // Path relative to the instance user's WebDAV root directory,
+            // without a leading slash, e.g. "Documents/Invoices".
             $table->string('remote_path');
             $table->string('oc_file_id')->nullable();
 

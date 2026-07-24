@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Hält den Zustand einer Datei, nicht ihren Text. Der Volltext liegt im
-     * Suchindex und als Blob im Objektspeicher.
+     * Holds a file's state, not its text. The full text lives in the search
+     * index and as a blob in object storage.
      */
     public function up(): void
     {
@@ -19,12 +19,12 @@ return new class extends Migration
             $table->foreignId('watched_folder_id')->constrained()->cascadeOnDelete();
             $table->foreignId('nextcloud_instance_id')->constrained()->cascadeOnDelete();
 
-            // Die Nextcloud-Datei-ID bleibt über Umbenennungen und Verschiebungen
-            // stabil und ist deshalb der Anker der Delta-Erkennung.
+            // The Nextcloud file id stays stable across renames and moves and
+            // is therefore the anchor of the delta detection.
             $table->string('oc_file_id')->nullable()->index();
             $table->text('remote_path');
-            // Pfade können jede Länge haben, ein Btree-Index über `text` läuft
-            // in Postgres irgendwann gegen die Zeilengrenze. Deshalb der Hash.
+            // Paths can be any length; a btree index over `text` eventually runs
+            // into Postgres's row-size limit. Hence the hash.
             $table->char('path_hash', 64);
             $table->string('name');
             $table->string('extension', 32)->nullable();

@@ -11,13 +11,13 @@ use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
 /*
- * Alle Routen laufen über den `web`-Stack: Nuxt reicht /api per Nitro-Proxy an
- * dieses Backend durch, UI und API teilen also eine Origin. Damit greifen
- * Session-Cookie und CSRF-Schutz ohne zusätzliche Konfiguration.
+ * All routes run on the `web` stack: Nuxt forwards /api via the Nitro proxy to
+ * this backend, so the UI and the API share an origin. That way the session
+ * cookie and CSRF protection work without extra configuration.
  */
 
 Route::prefix('api')->group(function () {
-    // Für den Container-Healthcheck. Sagt nichts über angemeldete Nutzer aus.
+    // For the container health check. Says nothing about signed-in users.
     Route::get('/health', fn () => response()->json(['status' => 'ok']));
 
     // Setzt den XSRF-TOKEN-Cookie, den das Frontend vor dem Login braucht.
@@ -37,8 +37,8 @@ Route::prefix('api')->group(function () {
         Route::get('/documents/{document}/preview', [DocumentController::class, 'preview']);
         Route::get('/documents/{document}/content', [DocumentController::class, 'content']);
 
-        // Bilder von Instanzen und Ordnern — für jeden angemeldeten Nutzer, weil
-        // sie an Treffern und Facetten erscheinen. Der Upload bleibt Admin-Sache.
+        // Instance and folder images — for every signed-in user, because they
+        // appear on hits and facets. Uploading stays an admin matter.
         Route::get('/directory', [DirectoryController::class, 'index']);
         Route::get('/instances/{instance}/image', [DirectoryController::class, 'instanceImage']);
         Route::get('/folders/{folder}/image', [DirectoryController::class, 'folderImage']);

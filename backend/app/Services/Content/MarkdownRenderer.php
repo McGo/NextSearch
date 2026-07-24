@@ -9,10 +9,9 @@ use League\CommonMark\Extension\Table\TableExtension;
 use League\CommonMark\MarkdownConverter;
 
 /**
- * Rendert Markdown zu HTML — und zwar aus fremden Dateien, deshalb streng
- * abgesichert: eingebettetes HTML wird escaped, nicht ausgeführt, und unsichere
- * Links (javascript:, data:) fallen raus. Das Ergebnis darf ohne weitere
- * Bereinigung in ein v-html.
+ * Renders Markdown to HTML — from foreign files, so strictly hardened: embedded
+ * HTML is escaped, not executed, and unsafe links (javascript:, data:) are
+ * dropped. The result may go into a v-html without further sanitising.
  */
 class MarkdownRenderer
 {

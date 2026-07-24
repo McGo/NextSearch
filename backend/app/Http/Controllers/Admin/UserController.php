@@ -66,8 +66,8 @@ class UserController extends Controller
     }
 
     /**
-     * Freigaben setzen. Was hier zugewiesen wird, gilt in NextSearch — die
-     * Dateirechte der Nextcloud bleiben unberücksichtigt.
+     * Set shares. What is assigned here applies in NextSearch — Nextcloud's file
+     * permissions are not considered.
      */
     public function syncFolderAccess(Request $request, User $user): JsonResponse
     {
@@ -101,7 +101,7 @@ class UserController extends Controller
     }
 
     /**
-     * Ohne Administrator käme niemand mehr an Instanzen und Freigaben.
+     * Without an administrator nobody could reach instances and shares anymore.
      */
     private function guardLastAdmin(User $user, string $newRole): void
     {

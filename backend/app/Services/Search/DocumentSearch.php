@@ -5,21 +5,21 @@ namespace App\Services\Search;
 use App\Models\User;
 
 /**
- * Übersetzt eine Suchanfrage aus der Oberfläche in eine Meilisearch-Abfrage —
- * und erzwingt dabei den Ordnerfilter des Nutzers.
+ * Translates a search request from the interface into a Meilisearch query — and
+ * enforces the user's folder filter while doing so.
  */
 class DocumentSearch
 {
-    /** Facetten, die die Oberfläche als Filterleiste anbietet. */
+    /** Facets the interface offers as the filter panel. */
     public const FACETS = [
         'instance_name', 'folder_label', 'extension', 'year', 'size_bucket', 'ocr_used',
     ];
 
     /**
-     * Platzhalter für die Trefferhervorhebung. Meilisearch setzt sie roh in den
-     * Text; erst nach dem Escapen werden daraus <mark>-Tags. Die Zeichen sind
-     * so gewählt, dass sie in echten Dokumenten praktisch nicht vorkommen — und
-     * selbst dann wären sie nach dem Escapen harmlos.
+     * Placeholders for match highlighting. Meilisearch inserts them raw into the
+     * text; only after escaping do they become <mark> tags. The characters are
+     * chosen so they practically never occur in real documents — and even then
+     * they'd be harmless after escaping.
      */
     private const MARK_OPEN = "\u{2E22}NS\u{2E23}";
 
@@ -36,7 +36,7 @@ class DocumentSearch
     public function __construct(private readonly SearchIndex $index) {}
 
     /**
-     * @param  array<string, list<string>>  $filters  Facettenname => gewählte Werte
+     * @param  array<string, list<string>>  $filters  facet name => selected values
      * @return array<string, mixed>
      */
     public function search(
@@ -49,7 +49,7 @@ class DocumentSearch
     ): array {
         $allowed = $user->accessibleFolderIds();
 
-        // Kein freigegebener Ordner heißt: keine Treffer. Nicht „alle Treffer".
+        // No shared folder means: no hits. Not "all hits".
         if ($allowed !== null && $allowed->isEmpty()) {
             return $this->emptyResult($page, $perPage);
         }
@@ -67,8 +67,8 @@ class DocumentSearch
             // Dateiinhalten und wird erst nach dem Escapen zu Markup gemacht.
             'highlightPreTag' => self::MARK_OPEN,
             'highlightPostTag' => self::MARK_CLOSE,
-            // Der Volltext selbst geht nicht mit über die Leitung, nur der
-            // hervorgehobene Ausschnitt aus _formatted.
+            // The full text itself doesn't travel over the wire, only the
+            // highlighted snippet from _formatted.
             'attributesToRetrieve' => [
                 'uuid', 'name', 'path', 'directory', 'extension', 'mime_type',
                 'size', 'size_bucket', 'modified_at', 'year', 'author', 'title',
@@ -95,7 +95,7 @@ class DocumentSearch
     }
 
     /**
-     * @param  list<int>|null  $allowedFolderIds  null = Administrator, keine Einschränkung
+     * @param  list<int>|null  $allowedFolderIds  null = administrator, no restriction
      * @param  array<string, list<string>>  $filters
      * @return list<string>
      */

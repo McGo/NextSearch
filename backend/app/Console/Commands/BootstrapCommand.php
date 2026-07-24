@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
- * Läuft bei jedem Start des App-Containers. Alles hier ist idempotent.
+ * Runs on every start of the app container. Everything here is idempotent.
  */
 class BootstrapCommand extends Command
 {
     protected $signature = 'nextsearch:bootstrap';
 
-    protected $description = 'Admin-Zugang, Objektspeicher und Suchindex einrichten';
+    protected $description = 'Set up the admin account, object storage and search index';
 
     public function handle(SearchIndex $index): int
     {
@@ -32,7 +32,7 @@ class BootstrapCommand extends Command
         $password = config('nextsearch.admin.password');
 
         if (blank($email) || blank($password)) {
-            $this->warn('ADMIN_EMAIL oder ADMIN_PASSWORD fehlt — kein Admin angelegt.');
+            $this->warn('ADMIN_EMAIL or ADMIN_PASSWORD is missing — no admin created.');
 
             return;
         }
@@ -40,11 +40,11 @@ class BootstrapCommand extends Command
         $existing = User::query()->where('email', $email)->first();
 
         if ($existing !== null) {
-            // Ein bestehendes Konto wird nicht überschrieben. Wer das Passwort
-            // vergessen hat, setzt es in der Oberfläche zurück.
+            // An existing account is not overwritten. Whoever forgot the
+            // password resets it in the interface.
             if (! $existing->isAdmin()) {
                 $existing->forceFill(['role' => User::ROLE_ADMIN])->save();
-                $this->info(sprintf('Konto %s zum Administrator gemacht.', $email));
+                $this->info(sprintf('Made account %s an administrator.', $email));
             }
 
             return;
@@ -57,7 +57,7 @@ class BootstrapCommand extends Command
             'role' => User::ROLE_ADMIN,
         ]);
 
-        $this->info(sprintf('Administrator %s angelegt.', $email));
+        $this->info(sprintf('Administrator %s created.', $email));
     }
 
     private function ensureBucket(): void
@@ -71,19 +71,19 @@ class BootstrapCommand extends Command
         try {
             $this->createBucketIfMissing($disk);
 
-            // Ein Schreibvorgang sagt mehr als eine Existenzprüfung.
+            // A write says more than an existence check.
             Storage::disk($disk)->put('.nextsearch-ready', (string) now());
-            $this->info('Objektspeicher erreichbar.');
+            $this->info('Object storage reachable.');
         } catch (Throwable $e) {
-            $this->warn('Objektspeicher nicht erreichbar: '.$e->getMessage());
-            $this->warn('Vorschaubilder werden erst funktionieren, wenn der Bucket existiert.');
+            $this->warn('Object storage unreachable: '.$e->getMessage());
+            $this->warn('Preview images will only work once the bucket exists.');
         }
     }
 
     /**
-     * Das mitgelieferte MinIO startet ohne Bucket. Bei einem echten S3-Anbieter
-     * fehlt meist die Berechtigung dafür — dann wird die Meldung geschluckt und
-     * der Bucket muss von Hand existieren.
+     * The bundled MinIO starts without a bucket. With a real S3 provider the
+     * permission for this is usually missing — then the message is swallowed and
+     * the bucket has to exist already.
      */
     private function createBucketIfMissing(string $disk): void
     {
@@ -102,9 +102,9 @@ class BootstrapCommand extends Command
 
         try {
             $client->createBucket(['Bucket' => $bucket]);
-            $this->info(sprintf('Bucket "%s" angelegt.', $bucket));
+            $this->info(sprintf('Bucket "%s" created.', $bucket));
         } catch (Throwable $e) {
-            $this->warn(sprintf('Bucket "%s" konnte nicht angelegt werden: %s', $bucket, $e->getMessage()));
+            $this->warn(sprintf('Bucket "%s" could not be created: %s', $bucket, $e->getMessage()));
         }
     }
 
@@ -112,9 +112,9 @@ class BootstrapCommand extends Command
     {
         try {
             $index->configure();
-            $this->info(sprintf('Suchindex "%s" eingerichtet.', $index->name()));
+            $this->info(sprintf('Search index "%s" set up.', $index->name()));
         } catch (Throwable $e) {
-            $this->warn('Suchindex nicht erreichbar: '.$e->getMessage());
+            $this->warn('Search index unreachable: '.$e->getMessage());
         }
     }
 }

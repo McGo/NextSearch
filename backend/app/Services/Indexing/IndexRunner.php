@@ -9,8 +9,8 @@ use App\Models\WatchedFolder;
 class IndexRunner
 {
     /**
-     * Startet einen Durchlauf für einen Ordner. Läuft bereits einer, wird er
-     * zurückgegeben statt einen zweiten daneben zu setzen.
+     * Starts a run for a folder. If one is already running it is returned
+     * instead of placing a second one next to it.
      */
     public function start(WatchedFolder $folder, bool $full = false, string $trigger = 'schedule'): IndexRun
     {
@@ -38,7 +38,7 @@ class IndexRunner
     }
 
     /**
-     * Alle fälligen Ordner anstoßen. Ruft der Scheduler minütlich auf.
+     * Kick off all due folders. Called by the scheduler every minute.
      *
      * @return list<IndexRun>
      */
@@ -64,8 +64,7 @@ class IndexRunner
     }
 
     /**
-     * Hängengebliebene Läufe aufräumen — etwa nach einem Neustart mitten im
-     * Durchlauf.
+     * Clean up stuck runs — e.g. after a restart in the middle of a crawl.
      */
     public function reapStale(int $afterHours = 6): int
     {

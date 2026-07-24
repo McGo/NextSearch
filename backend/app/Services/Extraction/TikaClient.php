@@ -76,7 +76,7 @@ class TikaClient
 
         if (! $response->successful()) {
             throw new RuntimeException(sprintf(
-                'Tika antwortete mit %d bei der Textextraktion.',
+                'Tika responded with %d during text extraction.',
                 $response->status(),
             ));
         }
@@ -102,8 +102,8 @@ class TikaClient
     }
 
     /**
-     * Tika liefert je nach Format Dutzende Felder in wechselnder Schreibweise.
-     * Übernommen wird nur, was in der Oberfläche auch auftaucht.
+     * Depending on the format Tika returns dozens of fields in varying spelling.
+     * Only what the interface actually shows is kept.
      *
      * @param  array<string, mixed>  $raw
      * @return array<string, scalar|null>
@@ -169,7 +169,7 @@ class TikaClient
         $handle = fopen($file, 'rb');
 
         if ($handle === false) {
-            throw new RuntimeException(sprintf('Datei "%s" nicht lesbar.', $file));
+            throw new RuntimeException(sprintf('File "%s" is not readable.', $file));
         }
 
         return $handle;
@@ -184,8 +184,8 @@ class TikaClient
     }
 
     /**
-     * Tika liefert reichlich Leerraum aus Layout-Informationen. Der bläht den
-     * Index auf und stört die Textausschnitte in den Treffern.
+     * Tika returns plenty of whitespace from layout information. That bloats the
+     * index and disturbs the snippets in the results.
      */
     private function normalize(string $text): string
     {

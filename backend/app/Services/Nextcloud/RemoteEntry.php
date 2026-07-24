@@ -10,7 +10,7 @@ use Carbon\CarbonImmutable;
 final readonly class RemoteEntry
 {
     public function __construct(
-        /** Pfad relativ zur WebDAV-Wurzel des Instanz-Benutzers, ohne führenden Slash. */
+        /** Path relative to the instance user's WebDAV root, without a leading slash. */
         public string $path,
         public string $name,
         public bool $isDirectory,

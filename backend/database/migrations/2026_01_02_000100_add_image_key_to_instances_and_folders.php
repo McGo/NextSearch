@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Instanzen und Ordner können ein eigenes Bild bekommen. Es liegt im
- * Objektspeicher; hier steht nur der Ablageschlüssel.
+ * Instances and folders can have their own image. It lives in object storage;
+ * only the storage key is kept here.
  */
 return new class extends Migration
 {

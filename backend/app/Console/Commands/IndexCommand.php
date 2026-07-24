@@ -16,13 +16,13 @@ class IndexCommand extends Command
         {--full : Delta-Erkennung übergehen und alles neu verarbeiten}
         {--due-only : Nur Ordner, deren Intervall abgelaufen ist}';
 
-    protected $description = 'Überwachte Ordner durchlaufen und indizieren';
+    protected $description = 'Crawl and index the watched folders';
 
     public function handle(IndexRunner $runner): int
     {
         if ($this->option('due-only')) {
             $runs = $runner->startDue();
-            $this->info(sprintf('%d Durchlauf/Durchläufe angestoßen.', count($runs)));
+            $this->info(sprintf('Kicked off %d run(s).', count($runs)));
 
             return self::SUCCESS;
         }
@@ -30,7 +30,7 @@ class IndexCommand extends Command
         $folders = $this->resolveFolders();
 
         if ($folders->isEmpty()) {
-            $this->warn('Kein passender Ordner gefunden.');
+            $this->warn('No matching folder found.');
 
             return self::FAILURE;
         }
@@ -44,14 +44,14 @@ class IndexCommand extends Command
                 '  %s — %s (%s)',
                 $folder->instance->name,
                 $folder->label,
-                $run->wasRecentlyCreated ? 'gestartet' : 'läuft bereits',
+                $run->wasRecentlyCreated ? 'started' : 'already running',
             ));
         }
 
         $this->info(sprintf(
-            '%d Ordner in der Warteschlange%s. Fortschritt: php artisan nextsearch:status',
+            '%d folder(s) queued%s. Progress: php artisan nextsearch:status',
             $folders->count(),
-            $full ? ' (vollständig)' : '',
+            $full ? ' (full)' : '',
         ));
 
         return self::SUCCESS;

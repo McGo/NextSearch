@@ -7,13 +7,13 @@ use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 /**
- * Nimmt ein hochgeladenes Bild für eine Instanz oder einen Ordner, bringt es
- * auf ein quadratisches Format und legt es im Objektspeicher ab. Ausgeliefert
- * wird es über das Backend, genau wie die Vorschaubilder.
+ * Takes an uploaded image for an instance or a folder, brings it to a square
+ * format and stores it in object storage. It is served through the backend,
+ * just like the preview images.
  */
 class DirectoryImageService
 {
-    /** Kantenlänge des gespeicherten Quadrats. */
+    /** Edge length of the stored square. */
     private const SIZE = 160;
 
     public function store(UploadedFile $file, string $key): string
@@ -21,7 +21,7 @@ class DirectoryImageService
         $image = @imagecreatefromstring((string) file_get_contents($file->getRealPath()));
 
         if ($image === false) {
-            throw new RuntimeException('Die Datei ließ sich nicht als Bild lesen.');
+            throw new RuntimeException('The file could not be read as an image.');
         }
 
         $square = $this->toSquare($image);
@@ -67,7 +67,7 @@ class DirectoryImageService
     }
 
     /**
-     * Mittiger quadratischer Ausschnitt, dann auf Zielgröße gebracht.
+     * Centered square crop, then brought to the target size.
      *
      * @param  \GdImage  $image
      * @return \GdImage
@@ -82,7 +82,7 @@ class DirectoryImageService
 
         $canvas = imagecreatetruecolor(self::SIZE, self::SIZE);
 
-        // Transparenz auf Weiß legen, damit die Kachel in der Liste nicht grau wird.
+        // Put transparency on white so the tile doesn't turn grey in the list.
         imagefill($canvas, 0, 0, imagecolorallocate($canvas, 255, 255, 255));
         imagecopyresampled(
             $canvas, $image,

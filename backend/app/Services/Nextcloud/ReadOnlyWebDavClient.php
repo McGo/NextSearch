@@ -15,12 +15,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
 /**
- * Der einzige Weg, auf dem NextSearch mit einer Nextcloud spricht.
+ * The only way NextSearch talks to a Nextcloud.
  *
- * Alles, was nicht in ALLOWED_METHODS steht, wird geworfen, bevor überhaupt
- * eine Verbindung aufgebaut wird. Damit ist die Zusage „ausschließlich lesend"
- * keine Absichtserklärung, sondern eine Eigenschaft des Codes. Der zugehörige
- * Test iteriert über sämtliche Schreibverben.
+ * Anything not in ALLOWED_METHODS is thrown before a connection is even opened.
+ * That makes the "read-only" promise not a statement of intent but a property of
+ * the code. The matching test iterates over every write verb.
  */
 class ReadOnlyWebDavClient
 {
@@ -47,7 +46,7 @@ class ReadOnlyWebDavClient
 
     /**
      * @param  (callable(RequestInterface, array): mixed)|null  $handler
-     *                                                                    Nur für Tests: ein eigener Guzzle-Handler, etwa ein MockHandler.
+     *                                                                    Tests only: a custom Guzzle handler, e.g. a MockHandler.
      */
     public function __construct(
         private readonly PropfindParser $parser,
@@ -82,7 +81,7 @@ class ReadOnlyWebDavClient
     }
 
     /**
-     * Nur die Ordner einer Ebene — Grundlage für den Ordner-Picker in der UI.
+     * Only the folders of one level — the basis for the folder picker in the UI.
      *
      * @return list<RemoteEntry>
      */
@@ -121,14 +120,14 @@ class ReadOnlyWebDavClient
     }
 
     /**
-     * Datei in eine lokale Datei streamen. Rückgabe ist die geschriebene Größe.
+     * Stream a file into a local file. Returns the number of bytes written.
      */
     public function downloadTo(NextcloudInstance $instance, string $path, string $target): int
     {
         $handle = fopen($target, 'wb');
 
         if ($handle === false) {
-            throw new NextcloudException(sprintf('Zieldatei "%s" nicht beschreibbar.', $target));
+            throw new NextcloudException(sprintf('Target file "%s" is not writable.', $target));
         }
 
         try {
@@ -143,7 +142,7 @@ class ReadOnlyWebDavClient
     }
 
     /**
-     * Datei als Stream öffnen — für das Durchreichen an den Browser.
+     * Open a file as a stream — for passing it through to the browser.
      */
     public function openStream(NextcloudInstance $instance, string $path): StreamInterface
     {
@@ -161,9 +160,9 @@ class ReadOnlyWebDavClient
     }
 
     /**
-     * Guzzle-Middleware mit derselben Prüfung. Sie hängt an jedem Client dieser
-     * Klasse, damit auch ein künftiger Aufrufer, der `send()` umgeht, nicht
-     * versehentlich schreibt.
+     * Guzzle middleware with the same check. It hangs on every client of this
+     * class, so that a future caller who bypasses `send()` can't accidentally
+     * write either.
      */
     public static function guardMiddleware(): callable
     {

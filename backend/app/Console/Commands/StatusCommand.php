@@ -14,34 +14,34 @@ class StatusCommand extends Command
 {
     protected $signature = 'nextsearch:status';
 
-    protected $description = 'Zustand von Instanzen, Index und Warteschlange anzeigen';
+    protected $description = 'Show the state of instances, index and queue';
 
     public function handle(SearchIndex $index, TikaClient $tika): int
     {
-        $this->components->twoColumnDetail('<fg=gray>Dienst</>', '<fg=gray>Zustand</>');
-        $this->components->twoColumnDetail('Tika', $tika->isReachable() ? '<fg=green>erreichbar</>' : '<fg=red>nicht erreichbar</>');
-        $this->components->twoColumnDetail('Suchindex', number_format((float) ($index->stats()['numberOfDocuments'] ?? 0), 0, ',', '.').' Dokumente');
+        $this->components->twoColumnDetail('<fg=gray>Service</>', '<fg=gray>State</>');
+        $this->components->twoColumnDetail('Tika', $tika->isReachable() ? '<fg=green>reachable</>' : '<fg=red>unreachable</>');
+        $this->components->twoColumnDetail('Search index', number_format((float) ($index->stats()['numberOfDocuments'] ?? 0), 0, ',', '.').' documents');
 
         foreach (['crawl', 'process', 'preview'] as $queue) {
-            $this->components->twoColumnDetail('Warteschlange '.$queue, (string) Queue::size($queue));
+            $this->components->twoColumnDetail('Queue '.$queue, (string) Queue::size($queue));
         }
 
         $this->newLine();
-        $this->components->twoColumnDetail('<fg=gray>Instanz</>', '<fg=gray>Verbindung</>');
+        $this->components->twoColumnDetail('<fg=gray>Instance</>', '<fg=gray>Connection</>');
 
         foreach (NextcloudInstance::query()->withCount('folders')->get() as $instance) {
             $this->components->twoColumnDetail(
-                sprintf('%s (%d Ordner)', $instance->name, $instance->folders_count),
+                sprintf('%s (%d folders)', $instance->name, $instance->folders_count),
                 match ($instance->health_state) {
                     NextcloudInstance::HEALTH_OK => '<fg=green>ok</>',
-                    NextcloudInstance::HEALTH_FAILED => '<fg=red>Fehler</>',
-                    default => '<fg=yellow>ungeprüft</>',
+                    NextcloudInstance::HEALTH_FAILED => '<fg=red>error</>',
+                    default => '<fg=yellow>unchecked</>',
                 },
             );
         }
 
         $this->newLine();
-        $this->components->twoColumnDetail('<fg=gray>Dokumente</>', '<fg=gray>Anzahl</>');
+        $this->components->twoColumnDetail('<fg=gray>Documents</>', '<fg=gray>Count</>');
 
         foreach (Document::query()->selectRaw('state, count(*) as total')->groupBy('state')->pluck('total', 'state') as $state => $total) {
             $this->components->twoColumnDetail($state, (string) $total);
@@ -52,7 +52,7 @@ class StatusCommand extends Command
         if ($runs->isNotEmpty()) {
             $this->newLine();
             $this->table(
-                ['Ordner', 'Zustand', 'gesehen', 'neu', 'geändert', 'entfernt', 'Fehler', 'offen'],
+                ['Folder', 'State', 'seen', 'new', 'changed', 'removed', 'errors', 'open'],
                 $runs->map(fn (IndexRun $run) => [
                     $run->folder->label,
                     $run->state,

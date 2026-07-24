@@ -46,8 +46,8 @@ class FolderController extends Controller
         $instance = NextcloudInstance::query()->where('uuid', $data['instance'])->firstOrFail();
         $path = trim($data['remote_path'], '/');
 
-        // Lieber jetzt eine klare Fehlermeldung als später ein Lauf, der
-        // stillschweigend nichts findet.
+        // Better a clear error now than a run later that silently finds
+        // nothing.
         try {
             $entry = $dav->stat($instance, $path);
         } catch (NextcloudException $e) {
@@ -116,16 +116,15 @@ class FolderController extends Controller
     }
 
     /**
-     * Merkt den Ordner für den nächsten Scheduler-Durchlauf vor und stößt ihn
-     * gleich an.
+     * Marks the folder for the next scheduler run and kicks it off right away.
      */
     public function reindex(Request $request, WatchedFolder $folder, IndexRunner $runner): JsonResponse
     {
         $full = $request->boolean('full');
 
         if ($full) {
-            // Beim vollständigen Neuaufbau fällt der bisherige Bestand weg,
-            // damit auch Reste verschwundener Dateien aus dem Index gehen.
+            // A full rebuild drops the existing set, so remnants of vanished
+            // files leave the index too.
             $folder->documents()->update(['state' => Document::STATE_PENDING, 'etag' => null]);
         }
 

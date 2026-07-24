@@ -22,8 +22,8 @@ class NextcloudInstance extends Model
     public const HEALTH_UNKNOWN = 'unknown';
 
     /**
-     * `uuid` ist die nach außen sichtbare Kennung, der Primärschlüssel bleibt
-     * die Autoincrement-ID.
+     * `uuid` is the outward-facing identifier; the primary key stays the
+     * autoincrement id.
      *
      * @return list<string>
      */
@@ -40,8 +40,8 @@ class NextcloudInstance extends Model
     protected function casts(): array
     {
         return [
-            // Das App-Passwort liegt nur verschlüsselt in der Datenbank. Geht
-            // der APP_KEY verloren, müssen die Instanzen neu hinterlegt werden.
+            // The app password is stored only encrypted. If the APP_KEY is
+            // lost, the instances have to be re-entered.
             'app_password' => 'encrypted',
             'verify_tls' => 'boolean',
             'enabled' => 'boolean',
@@ -66,7 +66,7 @@ class NextcloudInstance extends Model
     }
 
     /**
-     * WebDAV-Wurzel des Instanz-Benutzers, ohne abschließenden Slash.
+     * WebDAV root of the instance user, without a trailing slash.
      */
     public function davRoot(): string
     {

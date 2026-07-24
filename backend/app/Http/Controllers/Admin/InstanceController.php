@@ -46,8 +46,8 @@ class InstanceController extends Controller
     {
         $data = $request->validate($this->rules($instance));
 
-        // Ein leeres Passwortfeld heißt „unverändert lassen" — die Oberfläche
-        // bekommt das gespeicherte Passwort nie zu sehen.
+        // An empty password field means "leave unchanged" — the interface
+        // never gets to see the stored password.
         if (blank($data['app_password'] ?? null)) {
             unset($data['app_password']);
         }
@@ -63,8 +63,8 @@ class InstanceController extends Controller
 
     public function destroy(NextcloudInstance $instance, SearchIndex $index, DirectoryImageService $images): JsonResponse
     {
-        // Erst aus dem Suchindex, dann aus der Datenbank — andersherum wüsste
-        // niemand mehr, welche Dokumente zu entfernen wären.
+        // First out of the search index, then the database — the other way
+        // round nobody would know which documents to remove.
         foreach ($instance->folders as $folder) {
             $index->forgetFolder($folder->id);
             $images->delete($folder->image_key);
@@ -102,7 +102,7 @@ class InstanceController extends Controller
     }
 
     /**
-     * Ordner einer Ebene — Grundlage für den Ordner-Picker.
+     * Folders of one level — the basis for the folder picker.
      */
     public function browse(Request $request, NextcloudInstance $instance, ReadOnlyWebDavClient $dav): JsonResponse
     {

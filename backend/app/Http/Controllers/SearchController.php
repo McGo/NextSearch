@@ -13,19 +13,19 @@ class SearchController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            // `nullable`, weil Laravels ConvertEmptyStringsToNull aus einem leeren
-            // Suchfeld ein null macht — das ist keine ungültige Eingabe.
+            // `nullable`, because Laravel's ConvertEmptyStringsToNull turns an
+            // empty search field into null — that's not invalid input.
             'q' => ['sometimes', 'nullable', 'string', 'max:500'],
             'sort' => ['sometimes', 'string', 'in:relevance,newest,oldest,largest,name'],
             'page' => ['sometimes', 'integer', 'min:1', 'max:500'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:'.config('nextsearch.search.max_per_page')],
-            // Die Facettenfilter kommen als JSON-String — so serialisiert das
-            // Frontend das verschachtelte Objekt in den Query-String.
+            // The facet filters arrive as a JSON string — that's how the
+            // frontend serialises the nested object into the query string.
             'filters' => ['sometimes', 'nullable', 'string', 'max:4000'],
         ]);
 
-        // Der Ordnerfilter wird im Dienst gesetzt, nicht hier — er darf nicht
-        // von etwas abhängen, das aus dem Request stammt.
+        // The folder filter is set in the service, not here — it must not
+        // depend on anything that comes from the request.
         $result = $this->search->search(
             user: $request->user(),
             query: $validated['q'] ?? '',
@@ -39,9 +39,9 @@ class SearchController extends Controller
     }
 
     /**
-     * Dekodiert den Filter-JSON zu `facet => list<string>`. Unbekannte Facetten
-     * fängt der Suchdienst ab; hier wird nur die Form gesäubert, damit nichts
-     * anderes als Zeichenketten durchkommt.
+     * Decodes the filter JSON into `facet => list<string>`. Unknown facets are
+     * caught by the search service; here only the shape is cleaned so nothing
+     * other than strings gets through.
      *
      * @return array<string, list<string>>
      */

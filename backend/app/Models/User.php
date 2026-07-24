@@ -52,8 +52,8 @@ class User extends Authenticatable
     }
 
     /**
-     * IDs aller Ordner, in denen dieser Nutzer suchen darf. `null` heißt
-     * „keine Einschränkung" und gilt nur für Administratoren.
+     * IDs of every folder this user may search. `null` means "no restriction"
+     * and applies only to administrators.
      *
      * @return Collection<int, int>|null
      */

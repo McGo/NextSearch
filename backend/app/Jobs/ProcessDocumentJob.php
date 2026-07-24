@@ -16,11 +16,11 @@ use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
- * Holt eine Datei, zieht Text und Metadaten heraus, rendert die Vorschau und
- * schiebt das Ergebnis in den Suchindex.
+ * Fetches a file, extracts text and metadata, renders the preview and pushes the
+ * result into the search index.
  *
- * Der Zugriff auf die Nextcloud läuft ausschließlich über den
- * ReadOnlyWebDavClient — die Datei wird gelesen, nie angefasst.
+ * Access to Nextcloud runs exclusively through the ReadOnlyWebDavClient — the
+ * file is read, never touched.
  */
 class ProcessDocumentJob implements ShouldQueue
 {
@@ -86,9 +86,9 @@ class ProcessDocumentJob implements ShouldQueue
 
             $index->upsert(DocumentDto::fromModel($document, $extraction->text));
 
-            // Nur der erfolgreiche Durchlauf zählt den Lauf herunter. Bei einem
-            // Fehlschlag übernimmt das failed(), nachdem alle Versuche
-            // aufgebraucht sind — sonst fiele der Zähler pro Wiederholung.
+            // Only the successful run decrements the run. On a failure failed()
+            // takes over once all attempts are used up — otherwise the counter
+            // would drop per retry.
             $this->run->settleJob();
         } catch (Throwable $e) {
             $this->markFailed($document, $e);

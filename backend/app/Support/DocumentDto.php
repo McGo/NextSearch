@@ -57,8 +57,8 @@ final readonly class DocumentDto
     }
 
     /**
-     * Aufbereitung für Meilisearch. Die abgeleiteten Felder (Jahr, Größenklasse)
-     * existieren nur, damit sie als Facetten taugen.
+     * Prepared for Meilisearch. The derived fields (year, size bucket) exist
+     * only so they work as facets.
      *
      * @return array<string, mixed>
      */
@@ -70,8 +70,8 @@ final readonly class DocumentDto
             'id' => str_replace('-', '', $this->uuid),
             'uuid' => $this->uuid,
 
-            // Herkunft — trägt zugleich die Zugriffsprüfung: jede Suche wird
-            // serverseitig auf die freigegebenen folder_id gefiltert.
+            // Origin — also carries the access check: every search is filtered
+            // server-side to the shared folder_ids.
             'instance_id' => $this->instanceId,
             'instance_name' => $this->instanceName,
             'folder_id' => $this->folderId,
