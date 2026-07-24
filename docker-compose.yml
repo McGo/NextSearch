@@ -1,0 +1,197 @@
+name: nextsearch
+
+x-app-env: &app-env
+  APP_NAME: ${APP_NAME:-NextSearch}
+  APP_ENV: ${APP_ENV:-production}
+  APP_DEBUG: ${APP_DEBUG:-false}
+  APP_KEY: ${APP_KEY:?APP_KEY fehlt — siehe .env.example}
+  APP_URL: ${APP_URL:-http://localhost:3000}
+  ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+  ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me-please}
+
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: 5432
+  DB_DATABASE: ${DB_DATABASE:-nextsearch}
+  DB_USERNAME: ${DB_USERNAME:-nextsearch}
+  DB_PASSWORD: ${DB_PASSWORD:-nextsearch}
+
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  CACHE_STORE: redis
+  QUEUE_CONNECTION: redis
+  SESSION_DRIVER: redis
+  SESSION_SAME_SITE: lax
+
+  SCOUT_DRIVER: meilisearch
+  SCOUT_QUEUE: "true"
+  MEILISEARCH_HOST: http://meilisearch:7700
+  MEILISEARCH_KEY: ${MEILI_MASTER_KEY:?MEILI_MASTER_KEY fehlt}
+
+  FILESYSTEM_DISK: s3
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-nextsearch}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-nextsearch-secret}
+  AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+  AWS_BUCKET: ${AWS_BUCKET:-nextsearch}
+  AWS_ENDPOINT: ${AWS_ENDPOINT:-http://minio:9000}
+  AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT:-true}
+
+  INDEX_DEFAULT_INTERVAL_MINUTES: ${INDEX_DEFAULT_INTERVAL_MINUTES:-15}
+  INDEX_MAX_FILE_SIZE_MB: ${INDEX_MAX_FILE_SIZE_MB:-100}
+  INDEX_EXTENSIONS: ${INDEX_EXTENSIONS:-}
+
+  TIKA_URL: ${TIKA_URL:-http://tika:9998}
+  TIKA_TIMEOUT: ${TIKA_TIMEOUT:-300}
+  TIKA_OCR_ENABLED: ${TIKA_OCR_ENABLED:-true}
+  TIKA_OCR_LANGUAGES: ${TIKA_OCR_LANGUAGES:-deu+eng}
+
+  PREVIEW_ENABLED: ${PREVIEW_ENABLED:-true}
+  PREVIEW_OFFICE_ENABLED: ${PREVIEW_OFFICE_ENABLED:-true}
+  PREVIEW_WIDTH: ${PREVIEW_WIDTH:-600}
+  GOTENBERG_URL: ${GOTENBERG_URL:-http://gotenberg:3000}
+
+x-app-base: &app-base
+  build:
+    context: .
+    dockerfile: docker/app/Dockerfile
+  image: nextsearch/app:local
+  environment: *app-env
+  volumes:
+    - app_storage:/app/storage
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    meilisearch:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  # Einziger Dienst mit veröffentlichtem Port. Nitro proxied /api an `app`,
+  # dadurch teilen UI und API eine Origin und die Session-Cookies greifen.
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    image: nextsearch/web:local
+    environment:
+      NUXT_PUBLIC_APP_NAME: ${APP_NAME:-NextSearch}
+      NUXT_BACKEND_URL: http://app:8080
+      NITRO_PORT: 3000
+      NITRO_HOST: 0.0.0.0
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+  app:
+    <<: *app-base
+    command: ["app-entrypoint", "serve"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  worker:
+    <<: *app-base
+    command: ["app-entrypoint", "worker"]
+    depends_on:
+      app:
+        condition: service_healthy
+    deploy:
+      replicas: ${WORKER_REPLICAS:-2}
+
+  scheduler:
+    <<: *app-base
+    command: ["app-entrypoint", "scheduler"]
+    depends_on:
+      app:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18.4-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-nextsearch}
+      POSTGRES_USER: ${DB_USERNAME:-nextsearch}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-nextsearch}
+    volumes:
+      # Postgres 18+ legt die Daten in ein versioniertes Unterverzeichnis; das
+      # Volume gehört deshalb an /var/lib/postgresql, nicht an /…/data.
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-nextsearch} -d ${DB_DATABASE:-nextsearch}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.50.0
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:?MEILI_MASTER_KEY fehlt}
+      MEILI_ENV: production
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - meili_data:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  # Das -full-Tag bringt Tesseract samt Sprachpaketen mit — kein eigener OCR-Container.
+  tika:
+    image: apache/tika:3.3.1.0-full
+    restart: unless-stopped
+
+  # Nur für Vorschaubilder von Office-Dateien. PREVIEW_OFFICE_ENABLED=false
+  # macht den Dienst überflüssig.
+  gotenberg:
+    image: gotenberg/gotenberg:8.34
+    command:
+      - gotenberg
+      - --api-timeout=120s
+      - --chromium-disable-javascript=true
+      - --chromium-allow-list=file:///tmp/.*
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-nextsearch}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-nextsearch-secret}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  meili_data:
+  minio_data:
+  app_storage:

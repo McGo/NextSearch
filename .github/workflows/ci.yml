@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite, sqlite3, gd, intl, zip, bcmath
+          coverage: none
+
+      - name: Abhängigkeiten
+        working-directory: backend
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Stil
+        working-directory: backend
+        run: ./vendor/bin/pint --test
+
+      - name: Tests
+        working-directory: backend
+        run: php artisan test
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Abhängigkeiten
+        working-directory: frontend
+        run: npm ci --ignore-scripts
+
+      - name: Stil
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Typen
+        working-directory: frontend
+        run: npx nuxt typecheck
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  images:
+    name: Images bauen
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Prüft, dass beide Dockerfiles durchlaufen — ohne sie zu veröffentlichen.
+      - name: App-Image
+        run: docker build -f docker/app/Dockerfile -t nextsearch/app:ci .
+
+      - name: Web-Image
+        run: docker build -f docker/web/Dockerfile -t nextsearch/web:ci .

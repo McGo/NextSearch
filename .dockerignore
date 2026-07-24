@@ -1,0 +1,17 @@
+**/node_modules
+**/vendor
+**/.git
+**/.nuxt
+**/.output
+**/.data
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+backend/bootstrap/cache/*
+.env
+.env.*
+!.env.example
+demo/seed
+docs
+*.md

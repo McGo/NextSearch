@@ -1,0 +1,36 @@
+# Optionaler Demo-Stack: eine wegwerfbare Nextcloud mit Beispieldateien,
+# damit man NextSearch ohne eigene Instanz ausprobieren kann.
+#
+#   make demo
+#   make demo-seed
+#
+# In der NextSearch-UI dann als Instanz eintragen:
+#   URL      http://demo-nextcloud
+#   Benutzer ${DEMO_NEXTCLOUD_ADMIN_USER}
+#   Passwort ${DEMO_NEXTCLOUD_ADMIN_PASSWORD}
+
+services:
+  demo-nextcloud:
+    image: nextcloud:31-apache
+    environment:
+      SQLITE_DATABASE: nextcloud
+      NEXTCLOUD_ADMIN_USER: ${DEMO_NEXTCLOUD_ADMIN_USER:-demo}
+      NEXTCLOUD_ADMIN_PASSWORD: ${DEMO_NEXTCLOUD_ADMIN_PASSWORD:-demo-password}
+      NEXTCLOUD_TRUSTED_DOMAINS: demo-nextcloud localhost
+      OVERWRITEPROTOCOL: http
+    volumes:
+      - demo_nextcloud_data:/var/www/html
+      - ./demo/seed:/seed:ro
+    ports:
+      # Nur zur Bequemlichkeit — so kann man die Demo-Nextcloud im Browser ansehen.
+      - "${DEMO_NEXTCLOUD_PORT:-8081}:80"
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(file_get_contents('http://127.0.0.1/status.php') ? 0 : 1);"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  demo_nextcloud_data:

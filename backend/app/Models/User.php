@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Models;
+
+use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
+
+#[Fillable(['name', 'email', 'password', 'role'])]
+#[Hidden(['password', 'remember_token'])]
+class User extends Authenticatable
+{
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, Notifiable;
+
+    public const ROLE_ADMIN = 'admin';
+
+    public const ROLE_USER = 'user';
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
+    /**
+     * Ordner, die diesem Nutzer in NextSearch freigegeben sind. Mit den
+     * Dateirechten der Nextcloud hat das nichts zu tun — siehe
+     * docs/permissions.md.
+     *
+     * @return BelongsToMany<WatchedFolder, $this>
+     */
+    public function folders(): BelongsToMany
+    {
+        return $this->belongsToMany(WatchedFolder::class, 'folder_user')
+            ->withTimestamps();
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    /**
+     * IDs aller Ordner, in denen dieser Nutzer suchen darf. `null` heißt
+     * „keine Einschränkung" und gilt nur für Administratoren.
+     *
+     * @return Collection<int, int>|null
+     */
+    public function accessibleFolderIds(): ?Collection
+    {
+        if ($this->isAdmin()) {
+            return null;
+        }
+
+        return $this->folders()
+            ->where('watched_folders.enabled', true)
+            ->pluck('watched_folders.id');
+    }
+
+    public function canAccessFolder(int $folderId): bool
+    {
+        $allowed = $this->accessibleFolderIds();
+
+        return $allowed === null || $allowed->contains($folderId);
+    }
+}

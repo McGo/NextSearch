@@ -1,0 +1,27 @@
+.env
+.env.*
+!.env.example
+# Die Testkonfiguration gehört ins Repo — sie enthält nur Wegwerf-Werte und
+# zeigt auf SQLite im Arbeitsspeicher.
+!backend/.env.testing
+
+backend/vendor/
+backend/storage/*.key
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+backend/bootstrap/cache/*
+backend/.phpunit.result.cache
+
+frontend/node_modules/
+frontend/.nuxt/
+frontend/.output/
+frontend/.data/
+frontend/dist/
+
+demo/seed/
+!demo/seed/.gitkeep
+
+.DS_Store
+*.log
