@@ -1,13 +1,17 @@
 name: Publish
 
-# Builds and pushes the app and web images to Docker Hub on a version tag
-# (e.g. v1.2.0), multi-arch (amd64 + arm64). Production then only pulls.
+# Builds and pushes the app and web images to Docker Hub, multi-arch
+# (amd64 + arm64). Production then only pulls.
+#
+#   push to main   -> tag `latest` (the bleeding edge)
+#   push a v* tag  -> tags `1.2.0` and `1.2` (a pinned release)
 #
 # Requires two repository secrets:
 #   DOCKERHUB_USERNAME  the Docker Hub account (mirkohaaser)
 #   DOCKERHUB_TOKEN     an access token with write scope for the repositories
 on:
   push:
+    branches: [main]
     tags: ['v*']
   workflow_dispatch:
     inputs:
@@ -48,9 +52,9 @@ jobs:
         with:
           images: ${{ matrix.image }}
           tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
             type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Build and push
