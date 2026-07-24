@@ -9,6 +9,7 @@ interface Folder {
   interval_minutes: number
   exclude_patterns: string[]
   last_crawled_at: string | null
+  image_url: string | null
   documents_count: number
   instance: { uuid: string, name: string }
 }
@@ -203,6 +204,15 @@ onMounted(load)
             >
               Ausgeschlossen: {{ folder.exclude_patterns.join(', ') }}
             </p>
+
+            <DirectoryImageUpload
+              class="mt-3"
+              :label="folder.label"
+              :current-url="folder.image_url"
+              :upload-path="`/api/admin/folders/${folder.uuid}/image`"
+              :remove-path="`/api/admin/folders/${folder.uuid}/image`"
+              @changed="load"
+            />
           </div>
 
           <div class="flex gap-2">

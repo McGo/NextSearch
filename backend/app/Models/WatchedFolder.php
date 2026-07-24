@@ -79,6 +79,11 @@ class WatchedFolder extends Model
         return trim($this->remote_path, '/');
     }
 
+    public function imageUrl(): ?string
+    {
+        return $this->image_key === null ? null : "/api/folders/{$this->uuid}/image";
+    }
+
     public function isDue(): bool
     {
         if (! $this->enabled) {

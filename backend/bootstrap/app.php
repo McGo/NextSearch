@@ -18,10 +18,18 @@ return Application::configure(basePath: dirname(__DIR__))
         // Der Nuxt-Container ist der einzige Aufrufer und steht im selben Netz.
         $middleware->trustProxies(at: '*');
 
+        // Reine API: nicht angemeldete Anfragen gehören mit 401 beantwortet,
+        // nicht auf eine Login-Seite umgeleitet. Ohne dieses `null` ruft die
+        // Auth-Middleware route('login') auf — die es hier nicht gibt — und
+        // wirft, sobald der Nitro-Proxy den Accept-Header nicht durchreicht.
+        $middleware->redirectGuestsTo(fn () => null);
+
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Alles rendert als JSON — unabhängig davon, welchen Accept-Header der
+        // Proxy weiterreicht.
         $exceptions->shouldRenderJsonWhen(fn (Request $request) => true);
     })->create();

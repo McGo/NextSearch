@@ -4,10 +4,18 @@ import type { SearchHit } from '~/composables/useSearch'
 const props = defineProps<{ hit: SearchHit }>()
 
 const { bytes, date, icon } = useFormat()
+const { folderImageById, instanceImageByName } = useDirectory()
 const previewFailed = ref(false)
 
 const previewUrl = computed(() =>
   props.hit.has_preview ? `/api/documents/${props.hit.uuid}/preview` : null
+)
+
+// Herkunfts-Bild: erst der Ordner, sonst die Instanz.
+const originImage = computed(() =>
+  folderImageById.value[props.hit.folder_id]
+  ?? instanceImageByName.value[props.hit.instance_name]
+  ?? null
 )
 </script>
 
@@ -43,8 +51,15 @@ const previewUrl = computed(() =>
         v-html="hit.highlighted_name || hit.name"
       />
 
-      <p class="text-xs text-muted truncate">
-        {{ hit.instance_name }} · {{ hit.folder_label }} · {{ hit.directory || '/' }}
+      <p class="flex items-center gap-1.5 text-xs text-muted truncate">
+        <img
+          v-if="originImage"
+          :src="originImage"
+          :alt="hit.folder_label"
+          class="size-4 shrink-0 rounded object-cover"
+          loading="lazy"
+        >
+        <span class="truncate">{{ hit.instance_name }} · {{ hit.folder_label }} · {{ hit.directory || '/' }}</span>
       </p>
 
       <p

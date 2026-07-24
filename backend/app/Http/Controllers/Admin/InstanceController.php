@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Exceptions\NextcloudException;
 use App\Http\Controllers\Controller;
 use App\Models\NextcloudInstance;
+use App\Services\Directory\DirectoryImageService;
 use App\Services\Nextcloud\ConnectionTester;
 use App\Services\Nextcloud\ReadOnlyWebDavClient;
 use App\Services\Nextcloud\RemoteEntry;
@@ -60,14 +61,16 @@ class InstanceController extends Controller
         return response()->json(['instance' => $this->present($instance->refresh())]);
     }
 
-    public function destroy(NextcloudInstance $instance, SearchIndex $index): JsonResponse
+    public function destroy(NextcloudInstance $instance, SearchIndex $index, DirectoryImageService $images): JsonResponse
     {
         // Erst aus dem Suchindex, dann aus der Datenbank — andersherum wüsste
         // niemand mehr, welche Dokumente zu entfernen wären.
         foreach ($instance->folders as $folder) {
             $index->forgetFolder($folder->id);
+            $images->delete($folder->image_key);
         }
 
+        $images->delete($instance->image_key);
         $instance->delete();
 
         return response()->json(['message' => 'Instanz entfernt.']);
@@ -76,6 +79,26 @@ class InstanceController extends Controller
     public function test(NextcloudInstance $instance, ConnectionTester $tester): JsonResponse
     {
         return response()->json($tester->test($instance));
+    }
+
+    public function uploadImage(Request $request, NextcloudInstance $instance, DirectoryImageService $images): JsonResponse
+    {
+        $request->validate([
+            'image' => ['required', 'image', 'mimes:jpeg,png,webp,gif', 'max:4096'],
+        ]);
+
+        $key = $images->store($request->file('image'), $images->instanceKey($instance->uuid));
+        $instance->forceFill(['image_key' => $key])->save();
+
+        return response()->json(['instance' => $this->present($instance->refresh())]);
+    }
+
+    public function deleteImage(NextcloudInstance $instance, DirectoryImageService $images): JsonResponse
+    {
+        $images->delete($instance->image_key);
+        $instance->forceFill(['image_key' => null])->save();
+
+        return response()->json(['instance' => $this->present($instance->refresh())]);
     }
 
     /**
@@ -140,6 +163,7 @@ class InstanceController extends Controller
             'health_state' => $instance->health_state,
             'health_message' => $instance->health_message,
             'health_checked_at' => $instance->health_checked_at?->toIso8601String(),
+            'image_url' => $instance->imageUrl(),
             'folders_count' => $instance->folders_count ?? $instance->folders()->count(),
             'documents_count' => $instance->documents_count ?? $instance->documents()->count(),
         ];

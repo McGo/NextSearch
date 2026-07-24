@@ -74,4 +74,9 @@ class NextcloudInstance extends Model
             .'/remote.php/dav/files/'
             .rawurlencode($this->username);
     }
+
+    public function imageUrl(): ?string
+    {
+        return $this->image_key === null ? null : "/api/instances/{$this->uuid}/image";
+    }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Document;
 use App\Models\NextcloudInstance;
 use App\Models\WatchedFolder;
+use App\Services\Directory\DirectoryImageService;
 use App\Services\Indexing\IndexRunner;
 use App\Services\Nextcloud\ReadOnlyWebDavClient;
 use App\Services\Search\SearchIndex;
@@ -85,12 +86,33 @@ class FolderController extends Controller
         return response()->json(['folder' => $this->present($folder->fresh('instance'))]);
     }
 
-    public function destroy(WatchedFolder $folder, SearchIndex $index): JsonResponse
+    public function destroy(WatchedFolder $folder, SearchIndex $index, DirectoryImageService $images): JsonResponse
     {
         $index->forgetFolder($folder->id);
+        $images->delete($folder->image_key);
         $folder->delete();
 
         return response()->json(['message' => 'Ordner entfernt.']);
+    }
+
+    public function uploadImage(Request $request, WatchedFolder $folder, DirectoryImageService $images): JsonResponse
+    {
+        $request->validate([
+            'image' => ['required', 'image', 'mimes:jpeg,png,webp,gif', 'max:4096'],
+        ]);
+
+        $key = $images->store($request->file('image'), $images->folderKey($folder->uuid));
+        $folder->forceFill(['image_key' => $key])->save();
+
+        return response()->json(['folder' => $this->present($folder->fresh('instance'))]);
+    }
+
+    public function deleteImage(WatchedFolder $folder, DirectoryImageService $images): JsonResponse
+    {
+        $images->delete($folder->image_key);
+        $folder->forceFill(['image_key' => null])->save();
+
+        return response()->json(['folder' => $this->present($folder->fresh('instance'))]);
     }
 
     /**
@@ -130,6 +152,7 @@ class FolderController extends Controller
             'interval_minutes' => $folder->interval_minutes,
             'exclude_patterns' => $folder->exclude_patterns ?? [],
             'last_crawled_at' => $folder->last_crawled_at?->toIso8601String(),
+            'image_url' => $folder->imageUrl(),
             'documents_count' => $folder->documents_count ?? $folder->documents()->count(),
             'instance' => [
                 'uuid' => $folder->instance->uuid,

@@ -11,6 +11,7 @@ interface Instance {
   health_state: 'ok' | 'failed' | 'unknown'
   health_message: string | null
   health_checked_at: string | null
+  image_url: string | null
   folders_count: number
   documents_count: number
 }
@@ -205,6 +206,15 @@ onMounted(load)
             <p class="text-xs text-muted mt-1">
               {{ instance.folders_count }} Ordner · {{ instance.documents_count.toLocaleString('de-DE') }} Dokumente
             </p>
+
+            <DirectoryImageUpload
+              class="mt-3"
+              :label="instance.name"
+              :current-url="instance.image_url"
+              :upload-path="`/api/admin/instances/${instance.uuid}/image`"
+              :remove-path="`/api/admin/instances/${instance.uuid}/image`"
+              @changed="load"
+            />
           </div>
 
           <div class="flex gap-2">

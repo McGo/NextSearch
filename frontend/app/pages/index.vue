@@ -2,12 +2,17 @@
 useHead({ title: 'Suche' })
 
 const { user } = useAuth()
+const { load: loadDirectory } = useDirectory()
 const {
   query, sort, page, filters, result, pending, error,
   activeFilterCount, run, toggleFilter, clearFilters
 } = useSearch()
 
-onMounted(run)
+onMounted(() => {
+  // Bilder für Treffer und Facetten; unabhängig vom Suchlauf.
+  loadDirectory()
+  run()
+})
 
 const hasNoShares = computed(() => user.value?.folder_count === 0)
 

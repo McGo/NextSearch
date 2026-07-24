@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\InstanceController;
 use App\Http\Controllers\Admin\StatusController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\SessionController;
+use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,12 @@ Route::prefix('api')->group(function () {
         Route::get('/documents/{document}/preview', [DocumentController::class, 'preview']);
         Route::get('/documents/{document}/content', [DocumentController::class, 'content']);
 
+        // Bilder von Instanzen und Ordnern — für jeden angemeldeten Nutzer, weil
+        // sie an Treffern und Facetten erscheinen. Der Upload bleibt Admin-Sache.
+        Route::get('/directory', [DirectoryController::class, 'index']);
+        Route::get('/instances/{instance}/image', [DirectoryController::class, 'instanceImage']);
+        Route::get('/folders/{folder}/image', [DirectoryController::class, 'folderImage']);
+
         Route::middleware('admin')->prefix('admin')->group(function () {
             Route::get('/status', StatusController::class);
 
@@ -43,9 +50,13 @@ Route::prefix('api')->group(function () {
                 ->except('show');
             Route::post('/instances/{instance}/test', [InstanceController::class, 'test']);
             Route::get('/instances/{instance}/browse', [InstanceController::class, 'browse']);
+            Route::post('/instances/{instance}/image', [InstanceController::class, 'uploadImage']);
+            Route::delete('/instances/{instance}/image', [InstanceController::class, 'deleteImage']);
 
             Route::apiResource('folders', FolderController::class)->except('show');
             Route::post('/folders/{folder}/reindex', [FolderController::class, 'reindex']);
+            Route::post('/folders/{folder}/image', [FolderController::class, 'uploadImage']);
+            Route::delete('/folders/{folder}/image', [FolderController::class, 'deleteImage']);
 
             Route::apiResource('users', UserController::class)->except('show');
             Route::put('/users/{user}/folders', [UserController::class, 'syncFolderAccess']);

@@ -13,6 +13,7 @@ const emit = defineEmits<{
 }>()
 
 const { facetValue } = useFormat()
+const { folderImageByLabel, instanceImageByName } = useDirectory()
 
 /** Lange Facetten zeigen zunächst nur die häufigsten Werte. */
 const expanded = ref<Record<string, boolean>>({})
@@ -24,6 +25,13 @@ function visible(facet: Facet) {
 
 function isSelected(props: Record<string, string[]>, facet: string, value: string) {
   return (props[facet] ?? []).includes(value)
+}
+
+// Bild zu einem Facettenwert — nur die Herkunfts-Facetten tragen eines.
+function facetImage(facet: string, value: string): string | null {
+  if (facet === 'folder_label') return folderImageByLabel.value[value] ?? null
+  if (facet === 'instance_name') return instanceImageByName.value[value] ?? null
+  return null
 }
 </script>
 
@@ -77,6 +85,13 @@ function isSelected(props: Record<string, string[]>, facet: string, value: strin
                 class="size-4 shrink-0"
                 :class="isSelected(selected, facet.name, entry.value) ? 'text-primary' : 'text-muted'"
               />
+              <img
+                v-if="facetImage(facet.name, entry.value)"
+                :src="facetImage(facet.name, entry.value)!"
+                :alt="entry.value"
+                class="size-4 shrink-0 rounded object-cover"
+                loading="lazy"
+              >
               <span class="truncate">{{ facetValue(facet.name, entry.value) }}</span>
             </span>
             <span class="text-xs text-muted tabular-nums">{{ entry.count }}</span>
