@@ -49,13 +49,14 @@ export default defineNuxtConfig({
   },
 
   // Contributors add a language by dropping a JSON file into i18n/locales and
-  // listing it here. See CONTRIBUTING.md.
+  // listing it here. The `flag` is the emoji shown in the language switcher.
+  // See CONTRIBUTING.md.
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',
     locales: [
-      { code: 'en', name: 'English', language: 'en', file: 'en.json' },
-      { code: 'de', name: 'Deutsch', language: 'de', file: 'de.json' }
+      { code: 'en', name: 'English', language: 'en', file: 'en.json', flag: '🇬🇧' },
+      { code: 'de', name: 'Deutsch', language: 'de', file: 'de.json', flag: '🇩🇪' }
     ],
     detectBrowserLanguage: {
       useCookie: true,

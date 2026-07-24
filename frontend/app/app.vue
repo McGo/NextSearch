@@ -26,11 +26,20 @@ const navigation = computed(() => [
     : [])
 ])
 
+// Locales carry a `flag` emoji (see nuxt.config); the switcher identifies every
+// language by it, and the header shows the active one.
+// `flag` is a custom locale property, read through a small cast while the
+// locale's own typing (its code union) is kept for setLocale.
+const flagOf = (l: unknown) => (l as { flag?: string } | undefined)?.flag
+
+const currentFlag = computed(() =>
+  flagOf(locales.value.find(l => l.code === locale.value)) ?? '🌐'
+)
+
 // One entry per configured locale; contributors extend this by adding a locale.
 const languageItems = computed(() =>
   locales.value.map(l => ({
-    label: l.name ?? l.code,
-    icon: l.code === locale.value ? 'i-lucide-check' : undefined,
+    label: `${flagOf(l) ?? ''} ${l.name ?? l.code}`.trim(),
     onSelect: () => setLocale(l.code)
   }))
 )
@@ -78,9 +87,15 @@ const userMenuItems = computed(() => [
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-lucide-languages"
+            class="gap-1"
             :aria-label="t('language.label')"
-          />
+          >
+            <span class="text-base leading-none">{{ currentFlag }}</span>
+            <UIcon
+              name="i-lucide-chevron-down"
+              class="size-3.5 text-dimmed"
+            />
+          </UButton>
         </UDropdownMenu>
 
         <UColorModeButton />
