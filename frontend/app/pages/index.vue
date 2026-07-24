@@ -6,8 +6,11 @@ const { user } = useAuth()
 const { load: loadDirectory } = useDirectory()
 const {
   query, sort, page, filters, result, pending, error,
-  activeFilterCount, run, toggleFilter, clearFilters
+  activeFilterCount, run, toggleFilter, clearFilters, applySaved
 } = useSearch()
+
+// A search is worth saving once there's a query or at least one active filter.
+const canSave = computed(() => query.value.trim() !== '' || activeFilterCount.value > 0)
 
 const sortItems = computed(() =>
   SORT_VALUES.map(value => ({ value: value as string, label: t(`search.sort.${value}`) }))
@@ -71,6 +74,17 @@ const filterDrawerOpen = ref(false)
         value-key="value"
         size="lg"
         class="w-32 sm:w-44 lg:w-48 shrink-0"
+      />
+    </div>
+
+    <!-- Save the current search, or recall a saved one. -->
+    <div class="mt-3">
+      <SavedSearches
+        :query="query"
+        :filters="filters"
+        :sort="sort"
+        :can-save="canSave"
+        @apply="applySaved"
       />
     </div>
 

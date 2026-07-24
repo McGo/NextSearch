@@ -111,12 +111,32 @@ export function useSearch() {
     page.value = 1
   }
 
+  // Recalls a saved search: set query, sort and filters at once and run a
+  // single search — the watchers below stay quiet while this happens.
+  function applySaved(saved: { query: string, filters: FilterState, sort: string }) {
+    suppress = true
+    query.value = saved.query || ''
+    sort.value = saved.sort || 'relevance'
+    filters.value = { ...saved.filters }
+    page.value = 1
+
+    nextTick(() => {
+      suppress = false
+      syncUrl()
+      run()
+    })
+  }
+
   const activeFilterCount = computed(() => countFilters(filters.value))
 
   // Typing shouldn't fire a request per keystroke; filters and sort act at once.
   let debounce: ReturnType<typeof setTimeout> | undefined
+  // Set while a saved search is being applied, so setting the fields doesn't
+  // fire one request per field before the single deliberate run.
+  let suppress = false
 
   watch(query, () => {
+    if (suppress) return
     page.value = 1
     clearTimeout(debounce)
     debounce = setTimeout(() => {
@@ -126,6 +146,7 @@ export function useSearch() {
   })
 
   watch([filters, sort, page], () => {
+    if (suppress) return
     syncUrl()
     run()
   }, { deep: true })
@@ -141,6 +162,7 @@ export function useSearch() {
     activeFilterCount,
     run,
     toggleFilter,
-    clearFilters
+    clearFilters,
+    applySaved
   }
 }

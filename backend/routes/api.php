@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\IndexingStatusController;
+use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,11 @@ Route::prefix('api')->group(function () {
 
         Route::get('/search', SearchController::class);
         Route::get('/indexing-status', IndexingStatusController::class);
+
+        // Saved searches — scoped to the signed-in user inside the controller.
+        Route::get('/saved-searches', [SavedSearchController::class, 'index']);
+        Route::post('/saved-searches', [SavedSearchController::class, 'store']);
+        Route::delete('/saved-searches/{savedSearch}', [SavedSearchController::class, 'destroy']);
 
         Route::get('/documents/{document}', [DocumentController::class, 'show']);
         Route::get('/documents/{document}/raw', [DocumentController::class, 'raw']);

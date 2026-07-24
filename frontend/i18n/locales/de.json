@@ -283,5 +283,19 @@
   "indexing": {
     "title": "Indexierung läuft",
     "desc": "Neue Dokumente werden noch verarbeitet. Die Treffer füllen sich weiter — {pending} in der Warteschlange, {indexed} bislang indiziert."
+  },
+  "saved": {
+    "save": "Suche speichern",
+    "title": "Gespeicherte Suchen",
+    "saveTitle": "Diese Suche speichern",
+    "nameLabel": "Name",
+    "namePlaceholder": "z. B. Rechnungen 2019",
+    "nameRequired": "Gib der Suche einen Namen.",
+    "saved": "Suche gespeichert.",
+    "saveFailed": "Die Suche ließ sich nicht speichern.",
+    "remove": "Löschen",
+    "removeFailed": "Die Suche ließ sich nicht löschen.",
+    "everything": "Alles",
+    "filterCount": "{count} Filter | {count} Filter"
   }
 }

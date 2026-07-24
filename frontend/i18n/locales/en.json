@@ -283,5 +283,19 @@
   "indexing": {
     "title": "Indexing in progress",
     "desc": "New documents are still being processed. Results keep filling in — {pending} queued, {indexed} indexed so far."
+  },
+  "saved": {
+    "save": "Save search",
+    "title": "Saved searches",
+    "saveTitle": "Save this search",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. Invoices 2019",
+    "nameRequired": "Give the search a name.",
+    "saved": "Search saved.",
+    "saveFailed": "Could not save the search.",
+    "remove": "Delete",
+    "removeFailed": "Could not delete the search.",
+    "everything": "Everything",
+    "filterCount": "{count} filter | {count} filters"
   }
 }
