@@ -8,6 +8,10 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --ignore-scripts
 
 COPY frontend/ ./
+# The release version, shown in the footer. Passed by CI from the git tag;
+# defaults to the package version for local builds.
+ARG APP_VERSION=
+ENV NUXT_PUBLIC_APP_VERSION=$APP_VERSION
 RUN npx nuxt prepare && npm run build
 
 # ---------------------------------------------------------------------------

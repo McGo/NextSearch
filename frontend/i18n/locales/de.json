@@ -16,13 +16,16 @@
     "users": "Benutzer",
     "status": "Status",
     "github": "Quelltext auf GitHub",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "savedSearches": "Gespeicherte Suchen",
+    "appearance": "Darstellung"
   },
   "userMenu": {
     "changePassword": "Passwort ändern",
     "logout": "Abmelden",
     "admin": "Verwaltung",
-    "userManagement": "Benutzerverwaltung"
+    "userManagement": "Benutzerverwaltung",
+    "account": "Benutzereinstellungen"
   },
   "footer": {
     "note": "Freigaben werden in {app} gepflegt und gelten unabhängig von den Dateirechten der jeweiligen Nextcloud."
@@ -291,11 +294,18 @@
       "clearConfirmBody": "{count} wartende Jobs werden verworfen. Bereits indizierte Dokumente bleiben unberührt — noch nicht Verarbeitetes wird beim nächsten Durchlauf wieder aufgegriffen.",
       "clearConfirmAction": "Warteschlange leeren",
       "cleared": "{count} Jobs entfernt.",
-      "clearFailed": "Die Warteschlange ließ sich nicht leeren."
+      "clearFailed": "Die Warteschlange ließ sich nicht leeren.",
+      "rebuildIndex": "Index neu aufbauen",
+      "clearIndex": "Index leeren",
+      "indexActionFailed": "Die Aktion ließ sich nicht ausführen.",
+      "rebuildConfirmTitle": "Suchindex neu aufbauen?",
+      "rebuildConfirmBody": "Index und alle Dokument-Einträge werden verworfen, dann wird jeder Ordner von Grund auf neu gecrawlt und verarbeitet. Das dauert — die Suche bleibt unvollständig, bis es durch ist.",
+      "clearIndexConfirmTitle": "Suchindex leeren?",
+      "clearIndexConfirmBody": "Jedes Dokument wird aus dem Index und seinem Eintrag entfernt. Die Suche liefert nichts, bis du neu aufbaust oder die Ordner erneut gecrawlt werden. Das lässt sich nicht rückgängig machen."
     },
     "settings": {
-      "title": "Einstellungen",
-      "subtitle": "Erscheinungsbild dieser Installation.",
+      "title": "Darstellung",
+      "subtitle": "Aussehen dieser Installation — Name, Logo und Icons.",
       "brand": {
         "title": "Branding",
         "desc": "Name und Logo im Header sowie Favicon und App-Icons."
@@ -332,6 +342,24 @@
     "remove": "Löschen",
     "removeFailed": "Die Suche ließ sich nicht löschen.",
     "everything": "Alles",
-    "filterCount": "{count} Filter | {count} Filter"
+    "filterCount": "{count} Filter | {count} Filter",
+    "pageSubtitle": "Eine gespeicherte Suche aufrufen oder entfernen.",
+    "recall": "Öffnen",
+    "empty": "Noch keine gespeicherten Suchen. Speichere eine von der Suchseite aus."
+  },
+  "account": {
+    "title": "Benutzereinstellungen",
+    "subtitle": "Dein Konto und wie die App für dich aussieht.",
+    "tabs": {
+      "password": "Passwort",
+      "appearance": "Sprache & Design"
+    },
+    "language": "Sprache",
+    "theme": {
+      "title": "Design",
+      "system": "System",
+      "light": "Hell",
+      "dark": "Dunkel"
+    }
   }
 }

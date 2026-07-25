@@ -75,6 +75,34 @@ async function confirmClear() {
   }
 }
 
+// Whole-index maintenance — clear or rebuild, each behind a confirmation.
+const indexAction = ref<'clear' | 'rebuild' | null>(null)
+const indexBusy = ref(false)
+
+const indexModalOpen = computed({
+  get: () => indexAction.value !== null,
+  set: (open: boolean) => { if (!open) indexAction.value = null }
+})
+
+async function confirmIndexAction() {
+  if (!indexAction.value) return
+  indexBusy.value = true
+
+  try {
+    const res = await api.post<{ message: string }>(`/api/admin/index/${indexAction.value}`)
+    toast.add({ title: res.message, color: 'success' })
+    indexAction.value = null
+    await load()
+  } catch (e) {
+    toast.add({
+      title: e instanceof ApiError ? e.message : t('admin.status.indexActionFailed'),
+      color: 'error'
+    })
+  } finally {
+    indexBusy.value = false
+  }
+}
+
 async function load() {
   try {
     status.value = await api.get<Status>('/api/admin/status')
@@ -251,6 +279,24 @@ function runStateLabel(state: IndexRun['state']): string {
             <p class="mt-1 text-xs text-muted leading-relaxed">
               {{ t('admin.status.indexStage.desc') }}
             </p>
+            <div class="mt-2 flex flex-wrap gap-x-1 gap-y-0 -ml-1.5">
+              <UButton
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                icon="i-lucide-rotate-ccw"
+                :label="t('admin.status.rebuildIndex')"
+                @click="indexAction = 'rebuild'"
+              />
+              <UButton
+                size="xs"
+                color="error"
+                variant="ghost"
+                icon="i-lucide-trash-2"
+                :label="t('admin.status.clearIndex')"
+                @click="indexAction = 'clear'"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -371,6 +417,39 @@ function runStateLabel(state: IndexRun['state']): string {
             :loading="clearing"
             :label="t('admin.status.clearConfirmAction')"
             @click="confirmClear"
+          />
+        </div>
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="indexModalOpen"
+      :title="indexAction === 'rebuild'
+        ? t('admin.status.rebuildConfirmTitle')
+        : t('admin.status.clearIndexConfirmTitle')"
+    >
+      <template #body>
+        <p class="text-sm text-muted">
+          {{ indexAction === 'rebuild'
+            ? t('admin.status.rebuildConfirmBody')
+            : t('admin.status.clearIndexConfirmBody') }}
+        </p>
+
+        <div class="mt-6 flex justify-end gap-2">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :label="t('common.cancel')"
+            @click="indexModalOpen = false"
+          />
+          <UButton
+            :color="indexAction === 'rebuild' ? 'primary' : 'error'"
+            :icon="indexAction === 'rebuild' ? 'i-lucide-rotate-ccw' : 'i-lucide-trash-2'"
+            :loading="indexBusy"
+            :label="indexAction === 'rebuild'
+              ? t('admin.status.rebuildIndex')
+              : t('admin.status.clearIndex')"
+            @click="confirmIndexAction"
           />
         </div>
       </template>

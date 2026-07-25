@@ -2,7 +2,7 @@
 const config = useRuntimeConfig()
 const { user, isAdmin, logout } = useAuth()
 const route = useRoute()
-const { t, locale, locales, setLocale } = useI18n()
+const { t, locale } = useI18n()
 const { state: branding, load: loadBranding } = useBranding()
 
 onMounted(loadBranding)
@@ -25,48 +25,32 @@ useHead({
 })
 
 const showChrome = computed(() => route.path !== '/login')
-const passwordModalOpen = ref(false)
 
+// The header/bottom navigation — the same two entries for everyone. Everything
+// admin lives in the user menu instead.
 const navigation = computed(() => [
   { label: t('nav.search'), to: '/', icon: 'i-lucide-search' },
-  ...(isAdmin.value
-    ? [
-        { label: t('nav.instances'), to: '/admin/instances', icon: 'i-lucide-cloud' },
-        { label: t('nav.folders'), to: '/admin/folders', icon: 'i-lucide-folder-tree' },
-        { label: t('nav.status'), to: '/admin/status', icon: 'i-lucide-activity' }
-      ]
-    : [])
+  { label: t('nav.savedSearches'), to: '/saved-searches', icon: 'i-lucide-bookmark' }
 ])
 
-// Locales carry a `flag` emoji (see nuxt.config); the switcher identifies every
-// language by it, and the header shows the active one.
-// `flag` is a custom locale property, read through a small cast while the
-// locale's own typing (its code union) is kept for setLocale.
-const flagOf = (l: unknown) => (l as { flag?: string } | undefined)?.flag
-
-const currentFlag = computed(() =>
-  flagOf(locales.value.find(l => l.code === locale.value)) ?? '🌐'
-)
-
-// One entry per configured locale; contributors extend this by adding a locale.
-const languageItems = computed(() =>
-  locales.value.map(l => ({
-    label: `${flagOf(l) ?? ''} ${l.name ?? l.code}`.trim(),
-    onSelect: () => setLocale(l.code)
-  }))
-)
+function isActive(to: string): boolean {
+  return to === '/' ? route.path === '/' : route.path.startsWith(to)
+}
 
 const userMenuItems = computed(() => [
   [{ label: user.value?.email ?? '', type: 'label' as const }],
   [
-    { label: t('userMenu.changePassword'), icon: 'i-lucide-key-round', onSelect: () => { passwordModalOpen.value = true } }
+    { label: t('userMenu.account'), icon: 'i-lucide-user-cog', to: '/account' }
   ],
-  // Admin management, its own group with a heading, below the account actions.
+  // Administration, its own group with a heading, below the account entry.
   ...(isAdmin.value
     ? [[
         { label: t('userMenu.admin'), type: 'label' as const },
         { label: t('userMenu.userManagement'), icon: 'i-lucide-users', to: '/admin/users' },
-        { label: t('nav.settings'), icon: 'i-lucide-settings', to: '/admin/settings' }
+        { label: t('nav.instances'), icon: 'i-lucide-cloud', to: '/admin/instances' },
+        { label: t('nav.folders'), icon: 'i-lucide-folder-tree', to: '/admin/folders' },
+        { label: t('nav.status'), icon: 'i-lucide-activity', to: '/admin/status' },
+        { label: t('nav.appearance'), icon: 'i-lucide-palette', to: '/admin/settings' }
       ]]
     : []),
   [
@@ -77,7 +61,10 @@ const userMenuItems = computed(() => [
 
 <template>
   <UApp>
-    <UHeader v-if="showChrome">
+    <UHeader
+      v-if="showChrome"
+      :toggle="false"
+    >
       <template #left>
         <NuxtLink
           to="/"
@@ -101,34 +88,6 @@ const userMenuItems = computed(() => [
       <UNavigationMenu :items="navigation" />
 
       <template #right>
-        <UButton
-          v-if="config.public.repoUrl"
-          :to="config.public.repoUrl"
-          target="_blank"
-          rel="noopener"
-          color="neutral"
-          variant="ghost"
-          icon="i-simple-icons-github"
-          :aria-label="t('nav.github')"
-        />
-
-        <UDropdownMenu :items="languageItems">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            class="gap-1"
-            :aria-label="t('language.label')"
-          >
-            <span class="text-base leading-none">{{ currentFlag }}</span>
-            <UIcon
-              name="i-lucide-chevron-down"
-              class="size-3.5 text-dimmed"
-            />
-          </UButton>
-        </UDropdownMenu>
-
-        <UColorModeButton />
-
         <UDropdownMenu
           v-if="user"
           :items="userMenuItems"
@@ -141,29 +100,57 @@ const userMenuItems = computed(() => [
           />
         </UDropdownMenu>
       </template>
-
-      <template #body>
-        <UNavigationMenu
-          :items="navigation"
-          orientation="vertical"
-        />
-      </template>
     </UHeader>
 
-    <UMain>
+    <!-- Extra bottom padding on mobile so content clears the bottom nav bar. -->
+    <UMain :class="showChrome ? 'pb-20 md:pb-0' : ''">
       <NuxtPage />
     </UMain>
 
-    <PasswordChangeModal
-      v-if="user"
-      v-model:open="passwordModalOpen"
-    />
+    <!-- Mobile navigation: a bottom bar instead of the header nav, so it stays
+         reachable as an installed PWA. -->
+    <nav
+      v-if="showChrome"
+      class="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-default bg-default/95 backdrop-blur"
+      style="padding-bottom: env(safe-area-inset-bottom)"
+    >
+      <div class="flex">
+        <NuxtLink
+          v-for="item in navigation"
+          :key="item.to"
+          :to="item.to"
+          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 text-xs"
+          :class="isActive(item.to) ? 'text-primary' : 'text-muted'"
+        >
+          <UIcon
+            :name="item.icon"
+            class="size-5"
+          />
+          {{ item.label }}
+        </NuxtLink>
+      </div>
+    </nav>
 
-    <UFooter v-if="showChrome">
+    <UFooter>
       <template #left>
-        <p class="text-xs text-muted">
-          {{ t('footer.note', { app: config.public.appName }) }}
-        </p>
+        <div class="flex items-center gap-3 text-xs text-muted">
+          <UButton
+            v-if="config.public.repoUrl"
+            :to="config.public.repoUrl"
+            target="_blank"
+            rel="noopener"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            icon="i-simple-icons-github"
+            :aria-label="t('nav.github')"
+          />
+          <span>{{ siteName }}</span>
+        </div>
+      </template>
+
+      <template #right>
+        <span class="text-xs text-muted font-mono">v{{ config.public.appVersion }}</span>
       </template>
     </UFooter>
   </UApp>

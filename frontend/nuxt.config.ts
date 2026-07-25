@@ -1,4 +1,9 @@
+import pkg from './package.json'
+
 const backendUrl = process.env.NUXT_BACKEND_URL || 'http://app:8080'
+// Shown in the footer. CI bakes the release version via NUXT_PUBLIC_APP_VERSION
+// (see the web Dockerfile); locally it falls back to the package version.
+const appVersion = process.env.NUXT_PUBLIC_APP_VERSION || pkg.version
 
 export default defineNuxtConfig({
   modules: [
@@ -41,6 +46,7 @@ export default defineNuxtConfig({
     backendUrl,
     public: {
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'NextSearch',
+      appVersion,
       repoUrl: process.env.NUXT_PUBLIC_REPO_URL || 'https://github.com/McGo/NextSearch'
     }
   },

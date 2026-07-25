@@ -16,13 +16,16 @@
     "users": "Users",
     "status": "Status",
     "github": "Source on GitHub",
-    "settings": "Settings"
+    "settings": "Settings",
+    "savedSearches": "Saved searches",
+    "appearance": "Appearance"
   },
   "userMenu": {
     "changePassword": "Change password",
     "logout": "Sign out",
     "admin": "Administration",
-    "userManagement": "User management"
+    "userManagement": "User management",
+    "account": "User settings"
   },
   "footer": {
     "note": "Sharing is managed in {app} and applies independently of each Nextcloud's file permissions."
@@ -291,11 +294,18 @@
       "clearConfirmBody": "{count} queued jobs will be discarded. Documents already in the index stay untouched — anything not yet processed is picked up again on the next run.",
       "clearConfirmAction": "Clear queue",
       "cleared": "{count} jobs cleared.",
-      "clearFailed": "Could not clear the queue."
+      "clearFailed": "Could not clear the queue.",
+      "rebuildIndex": "Rebuild index",
+      "clearIndex": "Clear index",
+      "indexActionFailed": "The action could not be completed.",
+      "rebuildConfirmTitle": "Rebuild the search index?",
+      "rebuildConfirmBody": "The index and all document records are dropped, then every folder is crawled and processed from scratch. This takes a while — search stays incomplete until it finishes.",
+      "clearIndexConfirmTitle": "Clear the search index?",
+      "clearIndexConfirmBody": "Every document is removed from the index and its record. Search returns nothing until you rebuild or the folders are crawled again. This cannot be undone."
     },
     "settings": {
-      "title": "Settings",
-      "subtitle": "Appearance of this installation.",
+      "title": "Appearance",
+      "subtitle": "How this installation looks — name, logo and icons.",
       "brand": {
         "title": "Branding",
         "desc": "The name and logo shown in the header, plus the favicon and app icons."
@@ -332,6 +342,24 @@
     "remove": "Delete",
     "removeFailed": "Could not delete the search.",
     "everything": "Everything",
-    "filterCount": "{count} filter | {count} filters"
+    "filterCount": "{count} filter | {count} filters",
+    "pageSubtitle": "Recall a saved search or remove it.",
+    "recall": "Open",
+    "empty": "No saved searches yet. Save one from the search page."
+  },
+  "account": {
+    "title": "User settings",
+    "subtitle": "Your account and how the app looks for you.",
+    "tabs": {
+      "password": "Password",
+      "appearance": "Language & theme"
+    },
+    "language": "Language",
+    "theme": {
+      "title": "Theme",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
   }
 }
