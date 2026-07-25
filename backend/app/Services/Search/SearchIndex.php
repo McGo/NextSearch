@@ -107,6 +107,24 @@ class SearchIndex
     }
 
     /**
+     * Removes all documents of an instance — on deletion. Catches every hit by
+     * instance_id, even one whose folder row is already gone.
+     */
+    public function forgetInstance(int $instanceId): void
+    {
+        $this->client->index($this->name())->deleteDocuments(['filter' => 'instance_id = '.$instanceId]);
+    }
+
+    /**
+     * Empties the whole index. The counterpart to a full rebuild, and the way
+     * to clear out documents orphaned by an interrupted deletion.
+     */
+    public function flush(): void
+    {
+        $this->client->index($this->name())->deleteAllDocuments();
+    }
+
+    /**
      * @param  array<string, mixed>  $options
      * @return array<string, mixed>
      */

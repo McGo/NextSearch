@@ -33,6 +33,10 @@ return [
     'instance' => [
         'removed' => 'Instanz entfernt.',
     ],
+    'index' => [
+        'cleared' => 'Suchindex geleert.',
+        'rebuilding' => 'Index wird neu aufgebaut — :count Ordner eingereiht.',
+    ],
     'folder' => [
         'not_a_directory' => 'Der angegebene Pfad ist kein Ordner.',
         'removed' => 'Ordner entfernt.',

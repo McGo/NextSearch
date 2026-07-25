@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\FolderController;
+use App\Http\Controllers\Admin\IndexController;
 use App\Http\Controllers\Admin\InstanceController;
 use App\Http\Controllers\Admin\QueueController;
 use App\Http\Controllers\Admin\StatusController;
@@ -62,6 +63,8 @@ Route::prefix('api')->group(function () {
         Route::middleware('admin')->prefix('admin')->group(function () {
             Route::get('/status', StatusController::class);
             Route::post('/queues/{queue}/clear', [QueueController::class, 'clear']);
+            Route::post('/index/clear', [IndexController::class, 'clear']);
+            Route::post('/index/rebuild', [IndexController::class, 'rebuild']);
 
             Route::post('/branding/logo', [BrandingController::class, 'upload']);
             Route::delete('/branding/logo', [BrandingController::class, 'destroy']);

@@ -33,6 +33,10 @@ return [
     'instance' => [
         'removed' => 'Instance removed.',
     ],
+    'index' => [
+        'cleared' => 'Search index cleared.',
+        'rebuilding' => 'Rebuilding the index — :count folder(s) queued.',
+    ],
     'folder' => [
         'not_a_directory' => 'The given path is not a folder.',
         'removed' => 'Folder removed.',

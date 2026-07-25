@@ -64,9 +64,11 @@ class InstanceController extends Controller
     public function destroy(NextcloudInstance $instance, SearchIndex $index, DirectoryImageService $images): JsonResponse
     {
         // First out of the search index, then the database — the other way
-        // round nobody would know which documents to remove.
+        // round nobody would know which documents to remove. By instance_id, so
+        // every hit goes even if a folder row is already gone.
+        $index->forgetInstance($instance->id);
+
         foreach ($instance->folders as $folder) {
-            $index->forgetFolder($folder->id);
             $images->delete($folder->image_key);
         }
 
