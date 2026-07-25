@@ -8,7 +8,7 @@ Images for each release are published to Docker Hub as
 `mirkohaaser/nextsearch-app` and `mirkohaaser/nextsearch-web`, multi-arch
 (amd64 + arm64).
 
-## [Unreleased]
+## [0.2.1] — 2026-07-25
 
 ### Added
 
@@ -82,5 +82,6 @@ Gotenberg, MinIO, Postgres and Redis.
   documented in `docs/hosting.md`.
 - **Docker Hub publishing** (multi-arch) via a GitHub Actions workflow.
 
+[0.2.1]: https://github.com/McGo/NextSearch/releases/tag/v0.2.1
 [0.2.0]: https://github.com/McGo/NextSearch/releases/tag/v0.2.0
 [0.1.0]: https://github.com/McGo/NextSearch/releases/tag/v0.1.0
