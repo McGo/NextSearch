@@ -25,3 +25,7 @@ demo/seed/
 
 .DS_Store
 *.log
+
+# Claude Code — per-developer local files, never shared
+.claude/settings.local.json
+CLAUDE.local.md
