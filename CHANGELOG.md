@@ -8,6 +8,16 @@ Images for each release are published to Docker Hub as
 `mirkohaaser/nextsearch-app` and `mirkohaaser/nextsearch-web`, multi-arch
 (amd64 + arm64).
 
+## [0.2.3] — 2026-07-25
+
+### Fixed
+
+- **Redis Sentinel connected as a cluster and failed.** The `cluster` client
+  option was always set, so in Sentinel mode Predis built a cluster client and
+  fired `CLUSTER SLOTS` at the sentinels ("No connections left in the pool").
+  The option is now omitted entirely when `REDIS_SENTINELS` is set; a single
+  Redis is unaffected.
+
 ## [0.2.2] — 2026-07-25
 
 ### Fixed
@@ -92,6 +102,7 @@ Gotenberg, MinIO, Postgres and Redis.
   documented in `docs/hosting.md`.
 - **Docker Hub publishing** (multi-arch) via a GitHub Actions workflow.
 
+[0.2.3]: https://github.com/McGo/NextSearch/releases/tag/v0.2.3
 [0.2.2]: https://github.com/McGo/NextSearch/releases/tag/v0.2.2
 [0.2.1]: https://github.com/McGo/NextSearch/releases/tag/v0.2.1
 [0.2.0]: https://github.com/McGo/NextSearch/releases/tag/v0.2.0

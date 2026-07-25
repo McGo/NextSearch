@@ -192,11 +192,15 @@ return [
         // phpredis default. Switches automatically when REDIS_SENTINELS is set.
         'client' => env('REDIS_SENTINELS') ? 'predis' : env('REDIS_CLIENT', 'phpredis'),
 
-        'options' => [
-            'cluster' => env('REDIS_CLUSTER', 'redis'),
+        // In Sentinel mode the `cluster` option must be absent entirely — with
+        // it, Predis builds a cluster client and fires CLUSTER SLOTS at the
+        // sentinels ("No connections left in the pool"). array_filter drops the
+        // null cluster while keeping persistent => false.
+        'options' => array_filter([
+            'cluster' => env('REDIS_SENTINELS') ? null : env('REDIS_CLUSTER', 'redis'),
             'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
-        ],
+        ], static fn ($value) => ! is_null($value)),
 
         'default' => $redisConnection(env('REDIS_DB', '0')),
 
