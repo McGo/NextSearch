@@ -8,6 +8,16 @@ Images for each release are published to Docker Hub as
 `mirkohaaser/nextsearch-app` and `mirkohaaser/nextsearch-web`, multi-arch
 (amd64 + arm64).
 
+## [Unreleased]
+
+### Fixed
+
+- **Orphaned search hits no longer break.** A document left in the search index
+  after its database row was gone showed a raw model-binding error on click. It
+  is now removed from the index the moment it's opened (and reported as "no
+  longer available"), and a scheduled `nextsearch:reconcile` sweeps any such
+  orphans out of the index daily.
+
 ## [0.2.1] — 2026-07-25
 
 ### Added

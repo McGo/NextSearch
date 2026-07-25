@@ -4,6 +4,7 @@ namespace App\Services\Search;
 
 use App\Support\DocumentDto;
 use Meilisearch\Client;
+use Meilisearch\Contracts\DocumentsQuery;
 use Meilisearch\Exceptions\ApiException;
 
 /**
@@ -122,6 +123,34 @@ class SearchIndex
     public function flush(): void
     {
         $this->client->index($this->name())->deleteAllDocuments();
+    }
+
+    /**
+     * A page of document ids in the index — for reconciling against the
+     * database. Returns fewer than $limit ids on the last page.
+     *
+     * @return list<string>
+     */
+    public function documentIdPage(int $offset, int $limit): array
+    {
+        $query = (new DocumentsQuery)->setOffset($offset)->setLimit($limit)->setFields(['id']);
+        $results = $this->client->index($this->name())->getDocuments($query);
+
+        return array_map(fn (array $doc) => (string) $doc['id'], $results->getResults());
+    }
+
+    /**
+     * Removes documents by their raw index id (a uuid without dashes).
+     *
+     * @param  list<string>  $ids
+     */
+    public function deleteByIds(array $ids): void
+    {
+        if ($ids === []) {
+            return;
+        }
+
+        $this->client->index($this->name())->deleteDocuments(array_values($ids));
     }
 
     /**

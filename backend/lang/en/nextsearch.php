@@ -29,6 +29,7 @@ return [
         'too_large' => 'The file is too large for a preview.',
         'no_preview' => 'There is no preview image for this document.',
         'no_access' => 'This folder is not shared with you.',
+        'gone' => 'This document is no longer available.',
     ],
     'instance' => [
         'removed' => 'Instance removed.',

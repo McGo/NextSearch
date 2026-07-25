@@ -29,6 +29,7 @@ return [
         'too_large' => 'Die Datei ist für die Vorschau zu groß.',
         'no_preview' => 'Für dieses Dokument gibt es kein Vorschaubild.',
         'no_access' => 'Für diesen Ordner besteht keine Freigabe.',
+        'gone' => 'Dieses Dokument ist nicht mehr verfügbar.',
     ],
     'instance' => [
         'removed' => 'Instanz entfernt.',
