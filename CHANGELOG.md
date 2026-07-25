@@ -8,6 +8,15 @@ Images for each release are published to Docker Hub as
 `mirkohaaser/nextsearch-app` and `mirkohaaser/nextsearch-web`, multi-arch
 (amd64 + arm64).
 
+## [Unreleased]
+
+### Added
+
+- **Highly available Redis via Sentinel.** Set `REDIS_SENTINELS` (and
+  `REDIS_SENTINEL_SERVICE`) to run queue, cache and session against a Sentinel
+  cluster; the client switches to predis automatically. A single Redis keeps the
+  phpredis path unchanged. See `docs/hosting.md`.
+
 ## [0.2.0] — 2026-07-25
 
 ### Added

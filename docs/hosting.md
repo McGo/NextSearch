@@ -32,6 +32,23 @@ Redis, Meilisearch and MinIO have no published port by design; an external
 Redis or Meilisearch must be reachable from the application containers over the
 network you run them on.
 
+### Highly available Redis (Sentinel)
+
+For a failover-capable Redis, point the app at your sentinels instead of a
+single host:
+
+```
+REDIS_SENTINELS=sentinel1:26379,sentinel2:26379,sentinel3:26379
+REDIS_SENTINEL_SERVICE=mymaster
+REDIS_PASSWORD=your-data-node-password
+```
+
+The Redis client then switches to `predis` automatically (Sentinel isn't
+supported by phpredis in Laravel without a custom connector), discovers the
+current master through the sentinels, and follows a failover. `REDIS_HOST` is
+ignored while `REDIS_SENTINELS` is set. Queue, cache and session all ride on the
+same connection, so they all become highly available together.
+
 ### Real S3 instead of MinIO
 
 Point the `AWS_*` values at your provider, clear `AWS_ENDPOINT`, and set

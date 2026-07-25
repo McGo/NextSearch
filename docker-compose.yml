@@ -22,6 +22,10 @@ x-app-env: &app-env
   REDIS_HOST: ${REDIS_HOST:-redis}
   REDIS_PORT: ${REDIS_PORT:-6379}
   REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+  # High availability: set these to run against Redis Sentinel instead of a
+  # single host (see docs/hosting.md). Empty keeps the single-Redis path.
+  REDIS_SENTINELS: ${REDIS_SENTINELS:-}
+  REDIS_SENTINEL_SERVICE: ${REDIS_SENTINEL_SERVICE:-mymaster}
   CACHE_STORE: redis
   QUEUE_CONNECTION: redis
   SESSION_DRIVER: redis

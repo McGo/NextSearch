@@ -3,6 +3,49 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+/*
+ * Builds a Redis connection. With REDIS_SENTINELS set it returns a Predis
+ * Sentinel configuration for a highly available Redis (a comma-separated list
+ * of sentinel host:port, plus the master service name); otherwise the plain
+ * host/port connection used by the bundled single Redis.
+ *
+ * Note: Laravel's Predis connector pulls only the `options` key as client
+ * options and treats every other array entry as a sentinel node — so
+ * replication/service/parameters must live under `options`, not at the top.
+ */
+$redisConnection = function (string $database) {
+    $parameters = [
+        'username' => env('REDIS_USERNAME'),
+        'password' => env('REDIS_PASSWORD'),
+        'database' => $database,
+    ];
+
+    if ($sentinels = env('REDIS_SENTINELS')) {
+        $nodes = array_map(
+            fn (string $node) => 'tcp://'.trim($node),
+            explode(',', $sentinels),
+        );
+
+        return array_merge($nodes, [
+            'options' => [
+                'replication' => 'sentinel',
+                'service' => env('REDIS_SENTINEL_SERVICE', 'mymaster'),
+                'parameters' => $parameters,
+            ],
+        ]);
+    }
+
+    return array_merge($parameters, [
+        'url' => env('REDIS_URL'),
+        'host' => env('REDIS_HOST', '127.0.0.1'),
+        'port' => env('REDIS_PORT', '6379'),
+        'max_retries' => env('REDIS_MAX_RETRIES', 3),
+        'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
+        'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
+        'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+    ]);
+};
+
 return [
 
     /*
@@ -145,7 +188,9 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+        // Sentinel needs the predis client; a single Redis keeps the faster
+        // phpredis default. Switches automatically when REDIS_SENTINELS is set.
+        'client' => env('REDIS_SENTINELS') ? 'predis' : env('REDIS_CLIENT', 'phpredis'),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
@@ -153,31 +198,9 @@ return [
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 
-        'default' => [
-            'url' => env('REDIS_URL'),
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_DB', '0'),
-            'max_retries' => env('REDIS_MAX_RETRIES', 3),
-            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
-            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
-            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
-        ],
+        'default' => $redisConnection(env('REDIS_DB', '0')),
 
-        'cache' => [
-            'url' => env('REDIS_URL'),
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_CACHE_DB', '1'),
-            'max_retries' => env('REDIS_MAX_RETRIES', 3),
-            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
-            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
-            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
-        ],
+        'cache' => $redisConnection(env('REDIS_CACHE_DB', '1')),
 
     ],
 
