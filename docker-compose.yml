@@ -31,8 +31,8 @@ x-app-env: &app-env
   SESSION_DRIVER: redis
   SESSION_SAME_SITE: lax
 
-  SCOUT_DRIVER: meilisearch
-  SCOUT_QUEUE: "true"
+  # Indexing goes through the native Meilisearch client, not Laravel Scout —
+  # there are no SCOUT_* variables on purpose.
   MEILISEARCH_HOST: ${MEILISEARCH_HOST:-http://meilisearch:7700}
   MEILISEARCH_KEY: ${MEILI_MASTER_KEY:?MEILI_MASTER_KEY fehlt}
 

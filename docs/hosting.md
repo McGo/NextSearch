@@ -49,6 +49,13 @@ current master through the sentinels, and follows a failover. `REDIS_HOST` is
 ignored while `REDIS_SENTINELS` is set. Queue, cache and session all ride on the
 same connection, so they all become highly available together.
 
+**ACL note:** Predis runs the `ROLE` command on the data nodes to verify the
+sentinel-discovered master. `ROLE` is in Redis's `@dangerous` ACL category, so a
+restrictive ACL user (`+@all -@dangerous`) will fail with a permission error and
+the app returns 500 on every route. Grant the user `ROLE` explicitly — e.g.
+`... +@all -@dangerous +role`. The sentinels themselves need no client auth from
+the app; only the data-node user does.
+
 ### Real S3 instead of MinIO
 
 Point the `AWS_*` values at your provider, clear `AWS_ENDPOINT`, and set
