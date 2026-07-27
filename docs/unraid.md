@@ -13,9 +13,13 @@ So the NextSearch side is:
 - **`app`** — the all-in-one backend (`serve` + `worker` + `scheduler`)
 - **`web`** — the Nuxt UI, the only container with a published port
 
-Everything else — Postgres, Redis, Meilisearch, Tika, Gotenberg and S3 — is a
-backing service you point at over the network. Reuse an existing one where you
-have it; add the rest from Community Applications.
+The backing services — Postgres, Redis, Meilisearch, Tika and Gotenberg — you
+point at over the network: reuse an existing one where you have it, add the rest
+from Community Applications. Object storage is the exception worth calling out:
+the stack below runs a small MinIO alongside NextSearch that writes to Unraid
+storage, so previews and extracted text stay on your array and you don't need an
+external S3 at all. MinIO is the one extra sidecar; the NextSearch application
+itself is the two containers above.
 
 ## Are the dependencies available on Unraid?
 
@@ -77,14 +81,37 @@ services:
       TIKA_URL: http://192.168.1.10:9998
       GOTENBERG_URL: http://192.168.1.10:3000
 
+      # Object storage: the bundled MinIO below, backed by Unraid storage.
       FILESYSTEM_DISK: s3
-      AWS_ENDPOINT: http://192.168.1.10:9000
+      AWS_ENDPOINT: http://minio:9000
       AWS_ACCESS_KEY_ID: nextsearch
       AWS_SECRET_ACCESS_KEY: nextsearch-secret
       AWS_BUCKET: nextsearch
       AWS_USE_PATH_STYLE_ENDPOINT: "true"
     volumes:
       - /mnt/user/appdata/nextsearch/storage:/app/storage
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # S3-compatible object storage for previews and extracted text, writing to
+  # Unraid storage. NextSearch creates the bucket itself on first boot, so no
+  # setup is needed. Point the volume at any pool or share you like — appdata
+  # is fine, a dedicated share is tidier for a large archive.
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: nextsearch
+      MINIO_ROOT_PASSWORD: nextsearch-secret
+    volumes:
+      - /mnt/user/appdata/nextsearch/minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
     restart: unless-stopped
 
   web:
@@ -176,17 +203,25 @@ worth reusing.
 ## Object storage (S3)
 
 NextSearch stores preview images and extracted text in S3-compatible storage.
+The stack above bundles MinIO for that, writing to Unraid storage — the default,
+and nothing to set up: NextSearch creates the bucket itself on first boot, so it
+just works.
 
-- **Reuse an existing MinIO on Unraid:** point `AWS_ENDPOINT` at it, set the
-  access key/secret and a bucket, keep `AWS_USE_PATH_STYLE_ENDPOINT=true`.
-- **Add MinIO from Community Applications** if you don't have one, then wire it
-  the same way.
-- **External S3** (AWS, Backblaze B2, Wasabi): set the `AWS_*` values, remove
-  `AWS_ENDPOINT`, and set `AWS_USE_PATH_STYLE_ENDPOINT=false`. Use `AWS_ROOT` to
-  keep NextSearch under a prefix inside a shared bucket.
+- **Where it lands.** The MinIO volume is `…/appdata/nextsearch/minio:/data`.
+  For a large archive, point it at a dedicated share instead of appdata — the
+  blobs grow with the index, and appdata usually lives on the cache pool. Only
+  the path changes; nothing else moves.
+- **Reuse an existing MinIO** instead of the bundled one: drop the `minio`
+  service and its `depends_on`, and point `AWS_ENDPOINT` at your instance with
+  its own key/secret and bucket.
+- **External S3** (AWS, Backblaze B2, Wasabi): drop the `minio` service, set the
+  `AWS_*` values, remove `AWS_ENDPOINT`, and set
+  `AWS_USE_PATH_STYLE_ENDPOINT=false`. Use `AWS_ROOT` to keep NextSearch under a
+  prefix inside a shared bucket. With a real provider the bucket must already
+  exist — a restricted key often can't create one.
 
-Create the bucket named in `AWS_BUCKET` before the first index (the MinIO
-console, or `mc mb`).
+The MinIO root user/password and the app's `AWS_ACCESS_KEY_ID` /
+`AWS_SECRET_ACCESS_KEY` are the same credentials; change them together.
 
 ## First run
 
