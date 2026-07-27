@@ -10,6 +10,15 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+## [0.2.5] — 2026-07-27
+
+### Added
+
+- **NextSearch logo as the built-in brand.** The magnifying-glass mark now ships
+  as the default: the header and login marks show it out of the box, and the
+  bundled favicon, apple-touch and PWA icons are generated from it. An uploaded
+  logo still overrides all of them.
+
 ## [0.2.4] — 2026-07-27
 
 ### Added
@@ -122,6 +131,7 @@ Gotenberg, MinIO, Postgres and Redis.
   documented in `docs/hosting.md`.
 - **Docker Hub publishing** (multi-arch) via a GitHub Actions workflow.
 
+[0.2.5]: https://github.com/McGo/NextSearch/releases/tag/v0.2.5
 [0.2.4]: https://github.com/McGo/NextSearch/releases/tag/v0.2.4
 [0.2.3]: https://github.com/McGo/NextSearch/releases/tag/v0.2.3
 [0.2.2]: https://github.com/McGo/NextSearch/releases/tag/v0.2.2
