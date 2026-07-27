@@ -10,6 +10,8 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+## [0.2.4] — 2026-07-27
+
 ### Added
 
 - **Two-factor authentication (TOTP).** Each user can turn on 2FA in User
@@ -17,6 +19,14 @@ Images for each release are published to Docker Hub as
   code, and keep the one-time recovery codes. Sign-in then asks for a code (or a
   recovery code) as a second step. Optional per user; disabling requires the
   password.
+- **All-in-one container role for small installs.** A new `all` role runs
+  FrankenPHP, the queue worker and the scheduler together under one supervisor,
+  so a single-node deployment is two containers (`app` + `web`) instead of four.
+  The split `serve` / `worker` / `scheduler` roles are unchanged for scaled-out
+  setups.
+- **Unraid guide** (`docs/unraid.md`): running NextSearch on Unraid as two
+  containers against existing (or Community-Applications) Postgres, Redis,
+  Meilisearch, Tika, Gotenberg and S3.
 
 ## [0.2.3] — 2026-07-25
 
@@ -112,6 +122,7 @@ Gotenberg, MinIO, Postgres and Redis.
   documented in `docs/hosting.md`.
 - **Docker Hub publishing** (multi-arch) via a GitHub Actions workflow.
 
+[0.2.4]: https://github.com/McGo/NextSearch/releases/tag/v0.2.4
 [0.2.3]: https://github.com/McGo/NextSearch/releases/tag/v0.2.3
 [0.2.2]: https://github.com/McGo/NextSearch/releases/tag/v0.2.2
 [0.2.1]: https://github.com/McGo/NextSearch/releases/tag/v0.2.1

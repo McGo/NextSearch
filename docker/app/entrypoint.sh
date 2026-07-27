@@ -46,6 +46,20 @@ case "$role" in
     wait_for_db
     exec php artisan schedule:work
     ;;
+  all)
+    # Single-container mode for small installs (e.g. Unraid): FrankenPHP, the
+    # queue worker and the scheduler run side by side under supervisord. The
+    # boot steps run once here; supervisord then launches the `worker` and
+    # `scheduler` roles, so their commands stay defined in exactly one place.
+    wait_for_db
+    php artisan migrate --force --no-interaction
+    php artisan nextsearch:bootstrap
+    php artisan config:cache
+    php artisan route:cache
+    php artisan event:cache
+    echo "[nextsearch] starting all-in-one (serve + worker + scheduler)"
+    exec supervisord -c /etc/supervisor/nextsearch.conf
+    ;;
   *)
     exec "$@"
     ;;

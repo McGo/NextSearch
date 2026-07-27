@@ -78,8 +78,9 @@ More in [docs/architecture.md](docs/architecture.md); format coverage in
 [docs/formats.md](docs/formats.md). Deploying from the published images
 (`mirkohaaser/nextsearch-app`, `mirkohaaser/nextsearch-web`), running against
 external Postgres, Redis or S3, and moving a setup onto a server:
-[docs/hosting.md](docs/hosting.md). Release history in
-[CHANGELOG.md](CHANGELOG.md).
+[docs/hosting.md](docs/hosting.md). Running it on Unraid as two containers
+against your existing services: [docs/unraid.md](docs/unraid.md). Release
+history in [CHANGELOG.md](CHANGELOG.md).
 
 ## Operating
 
