@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/Logo/NextSearch.png" alt="NextSearch" width="320">
+</p>
+
 # NextSearch
 
 Full-text search across your Nextcloud folders. Self-hosted, one `docker compose up`,

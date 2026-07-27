@@ -71,16 +71,10 @@ const userMenuItems = computed(() => [
           class="flex items-center gap-2 font-semibold"
         >
           <img
-            v-if="branding.has_logo && branding.logo_url"
-            :src="branding.logo_url"
+            :src="branding.has_logo && branding.logo_url ? branding.logo_url : '/logo.svg'"
             :alt="siteName"
             class="h-7 w-auto max-w-[160px] object-contain"
           >
-          <UIcon
-            v-else
-            name="i-lucide-file-search"
-            class="size-5 text-primary"
-          />
           {{ siteName }}
         </NuxtLink>
       </template>

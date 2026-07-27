@@ -61,16 +61,10 @@ function backToCredentials() {
       <template #header>
         <div class="flex items-center gap-2">
           <img
-            v-if="branding.has_logo && branding.logo_url"
-            :src="branding.logo_url"
+            :src="branding.has_logo && branding.logo_url ? branding.logo_url : '/logo.svg'"
             :alt="siteName"
             class="h-8 w-auto max-w-[160px] object-contain"
           >
-          <UIcon
-            v-else
-            name="i-lucide-file-search"
-            class="size-6 text-primary"
-          />
           <div>
             <h1 class="font-semibold">
               {{ siteName }}

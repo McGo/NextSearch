@@ -26,6 +26,9 @@ demo/seed/
 .DS_Store
 *.log
 
+# Affinity Designer working lock files (the source .afdesign stays tracked)
+*~lock~
+
 # Claude Code — per-developer local files, never shared
 .claude/settings.local.json
 CLAUDE.local.md
