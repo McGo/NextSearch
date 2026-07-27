@@ -39,7 +39,15 @@
     "password": "Password",
     "remember": "Stay signed in",
     "submit": "Sign in",
-    "failed": "Sign-in failed."
+    "failed": "Sign-in failed.",
+    "twoFactorHint": "Enter the 6-digit code from your authenticator app.",
+    "recoveryHint": "Enter one of your recovery codes.",
+    "code": "Authentication code",
+    "recoveryCode": "Recovery code",
+    "useRecovery": "Use a recovery code instead",
+    "useCode": "Use your authenticator app instead",
+    "verify": "Verify",
+    "back": "Back"
   },
   "password": {
     "title": "Change password",
@@ -352,7 +360,8 @@
     "subtitle": "Your account and how the app looks for you.",
     "tabs": {
       "password": "Password",
-      "appearance": "Language & theme"
+      "appearance": "Language & theme",
+      "security": "Security"
     },
     "language": "Language",
     "theme": {
@@ -360,6 +369,27 @@
       "system": "System",
       "light": "Light",
       "dark": "Dark"
+    },
+    "security": {
+      "title": "Two-factor authentication",
+      "desc": "Protect your account with a second step at sign-in.",
+      "onTitle": "Two-factor is on",
+      "onDesc": "You'll be asked for a code from your authenticator app at every sign-in.",
+      "recoveryHint": "Recovery codes — each works once if you lose your authenticator. Keep them somewhere safe.",
+      "showRecovery": "Show recovery codes",
+      "regenerate": "Regenerate",
+      "recoveryRegenerated": "New recovery codes generated.",
+      "disableLabel": "Confirm with your password to turn it off",
+      "disable": "Disable two-factor",
+      "disabled": "Two-factor disabled.",
+      "scanHint": "Scan this with your authenticator app (Google Authenticator, Aegis, 1Password …).",
+      "manualHint": "Or enter the key manually:",
+      "saveRecovery": "Save these recovery codes now — each works once if you lose your authenticator.",
+      "confirmLabel": "Enter the code from the app to finish",
+      "confirm": "Confirm & enable",
+      "enable": "Enable two-factor",
+      "enabled": "Two-factor authentication enabled.",
+      "failed": "Something went wrong."
     }
   }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { login } = useAuth()
+const { login, twoFactorChallenge } = useAuth()
 const route = useRoute()
 const config = useRuntimeConfig()
 const { t } = useI18n()
@@ -17,20 +17,41 @@ const remember = ref(false)
 const pending = ref(false)
 const error = ref<string | null>(null)
 
+// Two-step: 'credentials' first, 'twofactor' if the account has 2FA on.
+const step = ref<'credentials' | 'twofactor'>('credentials')
+const code = ref('')
+const useRecovery = ref(false)
+
 async function submit() {
   pending.value = true
   error.value = null
 
   try {
-    await login(email.value, password.value, remember.value)
+    if (step.value === 'credentials') {
+      const { twoFactor } = await login(email.value, password.value, remember.value)
+      if (twoFactor) {
+        step.value = 'twofactor'
+        return
+      }
+    } else {
+      const value = code.value.trim()
+      await twoFactorChallenge(useRecovery.value ? { recovery_code: value } : { code: value })
+    }
+
     await navigateTo((route.query.next as string) || '/')
   } catch (e) {
     error.value = e instanceof ApiError
-      ? (e.fieldError('email') || e.message)
+      ? (e.fieldError('code') || e.fieldError('email') || e.message)
       : t('login.failed')
   } finally {
     pending.value = false
   }
+}
+
+function backToCredentials() {
+  step.value = 'credentials'
+  code.value = ''
+  error.value = null
 }
 </script>
 
@@ -65,37 +86,68 @@ async function submit() {
         class="space-y-4"
         @submit.prevent="submit"
       >
-        <UFormField
-          :label="t('login.email')"
-          name="email"
-        >
-          <UInput
-            v-model="email"
-            type="email"
-            autocomplete="username"
-            autofocus
-            required
-            class="w-full"
-          />
-        </UFormField>
+        <template v-if="step === 'credentials'">
+          <UFormField
+            :label="t('login.email')"
+            name="email"
+          >
+            <UInput
+              v-model="email"
+              type="email"
+              autocomplete="username"
+              autofocus
+              required
+              class="w-full"
+            />
+          </UFormField>
 
-        <UFormField
-          :label="t('login.password')"
-          name="password"
-        >
-          <UInput
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            required
-            class="w-full"
-          />
-        </UFormField>
+          <UFormField
+            :label="t('login.password')"
+            name="password"
+          >
+            <UInput
+              v-model="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              class="w-full"
+            />
+          </UFormField>
 
-        <UCheckbox
-          v-model="remember"
-          :label="t('login.remember')"
-        />
+          <UCheckbox
+            v-model="remember"
+            :label="t('login.remember')"
+          />
+        </template>
+
+        <template v-else>
+          <p class="text-sm text-muted">
+            {{ useRecovery ? t('login.recoveryHint') : t('login.twoFactorHint') }}
+          </p>
+
+          <UFormField
+            :label="useRecovery ? t('login.recoveryCode') : t('login.code')"
+            name="code"
+          >
+            <UInput
+              v-model="code"
+              :type="useRecovery ? 'text' : 'text'"
+              :inputmode="useRecovery ? 'text' : 'numeric'"
+              autocomplete="one-time-code"
+              autofocus
+              required
+              class="w-full"
+            />
+          </UFormField>
+
+          <button
+            type="button"
+            class="text-xs text-primary hover:underline"
+            @click="useRecovery = !useRecovery; code = ''"
+          >
+            {{ useRecovery ? t('login.useCode') : t('login.useRecovery') }}
+          </button>
+        </template>
 
         <UAlert
           v-if="error"
@@ -109,7 +161,16 @@ async function submit() {
           type="submit"
           block
           :loading="pending"
-          :label="t('login.submit')"
+          :label="step === 'credentials' ? t('login.submit') : t('login.verify')"
+        />
+
+        <UButton
+          v-if="step === 'twofactor'"
+          block
+          color="neutral"
+          variant="ghost"
+          :label="t('login.back')"
+          @click="backToCredentials"
         />
       </form>
 

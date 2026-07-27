@@ -34,6 +34,14 @@ return [
     'instance' => [
         'removed' => 'Instanz entfernt.',
     ],
+    'twofactor' => [
+        'already_enabled' => 'Zwei-Faktor ist bereits aktiv.',
+        'not_pending' => 'Starte zuerst die Einrichtung.',
+        'invalid_code' => 'Der Code stimmt nicht.',
+        'enabled' => 'Zwei-Faktor-Authentifizierung aktiviert.',
+        'disabled' => 'Zwei-Faktor-Authentifizierung deaktiviert.',
+        'no_challenge' => 'Diese Anmeldung ist abgelaufen. Bitte neu einloggen.',
+    ],
     'index' => [
         'cleared' => 'Suchindex geleert.',
         'rebuilding' => 'Index wird neu aufgebaut — :count Ordner eingereiht.',

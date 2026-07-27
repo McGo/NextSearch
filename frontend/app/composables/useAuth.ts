@@ -4,6 +4,7 @@ export interface AuthUser {
   email: string
   role: 'admin' | 'user'
   is_admin: boolean
+  two_factor_enabled: boolean
   folder_count: number | null
 }
 
@@ -32,12 +33,31 @@ export function useAuth() {
     return user.value
   }
 
-  async function login(email: string, password: string, remember = false) {
-    const { user: current } = await api.post<{ user: AuthUser }>('/api/auth/login', {
+  /**
+   * Returns { twoFactor: true } when the password was right but a second factor
+   * is still needed — the caller then collects a code and calls
+   * twoFactorChallenge. Otherwise the user is signed in.
+   */
+  async function login(email: string, password: string, remember = false): Promise<{ twoFactor: boolean }> {
+    const res = await api.post<{ user?: AuthUser, two_factor?: boolean }>('/api/auth/login', {
       email,
       password,
       remember
     })
+
+    if (res.two_factor) {
+      return { twoFactor: true }
+    }
+
+    user.value = res.user ?? null
+    resolved.value = true
+
+    return { twoFactor: false }
+  }
+
+  /** Second step of a 2FA login: a TOTP code or a one-time recovery code. */
+  async function twoFactorChallenge(payload: { code?: string, recovery_code?: string }): Promise<AuthUser> {
+    const { user: current } = await api.post<{ user: AuthUser }>('/api/auth/two-factor-challenge', payload)
 
     user.value = current
     resolved.value = true
@@ -62,6 +82,7 @@ export function useAuth() {
     refresh,
     ensureResolved,
     login,
+    twoFactorChallenge,
     logout
   }
 }

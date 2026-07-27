@@ -39,7 +39,15 @@
     "password": "Passwort",
     "remember": "Angemeldet bleiben",
     "submit": "Anmelden",
-    "failed": "Die Anmeldung ist fehlgeschlagen."
+    "failed": "Die Anmeldung ist fehlgeschlagen.",
+    "twoFactorHint": "Gib den 6-stelligen Code aus deiner Authenticator-App ein.",
+    "recoveryHint": "Gib einen deiner Recovery-Codes ein.",
+    "code": "Authentifizierungscode",
+    "recoveryCode": "Recovery-Code",
+    "useRecovery": "Stattdessen einen Recovery-Code verwenden",
+    "useCode": "Stattdessen die Authenticator-App verwenden",
+    "verify": "Bestätigen",
+    "back": "Zurück"
   },
   "password": {
     "title": "Passwort ändern",
@@ -352,7 +360,8 @@
     "subtitle": "Dein Konto und wie die App für dich aussieht.",
     "tabs": {
       "password": "Passwort",
-      "appearance": "Sprache & Design"
+      "appearance": "Sprache & Design",
+      "security": "Sicherheit"
     },
     "language": "Sprache",
     "theme": {
@@ -360,6 +369,27 @@
       "system": "System",
       "light": "Hell",
       "dark": "Dunkel"
+    },
+    "security": {
+      "title": "Zwei-Faktor-Authentifizierung",
+      "desc": "Schütze dein Konto mit einem zweiten Schritt beim Login.",
+      "onTitle": "Zwei-Faktor ist aktiv",
+      "onDesc": "Bei jedem Login wird ein Code aus deiner Authenticator-App verlangt.",
+      "recoveryHint": "Recovery-Codes — jeder einmal nutzbar, falls du deinen Authenticator verlierst. Sicher aufbewahren.",
+      "showRecovery": "Recovery-Codes anzeigen",
+      "regenerate": "Neu erzeugen",
+      "recoveryRegenerated": "Neue Recovery-Codes erzeugt.",
+      "disableLabel": "Zum Deaktivieren mit deinem Passwort bestätigen",
+      "disable": "Zwei-Faktor deaktivieren",
+      "disabled": "Zwei-Faktor deaktiviert.",
+      "scanHint": "Scanne das mit deiner Authenticator-App (Google Authenticator, Aegis, 1Password …).",
+      "manualHint": "Oder den Schlüssel manuell eingeben:",
+      "saveRecovery": "Speichere diese Recovery-Codes jetzt — jeder einmal nutzbar, falls du deinen Authenticator verlierst.",
+      "confirmLabel": "Zum Abschluss den Code aus der App eingeben",
+      "confirm": "Bestätigen & aktivieren",
+      "enable": "Zwei-Faktor aktivieren",
+      "enabled": "Zwei-Faktor-Authentifizierung aktiviert.",
+      "failed": "Etwas ist schiefgelaufen."
     }
   }
 }

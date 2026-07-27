@@ -80,8 +80,8 @@ export function useApi() {
       request<T>(path, { method: 'POST', body: body as Record<string, unknown> }),
     put: <T>(path: string, body?: unknown) =>
       request<T>(path, { method: 'PUT', body: body as Record<string, unknown> }),
-    del: <T>(path: string) =>
-      request<T>(path, { method: 'DELETE' }),
+    del: <T>(path: string, body?: unknown) =>
+      request<T>(path, { method: 'DELETE', body: body as Record<string, unknown> }),
     // File upload. With FormData, ofetch sets the Content-Type including the
     // boundary itself — so we don't pass one here.
     upload: <T>(path: string, form: FormData) =>

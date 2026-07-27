@@ -5,12 +5,15 @@ useHead({ title: () => t('account.title') })
 const api = useApi()
 const toast = useToast()
 const colorMode = useColorMode()
+const { user, refresh: refreshAuth } = useAuth()
 
-const tabs = [
+type TabKey = 'password' | 'security' | 'appearance'
+const tabs: { key: TabKey, label: string }[] = [
   { key: 'password', label: t('account.tabs.password') },
+  { key: 'security', label: t('account.tabs.security') },
   { key: 'appearance', label: t('account.tabs.appearance') }
 ]
-const active = ref<'password' | 'appearance'>('password')
+const active = ref<TabKey>('password')
 
 // --- Password ---------------------------------------------------------------
 const pwForm = reactive({ current_password: '', password: '', password_confirmation: '' })
@@ -33,6 +36,79 @@ async function submitPassword() {
       : t('password.failed')
   } finally {
     pwSaving.value = false
+  }
+}
+
+// --- Two-factor -------------------------------------------------------------
+interface Enrolment { secret: string, qr: string, recovery_codes: string[] }
+
+const twoFactorEnabled = computed(() => user.value?.two_factor_enabled === true)
+const enrolment = ref<Enrolment | null>(null)
+const confirmCode = ref('')
+const recoveryCodes = ref<string[] | null>(null)
+const disablePassword = ref('')
+const tfaBusy = ref(false)
+const tfaError = ref<string | null>(null)
+
+async function startEnrolment() {
+  tfaBusy.value = true
+  tfaError.value = null
+  try {
+    enrolment.value = await api.post<Enrolment>('/api/auth/two-factor')
+    recoveryCodes.value = enrolment.value.recovery_codes
+  } catch (e) {
+    tfaError.value = e instanceof ApiError ? e.message : t('account.security.failed')
+  } finally {
+    tfaBusy.value = false
+  }
+}
+
+async function confirmEnrolment() {
+  tfaBusy.value = true
+  tfaError.value = null
+  try {
+    await api.post('/api/auth/two-factor/confirm', { code: confirmCode.value.trim() })
+    await refreshAuth()
+    enrolment.value = null
+    confirmCode.value = ''
+    toast.add({ title: t('account.security.enabled'), color: 'success' })
+  } catch (e) {
+    tfaError.value = e instanceof ApiError ? (e.fieldError('code') || e.message) : t('account.security.failed')
+  } finally {
+    tfaBusy.value = false
+  }
+}
+
+function cancelEnrolment() {
+  enrolment.value = null
+  confirmCode.value = ''
+  tfaError.value = null
+}
+
+async function showRecoveryCodes() {
+  const res = await api.get<{ recovery_codes: string[] }>('/api/auth/two-factor/recovery-codes')
+  recoveryCodes.value = res.recovery_codes
+}
+
+async function regenerateRecoveryCodes() {
+  const res = await api.post<{ recovery_codes: string[] }>('/api/auth/two-factor/recovery-codes')
+  recoveryCodes.value = res.recovery_codes
+  toast.add({ title: t('account.security.recoveryRegenerated'), color: 'success' })
+}
+
+async function disableTwoFactor() {
+  tfaBusy.value = true
+  tfaError.value = null
+  try {
+    await api.del('/api/auth/two-factor', { password: disablePassword.value })
+    await refreshAuth()
+    disablePassword.value = ''
+    recoveryCodes.value = null
+    toast.add({ title: t('account.security.disabled'), color: 'success' })
+  } catch (e) {
+    tfaError.value = e instanceof ApiError ? (e.fieldError('password') || e.message) : t('account.security.failed')
+  } finally {
+    tfaBusy.value = false
   }
 }
 
@@ -67,7 +143,7 @@ const themeOptions = [
         :class="active === tab.key
           ? 'border-primary text-highlighted font-medium'
           : 'border-transparent text-muted hover:text-default'"
-        @click="active = (tab.key as 'password' | 'appearance')"
+        @click="active = tab.key"
       >
         {{ tab.label }}
       </button>
@@ -138,9 +214,176 @@ const themeOptions = [
       </form>
     </section>
 
+    <!-- Security: two-factor -->
+    <section
+      v-else-if="active === 'security'"
+      class="max-w-md space-y-6"
+    >
+      <div>
+        <h2 class="font-medium">
+          {{ t('account.security.title') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ t('account.security.desc') }}
+        </p>
+      </div>
+
+      <UAlert
+        v-if="tfaError"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        :description="tfaError"
+      />
+
+      <!-- Already on -->
+      <template v-if="twoFactorEnabled">
+        <UAlert
+          color="success"
+          variant="subtle"
+          icon="i-lucide-shield-check"
+          :title="t('account.security.onTitle')"
+          :description="t('account.security.onDesc')"
+        />
+
+        <div
+          v-if="recoveryCodes"
+          class="rounded-lg border border-default p-3"
+        >
+          <p class="text-xs text-muted mb-2">
+            {{ t('account.security.recoveryHint') }}
+          </p>
+          <ul class="grid grid-cols-2 gap-1 font-mono text-sm">
+            <li
+              v-for="rc in recoveryCodes"
+              :key="rc"
+            >
+              {{ rc }}
+            </li>
+          </ul>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <UButton
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-list"
+            :label="t('account.security.showRecovery')"
+            @click="showRecoveryCodes"
+          />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-refresh-cw"
+            :label="t('account.security.regenerate')"
+            @click="regenerateRecoveryCodes"
+          />
+        </div>
+
+        <form
+          class="space-y-3 border-t border-default pt-4"
+          @submit.prevent="disableTwoFactor"
+        >
+          <UFormField
+            :label="t('account.security.disableLabel')"
+            name="password"
+          >
+            <UInput
+              v-model="disablePassword"
+              type="password"
+              autocomplete="current-password"
+              class="w-full"
+            />
+          </UFormField>
+          <UButton
+            type="submit"
+            color="error"
+            variant="soft"
+            icon="i-lucide-shield-off"
+            :loading="tfaBusy"
+            :label="t('account.security.disable')"
+          />
+        </form>
+      </template>
+
+      <!-- Enrolment in progress -->
+      <template v-else-if="enrolment">
+        <p class="text-sm">
+          {{ t('account.security.scanHint') }}
+        </p>
+        <img
+          :src="enrolment.qr"
+          alt=""
+          class="rounded-lg border border-default bg-white p-2"
+          width="220"
+          height="220"
+        >
+        <p class="text-xs text-muted">
+          {{ t('account.security.manualHint') }}
+          <span class="font-mono break-all select-all">{{ enrolment.secret }}</span>
+        </p>
+
+        <div class="rounded-lg border border-default p-3">
+          <p class="text-xs text-muted mb-2">
+            {{ t('account.security.saveRecovery') }}
+          </p>
+          <ul class="grid grid-cols-2 gap-1 font-mono text-sm">
+            <li
+              v-for="rc in enrolment.recovery_codes"
+              :key="rc"
+            >
+              {{ rc }}
+            </li>
+          </ul>
+        </div>
+
+        <form
+          class="space-y-3"
+          @submit.prevent="confirmEnrolment"
+        >
+          <UFormField
+            :label="t('account.security.confirmLabel')"
+            name="code"
+          >
+            <UInput
+              v-model="confirmCode"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              autofocus
+              class="w-full"
+            />
+          </UFormField>
+          <div class="flex gap-2">
+            <UButton
+              type="submit"
+              icon="i-lucide-shield-check"
+              :loading="tfaBusy"
+              :label="t('account.security.confirm')"
+            />
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :label="t('common.cancel')"
+              @click="cancelEnrolment"
+            />
+          </div>
+        </form>
+      </template>
+
+      <!-- Off -->
+      <template v-else>
+        <UButton
+          icon="i-lucide-shield-plus"
+          :loading="tfaBusy"
+          :label="t('account.security.enable')"
+          @click="startEnrolment"
+        />
+      </template>
+    </section>
+
     <!-- Appearance: language + theme -->
     <section
-      v-else
+      v-else-if="active === 'appearance'"
       class="space-y-8 max-w-md"
     >
       <div class="space-y-2">

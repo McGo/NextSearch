@@ -8,6 +8,16 @@ Images for each release are published to Docker Hub as
 `mirkohaaser/nextsearch-app` and `mirkohaaser/nextsearch-web`, multi-arch
 (amd64 + arm64).
 
+## [Unreleased]
+
+### Added
+
+- **Two-factor authentication (TOTP).** Each user can turn on 2FA in User
+  settings › Security: scan a QR code with an authenticator app, confirm a
+  code, and keep the one-time recovery codes. Sign-in then asks for a code (or a
+  recovery code) as a second step. Optional per user; disabling requires the
+  password.
+
 ## [0.2.3] — 2026-07-25
 
 ### Fixed

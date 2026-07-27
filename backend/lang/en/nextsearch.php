@@ -34,6 +34,14 @@ return [
     'instance' => [
         'removed' => 'Instance removed.',
     ],
+    'twofactor' => [
+        'already_enabled' => 'Two-factor is already enabled.',
+        'not_pending' => 'Start the setup first.',
+        'invalid_code' => 'That code is not correct.',
+        'enabled' => 'Two-factor authentication enabled.',
+        'disabled' => 'Two-factor authentication disabled.',
+        'no_challenge' => 'This sign-in has expired. Please log in again.',
+    ],
     'index' => [
         'cleared' => 'Search index cleared.',
         'rebuilding' => 'Rebuilding the index — :count folder(s) queued.',

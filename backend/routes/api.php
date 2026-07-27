@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\QueueController;
 use App\Http\Controllers\Admin\StatusController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\SessionController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\DocumentController;
@@ -29,6 +30,9 @@ Route::prefix('api')->group(function () {
     Route::get('/auth/csrf', fn () => response()->noContent());
 
     Route::post('/auth/login', [SessionController::class, 'login']);
+    // Second step of a 2FA login — the user isn't authenticated yet, the
+    // pending id lives in the session from the password step.
+    Route::post('/auth/two-factor-challenge', [SessionController::class, 'twoFactorChallenge']);
 
     // Branding reads are public: the browser fetches the favicon, the manifest
     // and its icons before anyone is signed in.
@@ -40,6 +44,13 @@ Route::prefix('api')->group(function () {
         Route::post('/auth/logout', [SessionController::class, 'logout']);
         Route::get('/auth/me', [SessionController::class, 'me']);
         Route::put('/auth/password', [SessionController::class, 'changePassword']);
+
+        // Manage your own two-factor.
+        Route::post('/auth/two-factor', [TwoFactorController::class, 'enable']);
+        Route::post('/auth/two-factor/confirm', [TwoFactorController::class, 'confirm']);
+        Route::get('/auth/two-factor/recovery-codes', [TwoFactorController::class, 'recoveryCodes']);
+        Route::post('/auth/two-factor/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes']);
+        Route::delete('/auth/two-factor', [TwoFactorController::class, 'disable']);
 
         Route::get('/search', SearchController::class);
         Route::get('/indexing-status', IndexingStatusController::class);
