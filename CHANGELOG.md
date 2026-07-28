@@ -10,6 +10,12 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+### Fixed
+
+- **"Back to search" keeps the search.** Opening a document and returning now
+  lands back on the same result list — the query, filters, sort and page are
+  carried along instead of being reset to an empty search.
+
 ## [0.2.5] — 2026-07-27
 
 ### Added

@@ -4,9 +4,17 @@ import type { SearchHit } from '~/composables/useSearch'
 const props = defineProps<{ hit: SearchHit }>()
 
 const { t } = useI18n()
+const route = useRoute()
 const { bytes, date, icon } = useFormat()
 const { folderImageById, instanceImageByName } = useDirectory()
 const previewFailed = ref(false)
+
+// Carry the current search URL (query, filters, sort, page all live in it) so
+// the document's "back to search" returns to exactly this result list.
+const documentTo = computed(() => ({
+  path: `/documents/${props.hit.uuid}`,
+  query: { from: route.fullPath }
+}))
 
 const previewUrl = computed(() =>
   props.hit.has_preview ? `/api/documents/${props.hit.uuid}/preview` : null
@@ -22,7 +30,7 @@ const folderImage = computed(() => folderImageById.value[props.hit.folder_id] ??
        from the indexed files and then inserts only <mark> tags. -->
   <!-- eslint-disable vue/no-v-html -->
   <NuxtLink
-    :to="`/documents/${hit.uuid}`"
+    :to="documentTo"
     class="flex gap-4 rounded-lg border border-default p-4 transition hover:border-primary hover:bg-elevated/50"
   >
     <!-- Preview, otherwise a type tile: .eml, .md and .txt can't be rendered

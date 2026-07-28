@@ -24,6 +24,9 @@ const { t } = useI18n()
 const { bytes, dateTime, icon } = useFormat()
 
 const uuid = route.params.uuid as string
+// Where "back to search" returns: the search URL we came from (filters, sort and
+// page all encoded in it), or the bare search page on a direct link.
+const backTo = computed(() => (route.query.from as string) || '/')
 const document = ref<DocumentDetail | null>(null)
 const error = ref<string | null>(null)
 const pending = ref(true)
@@ -115,7 +118,7 @@ const metadataRows = computed(() => {
 <template>
   <UContainer class="py-8">
     <UButton
-      to="/"
+      :to="backTo"
       color="neutral"
       variant="ghost"
       icon="i-lucide-arrow-left"
