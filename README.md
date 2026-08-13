@@ -20,10 +20,13 @@ instances as you like — and makes their contents searchable.
 - **Renders** preview images of the first page.
 - **Searches** the full text, with faceted filters by instance, folder, file type, year,
   size, and the origin of the text.
-- **Tags** documents — shared across the instance or privately, by hand or automatically.
-  Whatever is indexed for the first time carries "Neu" for a while and then stops.
+- **Tags** documents — shared across the instance or private to one person, set by hand or
+  automatically. Anything indexed for the first time carries "New" for a while, then loses
+  it again.
 - **Streams** the original document straight to the browser — no Nextcloud account needed
   for the person searching.
+- **Answers** an HTTP API for searching and tagging from a script, with a personal key per
+  user.
 
 ## Quick start
 
@@ -62,6 +65,58 @@ permits `GET`, `HEAD`, `PROPFIND` and `OPTIONS`, and throws on anything else bef
 connection is even opened (`app/Services/Nextcloud/ReadOnlyWebDavClient.php`). A test
 iterates over every write verb.
 
+## Tags
+
+Search finds what a file says. Tags cover what it means to the people working with it —
+one more filter next to instance, folder and file type, and the only one somebody put
+there on purpose.
+
+An administrator keeps the vocabulary of the installation under Administration › Tags.
+Beyond that, anyone can create private tags for themselves, straight from the picker on a
+document.
+
+Each tag carries a scope, and that decides who sees a document wearing it. A `global`
+tag's assignment is visible to everyone who has access to the document; a `personal` one's
+only to whoever made it. The two combine with ownership, so an administrator can define an
+instance-wide tag whose assignments still stay private — shared vocabulary, personal
+marks. That is what a "Read later" usually wants to be.
+
+Whether a global tag may be assigned by anyone with access or by administrators alone is
+set per tag. A curated "Approved" can sit next to open ones.
+
+### The tag that assigns itself
+
+Every installation ships with one system tag, `new`. It hangs on every document indexed
+for the first time and falls off again after a set time — seven days by default. That
+turns "what arrived lately" into a filter instead of a sort order.
+
+Two things keep it useful. The initial crawl of a folder tags nothing: on the first run
+the whole stock is new, and a tag on twenty thousand documents says nothing. And rebuilding
+the index does not fire it again — each document remembers its first indexing. Name,
+colour and shelf life are adjustable; deleting it is not.
+
+Scopes, permissions and the automation in detail: [docs/tags.md](docs/tags.md).
+
+## API
+
+Searching and tagging also work over HTTP, for the jobs the interface is awkward at —
+tagging a few thousand documents from a script, or wiring a search into another tool.
+
+Create a key under User settings › API keys. It carries its owner's permissions and
+nothing more: the same folder grants, the same tags. The plain text is shown once.
+
+```bash
+curl -H "Authorization: Bearer nxs_…" \
+     "https://search.example.org/api/v1/documents?q=rechnung"
+
+curl -X POST -H "Authorization: Bearer nxs_…" -H "Content-Type: application/json" \
+     -d '{"documents":["6f1c…","8b3d…"],"add":["vertrag"],"remove":["new"]}' \
+     https://search.example.org/api/v1/documents/tags
+```
+
+Endpoints, error shapes and limits in [docs/api.md](docs/api.md); the OpenAPI file for
+Postman, Insomnia or Bruno in [docs/api/openapi.yaml](docs/api/openapi.yaml).
+
 ## How it's put together
 
 Only the Nuxt container is reachable from outside, on `APP_PORT`. It forwards `/api`
@@ -81,9 +136,7 @@ internally to Laravel; everything else sits on the Compose network with no publi
 | `minio` | object storage for previews and text blobs |
 
 More in [docs/architecture.md](docs/architecture.md); format coverage in
-[docs/formats.md](docs/formats.md); tags, their scopes and the automation in
-[docs/tags.md](docs/tags.md); the HTTP API for search and tagging in
-[docs/api.md](docs/api.md). Deploying from the published images
+[docs/formats.md](docs/formats.md). Deploying from the published images
 (`mirkohaaser/nextsearch-app`, `mirkohaaser/nextsearch-web`), running against
 external Postgres, Redis or S3, and moving a setup onto a server:
 [docs/hosting.md](docs/hosting.md). Running it on Unraid as two containers
