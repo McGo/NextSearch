@@ -28,8 +28,16 @@ export function useFormat() {
       unit++
     }
 
-    const rounded = size.toFixed(size < 10 ? 1 : 0)
-    return `${new Intl.NumberFormat(intl.value).format(Number(rounded))} ${units[unit]}`
+    // Below ten units one decimal, above it none — it says nothing there. The
+    // digits go to Intl rather than through toFixed: a detour over Number()
+    // would swallow the very decimal we asked for, so 1024 came out as "1 KB"
+    // instead of "1,0 KB".
+    const digits = size < 10 ? 1 : 0
+
+    return `${new Intl.NumberFormat(intl.value, {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits
+    }).format(size)} ${units[unit]}`
   }
 
   const number = (value: number): string =>
