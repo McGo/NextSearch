@@ -35,6 +35,7 @@ class WatchedFolder extends Model
             'exclude_patterns' => 'array',
             'last_crawled_at' => 'datetime',
             'crawl_requested_at' => 'datetime',
+            'baseline_at' => 'datetime',
         ];
     }
 

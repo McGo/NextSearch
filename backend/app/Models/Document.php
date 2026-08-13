@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'watched_folder_id', 'nextcloud_instance_id',
     'oc_file_id', 'remote_path', 'path_hash', 'name', 'extension', 'mime_type',
     'size', 'remote_modified_at', 'etag', 'text_key', 'preview_key', 'page_count',
     'ocr_used', 'metadata', 'state', 'failure_reason', 'attempts', 'indexed_at',
+    'first_indexed_at',
 ])]
 class Document extends Model
 {
@@ -45,6 +47,7 @@ class Document extends Model
         return [
             'remote_modified_at' => 'datetime',
             'indexed_at' => 'datetime',
+            'first_indexed_at' => 'datetime',
             'metadata' => 'array',
             'ocr_used' => 'boolean',
         ];
@@ -64,6 +67,17 @@ class Document extends Model
     public function instance(): BelongsTo
     {
         return $this->belongsTo(NextcloudInstance::class, 'nextcloud_instance_id');
+    }
+
+    /**
+     * Every tag hanging on this document — global and personal ones alike.
+     * Filtering by visibility is the caller's business.
+     *
+     * @return HasMany<TagAssignment, $this>
+     */
+    public function tagAssignments(): HasMany
+    {
+        return $this->hasMany(TagAssignment::class);
     }
 
     public static function hashPath(string $path): string

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Services\Content\MarkdownRenderer;
 use App\Services\Nextcloud\ReadOnlyWebDavClient;
+use App\Services\Tags\TagService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +30,7 @@ class DocumentController extends Controller
     /** Max raw-file size for in-app rendering. Above it: download only. */
     private const RENDER_MAX_BYTES = 2 * 1024 * 1024;
 
-    public function show(Request $request, Document $document): JsonResponse
+    public function show(Request $request, Document $document, TagService $tags): JsonResponse
     {
         $this->authorizeAccess($request, $document);
         $document->load(['folder', 'instance']);
@@ -49,6 +50,9 @@ class DocumentController extends Controller
                 'ocr_used' => $document->ocr_used,
                 'metadata' => $document->metadata,
                 'has_preview' => $document->preview_key !== null,
+                // What this user sees hanging on it — global assignments plus
+                // their own.
+                'tags' => $tags->present($document, $request->user()),
                 'instance' => ['name' => $document->instance->name, 'uuid' => $document->instance->uuid],
                 'folder' => ['label' => $document->folder->label, 'uuid' => $document->folder->uuid],
                 // A deep link into Nextcloud, in case the user has an account

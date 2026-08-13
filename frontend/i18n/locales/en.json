@@ -7,7 +7,8 @@
     "back": "Back",
     "apply": "Apply",
     "done": "Done",
-    "requestFailed": "The request failed."
+    "requestFailed": "The request failed.",
+    "edit": "Edit"
   },
   "nav": {
     "search": "Search",
@@ -18,7 +19,8 @@
     "github": "Source on GitHub",
     "settings": "Settings",
     "savedSearches": "Saved searches",
-    "appearance": "Appearance"
+    "appearance": "Appearance",
+    "tags": "Tags"
   },
   "userMenu": {
     "changePassword": "Change password",
@@ -93,7 +95,9 @@
     "ocrTrue": "recognised via OCR",
     "ocrFalse": "from text layer",
     "extensionNone": "none",
-    "path_segments": "Folder (path)"
+    "path_segments": "Folder (path)",
+    "tags": "Tags",
+    "my_tags": "My tags"
   },
   "sizeBucket": {
     "upTo100kb": "up to 100 KB",
@@ -332,6 +336,56 @@
         "removed": "Logo removed.",
         "failed": "The logo could not be saved."
       }
+    },
+    "tags": {
+      "title": "Tags",
+      "subtitle": "The vocabulary of this instance. Private tags are created by the people who use them and are not listed here.",
+      "new": "Create tag",
+      "newTitle": "New tag",
+      "editTitle": "Edit tag",
+      "empty": "No tag created yet.",
+      "saved": "Saved.",
+      "saveFailed": "Saving failed.",
+      "removeFailed": "Deleting failed.",
+      "disabled": "off",
+      "systemLocked": "Comes with the installation and cannot be deleted.",
+      "systemHint": "This tag comes with the installation. Name, colour, duration and the switch can be changed — its handle, scope and automation cannot.",
+      "nameLabel": "Name",
+      "colorLabel": "Colour",
+      "positionLabel": "Order",
+      "positionHint": "lower comes first",
+      "descriptionLabel": "Description",
+      "scopeLabel": "Scope",
+      "scopeHint": "fixed afterwards",
+      "policyLabel": "Who may assign it",
+      "autoLabel": "Assign automatically",
+      "autoDesc": "Hangs on every document indexed for the first time. A folder's initial stock stays clear.",
+      "autoFor": "automatic, {duration}",
+      "durationLabel": "Shelf life in minutes",
+      "durationHint": "the tag falls off afterwards",
+      "durationForever": "no end",
+      "days": "1 day | {count} days",
+      "hours": "1 hour | {count} hours",
+      "minutes": "1 minute | {count} minutes",
+      "enabledLabel": "Active",
+      "enabledDesc": "A tag switched off disappears from the filter and the picker; its assignments stay.",
+      "scopes": {
+        "global": "visible to everyone",
+        "personal": "only to whoever sets it"
+      },
+      "policies": {
+        "everyone": "anyone with access",
+        "admin": "administrators only"
+      },
+      "colors": {
+        "neutral": "Grey",
+        "primary": "Blue",
+        "secondary": "Violet",
+        "success": "Green",
+        "info": "Teal",
+        "warning": "Yellow",
+        "error": "Red"
+      }
     }
   },
   "indexing": {
@@ -361,7 +415,9 @@
     "tabs": {
       "password": "Password",
       "appearance": "Language & theme",
-      "security": "Security"
+      "security": "Security",
+      "tags": "My tags",
+      "api": "API keys"
     },
     "language": "Language",
     "theme": {
@@ -390,6 +446,49 @@
       "enable": "Enable two-factor",
       "enabled": "Two-factor authentication enabled.",
       "failed": "Something went wrong."
+    },
+    "tags": {
+      "title": "Your own tags",
+      "desc": "Only you see these. On documents you mark with them, they stay invisible to everyone else.",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Read later",
+      "add": "Create",
+      "empty": "You have no tags of your own yet."
+    },
+    "api": {
+      "title": "API keys",
+      "desc": "A key works with your permissions — the same folders, the same tags. Send it as a bearer token to /api/v1.",
+      "nameLabel": "Label",
+      "namePlaceholder": "e.g. Archive script",
+      "expiresLabel": "Expires",
+      "expiresHint": "optional",
+      "create": "Create key",
+      "createFailed": "The key could not be created.",
+      "onceTitle": "This is the only time the key is readable.",
+      "onceDesc": "Afterwards only the hash remains in the database. Copy it now and keep it somewhere safe.",
+      "copy": "Copy",
+      "copied": "Key copied.",
+      "empty": "You have not created a key yet.",
+      "revoke": "Revoke",
+      "revokeFailed": "The key could not be revoked.",
+      "lastUsed": "last used {at}",
+      "neverUsed": "never used",
+      "expiresAt": "expires {at}",
+      "docsHint": "Endpoints, examples and the OpenAPI file live in docs/api.md in the repository."
     }
+  },
+  "tags": {
+    "system": {
+      "new": "New"
+    },
+    "add": "Tag",
+    "remove": "Remove {tag}",
+    "personalMarker": "Only you can see this",
+    "searchPlaceholder": "Find or create a tag",
+    "noneLeft": "No other tags to add.",
+    "createOwn": "Create “{name}” as your own tag",
+    "assignFailed": "The tag could not be set.",
+    "removeFailed": "The tag could not be removed.",
+    "createFailed": "The tag could not be created."
   }
 }

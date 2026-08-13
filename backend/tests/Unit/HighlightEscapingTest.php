@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Services\Search\DocumentSearch;
 use App\Services\Search\SearchIndex;
+use App\Services\Tags\TagService;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
@@ -18,9 +19,8 @@ class HighlightEscapingTest extends TestCase
     public function markup_from_a_document_never_reaches_the_browser_as_markup(): void
     {
         $method = new ReflectionMethod(DocumentSearch::class, 'highlight');
-        $search = new DocumentSearch(
-            $this->createMock(SearchIndex::class),
-        );
+        $index = $this->createMock(SearchIndex::class);
+        $search = new DocumentSearch($index, new TagService($index));
 
         $open = "\u{2E22}NS\u{2E23}";
         $close = "\u{2E24}NS\u{2E25}";

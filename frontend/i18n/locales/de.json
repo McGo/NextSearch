@@ -7,7 +7,8 @@
     "back": "Zurück",
     "apply": "Übernehmen",
     "done": "Fertig",
-    "requestFailed": "Die Anfrage ist fehlgeschlagen."
+    "requestFailed": "Die Anfrage ist fehlgeschlagen.",
+    "edit": "Bearbeiten"
   },
   "nav": {
     "search": "Suche",
@@ -18,7 +19,8 @@
     "github": "Quelltext auf GitHub",
     "settings": "Einstellungen",
     "savedSearches": "Gespeicherte Suchen",
-    "appearance": "Darstellung"
+    "appearance": "Darstellung",
+    "tags": "Tags"
   },
   "userMenu": {
     "changePassword": "Passwort ändern",
@@ -93,7 +95,9 @@
     "ocrTrue": "per OCR erkannt",
     "ocrFalse": "aus Textlayer",
     "extensionNone": "ohne",
-    "path_segments": "Ordner (Pfad)"
+    "path_segments": "Ordner (Pfad)",
+    "tags": "Tags",
+    "my_tags": "Meine Tags"
   },
   "sizeBucket": {
     "upTo100kb": "bis 100 KB",
@@ -332,6 +336,56 @@
         "removed": "Logo entfernt.",
         "failed": "Das Logo ließ sich nicht speichern."
       }
+    },
+    "tags": {
+      "title": "Tags",
+      "subtitle": "Das Vokabular dieser Instanz. Eigene Tags legen Benutzer selbst an — die stehen hier nicht.",
+      "new": "Tag anlegen",
+      "newTitle": "Neuer Tag",
+      "editTitle": "Tag bearbeiten",
+      "empty": "Noch kein Tag angelegt.",
+      "saved": "Gespeichert.",
+      "saveFailed": "Speichern fehlgeschlagen.",
+      "removeFailed": "Löschen fehlgeschlagen.",
+      "disabled": "abgeschaltet",
+      "systemLocked": "Gehört zur Installation und lässt sich nicht löschen.",
+      "systemHint": "Dieser Tag gehört zur Installation. Name, Farbe, Standzeit und der Schalter lassen sich ändern — Kennung, Geltungsbereich und Automatik nicht.",
+      "nameLabel": "Name",
+      "colorLabel": "Farbe",
+      "positionLabel": "Reihenfolge",
+      "positionHint": "kleiner zuerst",
+      "descriptionLabel": "Beschreibung",
+      "scopeLabel": "Geltungsbereich",
+      "scopeHint": "steht danach fest",
+      "policyLabel": "Wer darf zuweisen",
+      "autoLabel": "Automatisch vergeben",
+      "autoDesc": "Hängt an jedem Dokument, das zum ersten Mal indiziert wird. Der Erstbestand eines Ordners bleibt frei.",
+      "autoFor": "automatisch, {duration}",
+      "durationLabel": "Standzeit in Minuten",
+      "durationHint": "danach fällt der Tag ab",
+      "durationForever": "ohne Ende",
+      "days": "1 Tag | {count} Tage",
+      "hours": "1 Stunde | {count} Stunden",
+      "minutes": "1 Minute | {count} Minuten",
+      "enabledLabel": "Aktiv",
+      "enabledDesc": "Abgeschaltete Tags verschwinden aus Filter und Auswahl, die Zuweisungen bleiben erhalten.",
+      "scopes": {
+        "global": "für alle sichtbar",
+        "personal": "nur für den, der ihn setzt"
+      },
+      "policies": {
+        "everyone": "jeder mit Zugriff",
+        "admin": "nur Administratoren"
+      },
+      "colors": {
+        "neutral": "Grau",
+        "primary": "Blau",
+        "secondary": "Violett",
+        "success": "Grün",
+        "info": "Türkis",
+        "warning": "Gelb",
+        "error": "Rot"
+      }
     }
   },
   "indexing": {
@@ -361,7 +415,9 @@
     "tabs": {
       "password": "Passwort",
       "appearance": "Sprache & Design",
-      "security": "Sicherheit"
+      "security": "Sicherheit",
+      "tags": "Meine Tags",
+      "api": "API-Schlüssel"
     },
     "language": "Sprache",
     "theme": {
@@ -390,6 +446,49 @@
       "enable": "Zwei-Faktor aktivieren",
       "enabled": "Zwei-Faktor-Authentifizierung aktiviert.",
       "failed": "Etwas ist schiefgelaufen."
+    },
+    "tags": {
+      "title": "Eigene Tags",
+      "desc": "Diese Tags siehst nur du. Auf Dokumenten, die du damit markierst, bleiben sie für alle anderen unsichtbar.",
+      "nameLabel": "Name",
+      "namePlaceholder": "z. B. Später lesen",
+      "add": "Anlegen",
+      "empty": "Du hast noch keine eigenen Tags."
+    },
+    "api": {
+      "title": "API-Schlüssel",
+      "desc": "Ein Schlüssel arbeitet mit deinen Rechten — dieselben Ordner, dieselben Tags. Verwendet wird er als Bearer-Token gegen /api/v1.",
+      "nameLabel": "Bezeichnung",
+      "namePlaceholder": "z. B. Archiv-Skript",
+      "expiresLabel": "Läuft ab",
+      "expiresHint": "optional",
+      "create": "Schlüssel erzeugen",
+      "createFailed": "Der Schlüssel ließ sich nicht erzeugen.",
+      "onceTitle": "Der Schlüssel steht hier genau einmal.",
+      "onceDesc": "Danach liegt nur noch der Hash in der Datenbank. Jetzt kopieren und sicher ablegen.",
+      "copy": "Kopieren",
+      "copied": "Schlüssel kopiert.",
+      "empty": "Du hast noch keinen Schlüssel angelegt.",
+      "revoke": "Widerrufen",
+      "revokeFailed": "Der Schlüssel ließ sich nicht widerrufen.",
+      "lastUsed": "zuletzt benutzt {at}",
+      "neverUsed": "noch nie benutzt",
+      "expiresAt": "läuft ab {at}",
+      "docsHint": "Endpunkte, Beispiele und die OpenAPI-Datei stehen in docs/api.md im Repository."
     }
+  },
+  "tags": {
+    "system": {
+      "new": "Neu"
+    },
+    "add": "Tag",
+    "remove": "{tag} entfernen",
+    "personalMarker": "Nur für dich sichtbar",
+    "searchPlaceholder": "Tag suchen oder anlegen",
+    "noneLeft": "Keine weiteren Tags vorhanden.",
+    "createOwn": "„{name}“ als eigenen Tag anlegen",
+    "assignFailed": "Der Tag ließ sich nicht setzen.",
+    "removeFailed": "Der Tag ließ sich nicht entfernen.",
+    "createFailed": "Der Tag ließ sich nicht anlegen."
   }
 }

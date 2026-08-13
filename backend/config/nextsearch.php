@@ -102,6 +102,37 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Tags
+    |--------------------------------------------------------------------------
+    |
+    | The "Neu" tag is created by `php artisan nextsearch:bootstrap` and hangs on
+    | every document indexed for the first time. The value below is only the
+    | starting point — an administrator adjusts the duration in the interface,
+    | and a change there is not overwritten on the next start.
+    |
+    */
+
+    'tags' => [
+        'new_duration_minutes' => (int) env('TAGS_NEW_DURATION_MINUTES', 7 * 24 * 60),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Öffentliche API
+    |--------------------------------------------------------------------------
+    |
+    | Requests per minute per API key on /api/v1. Generous enough for a script
+    | that tags a few thousand documents, tight enough to notice a runaway loop.
+    | Documented in docs/api.md.
+    |
+    */
+
+    'api' => [
+        'rate_limit' => (int) env('API_RATE_LIMIT', 120),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Suchindex
     |--------------------------------------------------------------------------
     */

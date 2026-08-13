@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { DocumentTag } from '~/composables/useTags'
+
 interface DocumentDetail {
   uuid: string
   name: string
@@ -13,6 +15,7 @@ interface DocumentDetail {
   ocr_used: boolean
   metadata: Record<string, string | number> | null
   has_preview: boolean
+  tags: DocumentTag[]
   instance: { name: string, uuid: string }
   folder: { label: string, uuid: string }
   nextcloud_url: string
@@ -163,6 +166,11 @@ const metadataRows = computed(() => {
             </p>
           </div>
         </div>
+
+        <TagPicker
+          v-model="document.tags"
+          :document-uuid="document.uuid"
+        />
 
         <!-- The original is streamed by the backend; the Nextcloud credentials
              stay there. -->

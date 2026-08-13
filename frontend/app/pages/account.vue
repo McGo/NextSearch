@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { TAG_COLORS } from '~/composables/useTags'
+
 const { t, locale, locales, setLocale } = useI18n()
 useHead({ title: () => t('account.title') })
 
@@ -7,10 +9,12 @@ const toast = useToast()
 const colorMode = useColorMode()
 const { user, refresh: refreshAuth } = useAuth()
 
-type TabKey = 'password' | 'security' | 'appearance'
+type TabKey = 'password' | 'security' | 'tags' | 'api' | 'appearance'
 const tabs: { key: TabKey, label: string }[] = [
   { key: 'password', label: t('account.tabs.password') },
   { key: 'security', label: t('account.tabs.security') },
+  { key: 'tags', label: t('account.tabs.tags') },
+  { key: 'api', label: t('account.tabs.api') },
   { key: 'appearance', label: t('account.tabs.appearance') }
 ]
 const active = ref<TabKey>('password')
@@ -111,6 +115,115 @@ async function disableTwoFactor() {
     tfaBusy.value = false
   }
 }
+
+// --- Own tags ---------------------------------------------------------------
+const { items: allTags, load: loadTags, create: createTag, remove: removeTag, label: tagLabel } = useTags()
+
+const ownTags = computed(() => allTags.value.filter(tag => tag.is_private))
+const newTagName = ref('')
+const newTagColor = ref('neutral')
+const tagBusy = ref(false)
+
+onMounted(() => {
+  loadTags().catch(() => { /* the list just stays empty */ })
+})
+
+async function addOwnTag() {
+  if (newTagName.value.trim() === '') return
+
+  tagBusy.value = true
+  try {
+    await createTag({ name: newTagName.value.trim(), color: newTagColor.value })
+    newTagName.value = ''
+  } catch (e) {
+    toast.add({ title: e instanceof ApiError ? e.message : t('tags.createFailed'), color: 'error' })
+  } finally {
+    tagBusy.value = false
+  }
+}
+
+async function dropOwnTag(uuid: string) {
+  tagBusy.value = true
+  try {
+    await removeTag(uuid)
+  } catch {
+    toast.add({ title: t('tags.removeFailed'), color: 'error' })
+  } finally {
+    tagBusy.value = false
+  }
+}
+
+// --- API keys ---------------------------------------------------------------
+interface ApiKey {
+  uuid: string
+  name: string
+  last_four: string
+  expires_at: string | null
+  last_used_at: string | null
+  created_at: string | null
+}
+
+const keys = ref<ApiKey[]>([])
+const keyName = ref('')
+const keyExpires = ref('')
+const keyBusy = ref(false)
+const keyError = ref<string | null>(null)
+// Shown exactly once, right after creation — afterwards only the hash exists.
+const freshKey = ref<string | null>(null)
+
+async function loadKeys() {
+  const response = await api.get<{ data: ApiKey[] }>('/api/auth/tokens')
+  keys.value = response.data
+}
+
+onMounted(() => {
+  loadKeys().catch(() => { /* the list just stays empty */ })
+})
+
+async function createKey() {
+  if (keyName.value.trim() === '') return
+
+  keyBusy.value = true
+  keyError.value = null
+
+  try {
+    const created = await api.post<ApiKey & { token: string }>('/api/auth/tokens', {
+      name: keyName.value.trim(),
+      ...(keyExpires.value ? { expires_at: keyExpires.value } : {})
+    })
+
+    freshKey.value = created.token
+    keyName.value = ''
+    keyExpires.value = ''
+    await loadKeys()
+  } catch (e) {
+    keyError.value = e instanceof ApiError
+      ? (Object.values(e.errors)[0]?.[0] || e.message)
+      : t('account.api.createFailed')
+  } finally {
+    keyBusy.value = false
+  }
+}
+
+async function revokeKey(uuid: string) {
+  keyBusy.value = true
+  try {
+    await api.del(`/api/auth/tokens/${uuid}`)
+    await loadKeys()
+  } catch {
+    toast.add({ title: t('account.api.revokeFailed'), color: 'error' })
+  } finally {
+    keyBusy.value = false
+  }
+}
+
+async function copyKey() {
+  if (!freshKey.value) return
+  await navigator.clipboard.writeText(freshKey.value)
+  toast.add({ title: t('account.api.copied'), color: 'success' })
+}
+
+const { dateTime } = useFormat()
 
 // --- Appearance -------------------------------------------------------------
 const flagOf = (l: unknown) => (l as { flag?: string } | undefined)?.flag
@@ -379,6 +492,226 @@ const themeOptions = [
           @click="startEnrolment"
         />
       </template>
+    </section>
+
+    <!-- Own tags -->
+    <section
+      v-else-if="active === 'tags'"
+      class="max-w-md space-y-6"
+    >
+      <div>
+        <h2 class="font-medium">
+          {{ t('account.tags.title') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ t('account.tags.desc') }}
+        </p>
+      </div>
+
+      <form
+        class="flex flex-wrap items-end gap-2"
+        @submit.prevent="addOwnTag"
+      >
+        <UFormField
+          :label="t('account.tags.nameLabel')"
+          name="name"
+          class="flex-1 min-w-40"
+        >
+          <UInput
+            v-model="newTagName"
+            maxlength="120"
+            :placeholder="t('account.tags.namePlaceholder')"
+            class="w-full"
+          />
+        </UFormField>
+
+        <UFormField
+          :label="t('admin.tags.colorLabel')"
+          name="color"
+        >
+          <USelect
+            v-model="newTagColor"
+            :items="TAG_COLORS.map(value => ({ value, label: t(`admin.tags.colors.${value}`) }))"
+            value-key="value"
+            class="w-36"
+          />
+        </UFormField>
+
+        <UButton
+          type="submit"
+          icon="i-lucide-plus"
+          :loading="tagBusy"
+          :label="t('account.tags.add')"
+        />
+      </form>
+
+      <p
+        v-if="ownTags.length === 0"
+        class="text-sm text-muted"
+      >
+        {{ t('account.tags.empty') }}
+      </p>
+
+      <ul
+        v-else
+        class="divide-y divide-default rounded-lg border border-default"
+      >
+        <li
+          v-for="tag in ownTags"
+          :key="tag.uuid"
+          class="flex items-center gap-3 px-3 py-2"
+        >
+          <TagChip :tag="tag" />
+          <span class="flex-1 truncate text-xs text-muted">{{ tag.slug }}</span>
+          <UButton
+            size="xs"
+            color="error"
+            variant="ghost"
+            icon="i-lucide-trash-2"
+            :disabled="tagBusy"
+            :aria-label="t('tags.remove', { tag: tagLabel(tag) })"
+            @click="dropOwnTag(tag.uuid)"
+          />
+        </li>
+      </ul>
+    </section>
+
+    <!-- API keys -->
+    <section
+      v-else-if="active === 'api'"
+      class="max-w-2xl space-y-6"
+    >
+      <div>
+        <h2 class="font-medium">
+          {{ t('account.api.title') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ t('account.api.desc') }}
+        </p>
+      </div>
+
+      <!-- The one and only time the key is legible. -->
+      <div
+        v-if="freshKey"
+        class="rounded-lg border border-primary/40 bg-primary/5 p-3 space-y-2"
+      >
+        <p class="text-sm font-medium">
+          {{ t('account.api.onceTitle') }}
+        </p>
+        <p class="text-xs text-muted">
+          {{ t('account.api.onceDesc') }}
+        </p>
+        <div class="flex items-center gap-2">
+          <code class="min-w-0 flex-1 truncate rounded bg-elevated px-2 py-1.5 font-mono text-sm select-all">{{ freshKey }}</code>
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-copy"
+            :label="t('account.api.copy')"
+            @click="copyKey"
+          />
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-x"
+            :aria-label="t('common.close')"
+            @click="freshKey = null"
+          />
+        </div>
+      </div>
+
+      <form
+        class="flex flex-wrap items-end gap-2"
+        @submit.prevent="createKey"
+      >
+        <UFormField
+          :label="t('account.api.nameLabel')"
+          name="name"
+          class="flex-1 min-w-40"
+        >
+          <UInput
+            v-model="keyName"
+            maxlength="120"
+            :placeholder="t('account.api.namePlaceholder')"
+            class="w-full"
+          />
+        </UFormField>
+
+        <UFormField
+          :label="t('account.api.expiresLabel')"
+          name="expires_at"
+          :hint="t('account.api.expiresHint')"
+        >
+          <UInput
+            v-model="keyExpires"
+            type="date"
+            class="w-44"
+          />
+        </UFormField>
+
+        <UButton
+          type="submit"
+          icon="i-lucide-key"
+          :loading="keyBusy"
+          :label="t('account.api.create')"
+        />
+      </form>
+
+      <UAlert
+        v-if="keyError"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        :description="keyError"
+      />
+
+      <p
+        v-if="keys.length === 0"
+        class="text-sm text-muted"
+      >
+        {{ t('account.api.empty') }}
+      </p>
+
+      <ul
+        v-else
+        class="divide-y divide-default rounded-lg border border-default"
+      >
+        <li
+          v-for="key in keys"
+          :key="key.uuid"
+          class="flex flex-wrap items-center gap-3 px-3 py-2"
+        >
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-medium">
+              {{ key.name }}
+              <span class="font-mono text-xs text-muted">…{{ key.last_four }}</span>
+            </p>
+            <p class="text-xs text-muted">
+              {{ key.last_used_at
+                ? t('account.api.lastUsed', { at: dateTime(key.last_used_at) })
+                : t('account.api.neverUsed') }}
+              <template v-if="key.expires_at">
+                · {{ t('account.api.expiresAt', { at: dateTime(key.expires_at) }) }}
+              </template>
+            </p>
+          </div>
+          <UButton
+            size="xs"
+            color="error"
+            variant="ghost"
+            icon="i-lucide-trash-2"
+            :disabled="keyBusy"
+            :label="t('account.api.revoke')"
+            @click="revokeKey(key.uuid)"
+          />
+        </li>
+      </ul>
+
+      <p class="text-xs text-muted">
+        {{ t('account.api.docsHint') }}
+      </p>
     </section>
 
     <!-- Appearance: language + theme -->

@@ -8,6 +8,7 @@ use App\Services\Extraction\TikaClient;
 use App\Services\Nextcloud\ReadOnlyWebDavClient;
 use App\Services\Preview\PreviewRenderer;
 use App\Services\Search\SearchIndex;
+use App\Services\Tags\TagService;
 use App\Support\DocumentDto;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -42,6 +43,7 @@ class ProcessDocumentJob implements ShouldQueue
         TikaClient $tika,
         PreviewRenderer $previews,
         SearchIndex $index,
+        TagService $tags,
     ): void {
         $document = $this->document->fresh(['folder.instance', 'instance']);
 
@@ -73,6 +75,10 @@ class ProcessDocumentJob implements ShouldQueue
 
             $textKey = $this->storeText($document->uuid, $extraction->text);
 
+            // Written exactly once. A rebuild reprocesses everything, and
+            // without this marker the automation would call it all new again.
+            $firstIndex = $document->first_indexed_at === null;
+
             $document->forceFill([
                 'text_key' => $textKey,
                 'preview_key' => $previewKey,
@@ -82,9 +88,16 @@ class ProcessDocumentJob implements ShouldQueue
                 'state' => Document::STATE_INDEXED,
                 'failure_reason' => null,
                 'indexed_at' => now(),
+                'first_indexed_at' => $document->first_indexed_at ?? now(),
             ])->save();
 
-            $index->upsert(DocumentDto::fromModel($document, $extraction->text));
+            if ($firstIndex) {
+                $tags->applyAutoTags($document);
+            }
+
+            // The tags go in with the same write — no second round trip to the
+            // index just to attach "Neu".
+            $index->upsert(DocumentDto::fromModel($document, $extraction->text, $tags->tokensFor($document)));
 
             // Only the successful run decrements the run. On a failure failed()
             // takes over once all attempts are used up — otherwise the counter

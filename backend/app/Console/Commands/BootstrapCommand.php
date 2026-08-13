@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Tag;
 use App\Models\User;
 use App\Services\Search\SearchIndex;
 use Illuminate\Console\Command;
@@ -20,10 +21,41 @@ class BootstrapCommand extends Command
     public function handle(SearchIndex $index): int
     {
         $this->ensureAdmin();
+        $this->ensureSystemTags();
         $this->ensureBucket();
         $this->ensureIndex($index);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * The tags that come with the installation. "Neu" is created once; name,
+     * colour, duration and the on/off switch afterwards belong to whoever
+     * administers the instance, so an existing row stays untouched.
+     */
+    private function ensureSystemTags(): void
+    {
+        if (Tag::query()->where('slug', Tag::SLUG_NEW)->whereNull('owner_id')->exists()) {
+            return;
+        }
+
+        $tag = new Tag;
+        $tag->forceFill([
+            'slug' => Tag::SLUG_NEW,
+            // Null on purpose: the interface translates system tags, so the
+            // label follows the language instead of the seed.
+            'name' => null,
+            'color' => 'primary',
+            'scope' => Tag::SCOPE_GLOBAL,
+            'assign_policy' => Tag::POLICY_EVERYONE,
+            'is_system' => true,
+            'enabled' => true,
+            'position' => 0,
+            'auto_rule' => Tag::AUTO_NEW_DOCUMENT,
+            'auto_duration_minutes' => (int) config('nextsearch.tags.new_duration_minutes'),
+        ])->save();
+
+        $this->info('System tag "new" created.');
     }
 
     private function ensureAdmin(): void

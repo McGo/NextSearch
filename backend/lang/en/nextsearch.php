@@ -52,6 +52,17 @@ return [
         'run_started' => 'Run started.',
         'run_already' => 'A run is already in progress for this folder.',
     ],
+    'tag' => [
+        'admin_only' => 'Only administrators maintain the instance vocabulary.',
+        'system_protected' => 'This tag comes with the installation and cannot be deleted.',
+        'scope_immutable' => 'The scope is set when a tag is created and cannot be changed afterwards.',
+        'auto_needs_global' => 'An automatic tag has to be global — nobody in particular assigns it.',
+        'unknown' => 'This tag does not exist.',
+        'unknown_named' => 'Tag ":tag" does not exist.',
+        'not_assignable' => 'You may not assign this tag.',
+        'not_assignable_named' => 'You may not assign the tag ":tag".',
+        'nothing_to_do' => 'Give at least one tag to add or to remove.',
+    ],
     'user' => [
         'cannot_delete_self' => 'You cannot delete your own account.',
         'last_admin' => 'At least one administrator must remain.',

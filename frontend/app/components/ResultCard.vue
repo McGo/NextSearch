@@ -84,6 +84,17 @@ const folderImage = computed(() => folderImageById.value[props.hit.folder_id] ??
         v-html="hit.snippet"
       />
 
+      <div
+        v-if="hit.tags?.length"
+        class="flex flex-wrap items-center gap-1 pt-1"
+      >
+        <TagChip
+          v-for="tag in hit.tags"
+          :key="tag.uuid"
+          :tag="tag"
+        />
+      </div>
+
       <div class="flex flex-wrap items-center gap-2 pt-1">
         <UBadge
           size="sm"

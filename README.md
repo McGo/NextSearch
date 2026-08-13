@@ -20,6 +20,8 @@ instances as you like — and makes their contents searchable.
 - **Renders** preview images of the first page.
 - **Searches** the full text, with faceted filters by instance, folder, file type, year,
   size, and the origin of the text.
+- **Tags** documents — shared across the instance or privately, by hand or automatically.
+  Whatever is indexed for the first time carries "Neu" for a while and then stops.
 - **Streams** the original document straight to the browser — no Nextcloud account needed
   for the person searching.
 
@@ -79,7 +81,9 @@ internally to Laravel; everything else sits on the Compose network with no publi
 | `minio` | object storage for previews and text blobs |
 
 More in [docs/architecture.md](docs/architecture.md); format coverage in
-[docs/formats.md](docs/formats.md). Deploying from the published images
+[docs/formats.md](docs/formats.md); tags, their scopes and the automation in
+[docs/tags.md](docs/tags.md); the HTTP API for search and tagging in
+[docs/api.md](docs/api.md). Deploying from the published images
 (`mirkohaaser/nextsearch-app`, `mirkohaaser/nextsearch-web`), running against
 external Postgres, Redis or S3, and moving a setup onto a server:
 [docs/hosting.md](docs/hosting.md). Running it on Unraid as two containers

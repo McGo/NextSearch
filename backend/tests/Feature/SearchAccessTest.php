@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\WatchedFolder;
 use App\Services\Search\DocumentSearch;
 use App\Services\Search\SearchIndex;
+use App\Services\Tags\TagService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Mockery\MockInterface;
@@ -34,7 +35,7 @@ class SearchAccessTest extends TestCase
             $this->assertStringNotContainsString((string) $forbidden->id, implode(' ', array_filter($options['filter'], 'is_string')));
         });
 
-        (new DocumentSearch($index))->search($user, 'rechnung');
+        (new DocumentSearch($index, new TagService($index)))->search($user, 'rechnung');
     }
 
     #[Test]
@@ -49,7 +50,7 @@ class SearchAccessTest extends TestCase
             }
         });
 
-        (new DocumentSearch($index))->search($admin, 'rechnung');
+        (new DocumentSearch($index, new TagService($index)))->search($admin, 'rechnung');
     }
 
     #[Test]
@@ -63,7 +64,7 @@ class SearchAccessTest extends TestCase
         // mean "see everything" here.
         $index->shouldNotReceive('search');
 
-        $result = (new DocumentSearch($index))->search($user, 'rechnung');
+        $result = (new DocumentSearch($index, new TagService($index)))->search($user, 'rechnung');
 
         $this->assertSame(0, $result['total']);
         $this->assertSame([], $result['hits']);

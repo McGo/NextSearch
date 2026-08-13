@@ -6,14 +6,17 @@ use App\Http\Controllers\Admin\InstanceController;
 use App\Http\Controllers\Admin\QueueController;
 use App\Http\Controllers\Admin\StatusController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\ApiTokenController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentTagController;
 use App\Http\Controllers\IndexingStatusController;
 use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -59,6 +62,24 @@ Route::prefix('api')->group(function () {
         Route::get('/saved-searches', [SavedSearchController::class, 'index']);
         Route::post('/saved-searches', [SavedSearchController::class, 'store']);
         Route::delete('/saved-searches/{savedSearch}', [SavedSearchController::class, 'destroy']);
+
+        // API keys for /api/v1. Managed over the session only — a key cannot
+        // mint another one.
+        Route::get('/auth/tokens', [ApiTokenController::class, 'index']);
+        Route::post('/auth/tokens', [ApiTokenController::class, 'store']);
+        Route::delete('/auth/tokens/{apiToken}', [ApiTokenController::class, 'destroy']);
+
+        // Tags. The same controllers answer under /api/v1 with a personal key;
+        // see routes/v1.php.
+        Route::get('/tags', [TagController::class, 'index']);
+        Route::post('/tags', [TagController::class, 'store']);
+        Route::patch('/tags/{tag}', [TagController::class, 'update']);
+        Route::delete('/tags/{tag}', [TagController::class, 'destroy']);
+
+        Route::get('/documents/{document}/tags', [DocumentTagController::class, 'index']);
+        Route::post('/documents/{document}/tags', [DocumentTagController::class, 'store']);
+        Route::put('/documents/{document}/tags', [DocumentTagController::class, 'replace']);
+        Route::delete('/documents/{document}/tags/{tagKey}', [DocumentTagController::class, 'destroy']);
 
         Route::get('/documents/{document}', [DocumentController::class, 'show']);
         Route::get('/documents/{document}/raw', [DocumentController::class, 'raw']);

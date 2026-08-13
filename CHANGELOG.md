@@ -10,6 +10,33 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+### Added
+
+- **Tags.** Documents can be marked and filtered by tags. An administrator keeps the
+  instance vocabulary under Administration › Tags; anyone can create private tags for
+  themselves, straight from the picker on a document. Each tag carries a scope: a global
+  one's assignment is visible to everyone with access, a personal one's only to whoever
+  made it. Whether a global tag may be assigned by anyone or by administrators alone is
+  set per tag. Tags appear in the filter panel as two facets, "Tags" and "Meine Tags".
+  Details in [docs/tags.md](docs/tags.md).
+- **The "Neu" tag assigns itself.** Every installation ships with one system tag that
+  hangs on documents indexed for the first time and falls off after a set time, seven days
+  by default. A folder's initial crawl stays clear of it — on the first run everything is
+  new, and that is no filter. A rebuild does not fire it again. Name, colour and shelf life
+  are adjustable; deleting it is not.
+- **HTTP API under `/api/v1`.** Searching, reading the vocabulary and setting or removing
+  tags from a script, including a bulk call for up to 500 documents. Authentication is a
+  personal API key created under User settings › API keys — it carries its owner's
+  permissions and nothing more. Documented in [docs/api.md](docs/api.md), with an OpenAPI
+  file at [docs/api/openapi.yaml](docs/api/openapi.yaml).
+
+### Changed
+
+- **Rebuilding the index keeps the documents.** *Rebuild index* used to drop every document
+  row and let the crawl write them again. With tags hanging on those rows that would throw
+  away what people sorted by hand, so the rows now stay and only their state is reset.
+  *Clear index* is unchanged and still removes everything.
+
 ## [0.2.6] — 2026-07-28
 
 ### Fixed

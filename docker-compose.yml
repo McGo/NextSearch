@@ -51,6 +51,11 @@ x-app-env: &app-env
   INDEX_MAX_FILE_SIZE_MB: ${INDEX_MAX_FILE_SIZE_MB:-100}
   INDEX_EXTENSIONS: ${INDEX_EXTENSIONS:-}
 
+  # Only the starting point for the "Neu" tag — an administrator adjusts the
+  # shelf life in the interface, and that is not overwritten on restart.
+  TAGS_NEW_DURATION_MINUTES: ${TAGS_NEW_DURATION_MINUTES:-10080}
+  API_RATE_LIMIT: ${API_RATE_LIMIT:-120}
+
   TIKA_URL: ${TIKA_URL:-http://tika:9998}
   TIKA_TIMEOUT: ${TIKA_TIMEOUT:-300}
   TIKA_OCR_ENABLED: ${TIKA_OCR_ENABLED:-true}

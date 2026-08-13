@@ -49,6 +49,7 @@ const userMenuItems = computed(() => [
         { label: t('userMenu.userManagement'), icon: 'i-lucide-users', to: '/admin/users' },
         { label: t('nav.instances'), icon: 'i-lucide-cloud', to: '/admin/instances' },
         { label: t('nav.folders'), icon: 'i-lucide-folder-tree', to: '/admin/folders' },
+        { label: t('nav.tags'), icon: 'i-lucide-tag', to: '/admin/tags' },
         { label: t('nav.status'), icon: 'i-lucide-activity', to: '/admin/status' },
         { label: t('nav.appearance'), icon: 'i-lucide-palette', to: '/admin/settings' }
       ]]

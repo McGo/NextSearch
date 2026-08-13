@@ -2,9 +2,15 @@
 
 namespace App\Providers;
 
+use App\Models\ApiToken;
 use App\Models\Document;
+use App\Models\User;
 use App\Services\Search\SearchIndex;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::shouldBeStrict(! $this->app->isProduction());
         Model::unguard(false);
+
+        $this->registerApiTokenGuard();
+        $this->registerApiRateLimit();
 
         // Behind the Nuxt proxy Laravel would otherwise build http URLs, even
         // though the operator terminates TLS in front of it.
@@ -49,5 +58,49 @@ class AppServiceProvider extends ServiceProvider
 
             return $document;
         });
+    }
+
+    /**
+     * Authentication for /api/v1 — a personal key in the Authorization header
+     * instead of the session cookie the interface uses.
+     *
+     * A key carries no permissions of its own: the request runs as its owner
+     * and sees exactly what that person sees in the interface.
+     */
+    private function registerApiTokenGuard(): void
+    {
+        Auth::viaRequest('api-token', function (Request $request): ?User {
+            $plain = $request->bearerToken();
+
+            if (! is_string($plain) || $plain === '') {
+                return null;
+            }
+
+            // Looked up by hash, so the plain text never has to be compared —
+            // and never has to be stored.
+            $token = ApiToken::query()
+                ->with('user')
+                ->where('token_hash', ApiToken::hash($plain))
+                ->first();
+
+            if ($token === null || $token->hasExpired() || $token->user === null) {
+                return null;
+            }
+
+            $token->touchLastUsed();
+
+            return $token->user;
+        });
+    }
+
+    /**
+     * The rate limit /api/v1 runs on. Counted per key owner, falling back to
+     * the caller's address while a request is still unauthenticated.
+     */
+    private function registerApiRateLimit(): void
+    {
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(
+            (int) config('nextsearch.api.rate_limit')
+        )->by($request->user()?->id ?: $request->ip()));
     }
 }

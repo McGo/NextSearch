@@ -20,14 +20,35 @@ class IndexController extends Controller
 {
     public function clear(SearchIndex $index): JsonResponse
     {
-        $this->reset($index);
+        $index->flush();
+        Document::query()->delete();
+
+        // Without documents there is no stock either — the next crawl starts
+        // from nothing, so the "Neu" automation has to wait for its baseline
+        // again. See TagService::applyAutoTags().
+        WatchedFolder::query()->update(['baseline_at' => null]);
+
+        $this->settle();
 
         return response()->json(['message' => __('nextsearch.index.cleared')]);
     }
 
     public function rebuild(SearchIndex $index, IndexRunner $runner): JsonResponse
     {
-        $this->reset($index);
+        $index->flush();
+
+        // Deliberately not deleting: the tags hang on the document rows, and a
+        // rebuild is meant to renew the index, not throw away what people have
+        // sorted by hand. The full crawl writes every row again via
+        // updateOrCreate, purgeVanished() clears what is gone, and
+        // `nextsearch:reconcile` picks up any orphan left in the index.
+        Document::query()->update([
+            'state' => Document::STATE_PENDING,
+            'failure_reason' => null,
+            'indexed_at' => null,
+        ]);
+
+        $this->settle();
 
         $folders = WatchedFolder::query()->where('enabled', true)->get();
 
@@ -42,14 +63,11 @@ class IndexController extends Controller
     }
 
     /**
-     * Wipes the search index and the document state, drops any queued crawl and
-     * process jobs, and closes runs left hanging so a fresh crawl isn't refused.
+     * Drops any queued crawl and process jobs and closes runs left hanging, so
+     * a fresh crawl isn't refused.
      */
-    private function reset(SearchIndex $index): void
+    private function settle(): void
     {
-        $index->flush();
-        Document::query()->delete();
-
         // Drop stale jobs so nothing runs against the wiped state. Driver-safe:
         // only RedisQueue has clear(); other drivers (and the test fake) don't.
         try {

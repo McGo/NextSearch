@@ -52,6 +52,17 @@ return [
         'run_started' => 'Durchlauf gestartet.',
         'run_already' => 'Für diesen Ordner läuft bereits ein Durchlauf.',
     ],
+    'tag' => [
+        'admin_only' => 'Das Vokabular der Instanz pflegen ausschließlich Administratoren.',
+        'system_protected' => 'Dieser Tag gehört zur Installation und lässt sich nicht löschen.',
+        'scope_immutable' => 'Der Geltungsbereich wird beim Anlegen festgelegt und bleibt danach, wie er ist.',
+        'auto_needs_global' => 'Ein automatischer Tag muss global sein — ihn vergibt niemand persönlich.',
+        'unknown' => 'Diesen Tag gibt es nicht.',
+        'unknown_named' => 'Den Tag ":tag" gibt es nicht.',
+        'not_assignable' => 'Diesen Tag darfst du nicht vergeben.',
+        'not_assignable_named' => 'Den Tag ":tag" darfst du nicht vergeben.',
+        'nothing_to_do' => 'Gib mindestens einen Tag zum Hinzufügen oder Entfernen an.',
+    ],
     'user' => [
         'cannot_delete_self' => 'Das eigene Konto lässt sich nicht löschen.',
         'last_admin' => 'Es muss mindestens ein Administrator übrig bleiben.',

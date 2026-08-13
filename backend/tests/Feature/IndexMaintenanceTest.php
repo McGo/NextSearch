@@ -58,7 +58,10 @@ class IndexMaintenanceTest extends TestCase
             ->assertOk()
             ->assertJsonPath('folders', 2);
 
-        $this->assertSame(0, Document::query()->count());
+        // The rows stay: the tags hang on them, and a rebuild renews the index,
+        // not what people have sorted by hand. Only the state goes back.
+        $this->assertSame(5, Document::query()->count());
+        $this->assertSame(5, Document::query()->where('state', Document::STATE_PENDING)->count());
         // One crawl per enabled folder, the disabled one is skipped.
         Queue::assertPushed(CrawlFolderJob::class, 2);
     }

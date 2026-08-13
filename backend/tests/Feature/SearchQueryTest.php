@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\WatchedFolder;
 use App\Services\Search\DocumentSearch;
 use App\Services\Search\SearchIndex;
+use App\Services\Tags\TagService;
 use App\Support\DocumentDto;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -122,7 +123,7 @@ class SearchQueryTest extends TestCase
             return ['hits' => [], 'totalHits' => 0];
         });
 
-        (new DocumentSearch($index))->search($user, 'suche', $filters);
+        (new DocumentSearch($index, new TagService($index)))->search($user, 'suche', $filters);
 
         return $captured;
     }

@@ -19,11 +19,32 @@ export interface SearchHit {
   has_preview: boolean
   highlighted_name: string
   snippet: string | null
+  /** Only what this user may see — global tags plus their own. */
+  tags: TagBrief[]
+}
+
+export interface TagBrief {
+  uuid: string
+  slug: string
+  name: string | null
+  color: string
+  scope: 'global' | 'personal'
+  is_system: boolean
+}
+
+export interface FacetValue {
+  value: string
+  count: number
+  /** Set on tag facets: the tag's own label, colour and slug. */
+  label?: string | null
+  color?: string
+  slug?: string
+  is_system?: boolean
 }
 
 export interface Facet {
   name: string
-  values: { value: string, count: number }[]
+  values: FacetValue[]
 }
 
 export interface SearchResult {

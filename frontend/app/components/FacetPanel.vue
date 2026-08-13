@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Facet } from '~/composables/useSearch'
+import type { Facet, FacetValue } from '~/composables/useSearch'
 
 defineProps<{
   facets: Facet[]
@@ -33,6 +33,33 @@ function facetImage(facet: string, value: string): string | null {
   if (facet === 'folder_label') return folderImageByLabel.value[value] ?? null
   if (facet === 'instance_name') return instanceImageByName.value[value] ?? null
   return null
+}
+
+const { label: tagLabel } = useTags()
+
+/**
+ * Tag facets bring their own label along — the backend resolves the uuid, and
+ * a system tag without a name of its own is translated here.
+ */
+function entryLabel(facet: string, entry: FacetValue): string {
+  if (entry.slug === undefined) return facetValue(facet, entry.value)
+
+  return tagLabel({ name: entry.label ?? null, slug: entry.slug, is_system: entry.is_system === true })
+}
+
+/** Colour dot in front of a tag, in place of the origin facets' image. */
+function entryDot(entry: FacetValue): string | null {
+  if (entry.color === undefined) return null
+
+  return {
+    neutral: 'bg-neutral-400',
+    primary: 'bg-primary',
+    secondary: 'bg-secondary',
+    success: 'bg-success',
+    info: 'bg-info',
+    warning: 'bg-warning',
+    error: 'bg-error'
+  }[entry.color] ?? 'bg-neutral-400'
 }
 </script>
 
@@ -93,7 +120,12 @@ function facetImage(facet: string, value: string): string | null {
                 class="size-4 shrink-0 rounded object-cover"
                 loading="lazy"
               >
-              <span class="truncate">{{ facetValue(facet.name, entry.value) }}</span>
+              <span
+                v-else-if="entryDot(entry)"
+                class="size-2 shrink-0 rounded-full"
+                :class="entryDot(entry)!"
+              />
+              <span class="truncate">{{ entryLabel(facet.name, entry) }}</span>
             </span>
             <span class="text-xs text-muted tabular-nums">{{ entry.count }}</span>
           </button>

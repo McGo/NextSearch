@@ -108,6 +108,14 @@ class IndexRun extends Model
         WatchedFolder::query()
             ->whereKey($this->watched_folder_id)
             ->update(['last_crawled_at' => now(), 'crawl_requested_at' => null]);
+
+        // The first completed run draws the line: everything found up to here
+        // is the existing stock, everything after it is genuinely new. Only
+        // from now on does the "Neu" automation apply — see TagService.
+        WatchedFolder::query()
+            ->whereKey($this->watched_folder_id)
+            ->whereNull('baseline_at')
+            ->update(['baseline_at' => now()]);
     }
 
     public function recordError(string $path, string $message): void

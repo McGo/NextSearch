@@ -68,6 +68,25 @@ class User extends Authenticatable
         return $this->hasMany(SavedSearch::class);
     }
 
+    /**
+     * The private tags this user created for themselves. The instance
+     * vocabulary is not in here — see Tag::scopeVisibleTo().
+     *
+     * @return HasMany<Tag, $this>
+     */
+    public function tags(): HasMany
+    {
+        return $this->hasMany(Tag::class, 'owner_id');
+    }
+
+    /**
+     * @return HasMany<ApiToken, $this>
+     */
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(ApiToken::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;

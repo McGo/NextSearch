@@ -1,0 +1,637 @@
+openapi: 3.1.0
+
+info:
+  title: NextSearch API
+  version: "1.0"
+  description: |
+    Search and tagging over HTTP, authenticated with a personal API key.
+
+    A key carries no permissions of its own: a request does exactly what its
+    owner can do in the interface — the same folder grants, the same tags.
+    Create one under User settings › API keys; the plain text is shown once.
+
+    Prose, examples and the parts this file cannot express:
+    https://github.com/McGo/NextSearch/blob/main/docs/api.md
+  license:
+    name: AGPL-3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.html
+
+servers:
+  - url: https://search.example.org/api/v1
+    description: Replace the host with your own installation.
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Account
+  - name: Documents
+  - name: Tags
+
+paths:
+  /me:
+    get:
+      tags: [Account]
+      summary: The account this key belongs to
+      operationId: me
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /documents:
+    get:
+      tags: [Documents]
+      summary: Search
+      description: |
+        Full-text search across the folders granted to the key's owner. Without
+        `q` it lists everything the caller may see.
+      operationId: searchDocuments
+      parameters:
+        - name: q
+          in: query
+          description: The query.
+          schema: { type: string, maxLength: 500 }
+        - name: filters
+          in: query
+          description: |
+            JSON object of `facet => [values]`. Facet names are the ones the
+            response returns: `tags`, `my_tags`, `instance_name`,
+            `folder_label`, `path_segments`, `extension`, `year`,
+            `size_bucket`, `ocr_used`. Tag facets take tag uuids.
+          example: '{"extension":["pdf"],"year":["2019"]}'
+          schema: { type: string, maxLength: 4000 }
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: relevance
+            enum: [relevance, newest, oldest, largest, name]
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 500, default: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /documents/{document}:
+    parameters:
+      - $ref: "#/components/parameters/DocumentUuid"
+    get:
+      tags: [Documents]
+      summary: One document with its metadata and tags
+      operationId: showDocument
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    $ref: "#/components/schemas/DocumentDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /documents/{document}/tags:
+    parameters:
+      - $ref: "#/components/parameters/DocumentUuid"
+    get:
+      tags: [Tags]
+      summary: The tags on a document
+      description: Global assignments plus the caller's own. Nobody else's.
+      operationId: listDocumentTags
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentTags"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags: [Tags]
+      summary: Add tags
+      description: What is already on the document stays. This is not a replacement.
+      operationId: addDocumentTags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TagKeyList"
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentTags"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+    put:
+      tags: [Tags]
+      summary: Replace the set of tags
+      description: |
+        Only tags the caller could assign anyway are affected — someone else's
+        personal assignment and a tag reserved for administrators stay put.
+      operationId: replaceDocumentTags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TagKeyList"
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentTags"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /documents/{document}/tags/{tag}:
+    parameters:
+      - $ref: "#/components/parameters/DocumentUuid"
+      - name: tag
+        in: path
+        required: true
+        description: Slug or uuid of the tag.
+        schema: { type: string }
+    delete:
+      tags: [Tags]
+      summary: Take one tag off a document
+      operationId: removeDocumentTag
+      responses:
+        "200":
+          $ref: "#/components/responses/DocumentTags"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /documents/tags:
+    post:
+      tags: [Tags]
+      summary: Tag many documents in one call
+      description: |
+        Documents the caller has no access to are skipped rather than refused —
+        a wide selection should not fail over one folder that was never granted.
+      operationId: bulkTagDocuments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documents]
+              properties:
+                documents:
+                  type: array
+                  minItems: 1
+                  maxItems: 500
+                  items: { type: string, format: uuid }
+                add:
+                  type: array
+                  maxItems: 50
+                  description: Slugs or uuids.
+                  items: { type: string }
+                remove:
+                  type: array
+                  maxItems: 50
+                  items: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated:
+                    type: integer
+                    description: Documents actually touched.
+                  skipped:
+                    type: array
+                    description: Uuids the caller has no access to.
+                    items: { type: string, format: uuid }
+                  unknown:
+                    type: array
+                    description: Uuids that match no document.
+                    items: { type: string, format: uuid }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /tags:
+    get:
+      tags: [Tags]
+      summary: The vocabulary
+      description: The instance tags plus the caller's own private ones.
+      operationId: listTags
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Tag" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Tags]
+      summary: Create a tag
+      description: |
+        Without `owner` the result is a private tag: personal in scope, never
+        automatic, visible to nobody else. `owner: instance` adds to the
+        installation's vocabulary and needs an administrator.
+      operationId: createTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/TagWritable"
+                - type: object
+                  required: [name]
+                  properties:
+                    owner:
+                      type: string
+                      default: me
+                      enum: [me, instance]
+                    scope:
+                      type: string
+                      default: global
+                      description: Instance tags only. Fixed once created.
+                      enum: [global, personal]
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Tag" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Only administrators maintain the instance vocabulary.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /tags/{tag}:
+    parameters:
+      - name: tag
+        in: path
+        required: true
+        description: The tag's uuid.
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Tags]
+      summary: Change a tag
+      description: |
+        Slug and scope are not changeable. A system tag additionally refuses
+        `assign_policy` and `auto_rule` — its identity comes with the
+        installation.
+      operationId: updateTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TagWritable" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Tag" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+    delete:
+      tags: [Tags]
+      summary: Delete a tag
+      description: Takes its assignments with it. System tags are refused.
+      operationId: deleteTag
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: The tag comes with the installation.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: A personal API key, `nxs_` followed by 40 characters.
+
+  parameters:
+    DocumentUuid:
+      name: document
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    Unauthorized:
+      description: No key, an unknown one, or one that has expired.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: The folder is not granted to the key's owner.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Unknown — or none of the caller's business.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    ValidationFailed:
+      description: |
+        Something in the request does not hold. An unknown tag, or one the
+        caller may not assign, fails the whole call — nothing is dropped quietly.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ValidationError" }
+    DocumentTags:
+      description: The document's tags as the caller sees them.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items: { $ref: "#/components/schemas/DocumentTag" }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+
+    ValidationError:
+      type: object
+      properties:
+        message: { type: string }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    User:
+      type: object
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [admin, user] }
+        two_factor_enabled: { type: boolean }
+
+    TagWritable:
+      type: object
+      properties:
+        name: { type: string, maxLength: 120 }
+        slug:
+          type: string
+          maxLength: 64
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          description: Optional on create, ignored on update. Derived from the name if absent.
+        color:
+          type: string
+          default: neutral
+          enum: [neutral, primary, secondary, success, info, warning, error]
+        description: { type: [string, "null"], maxLength: 500 }
+        assign_policy:
+          type: string
+          default: everyone
+          description: Global instance tags only.
+          enum: [everyone, admin]
+        position:
+          type: integer
+          minimum: 0
+          maximum: 9999
+          description: Order in the filter panel, lower first.
+        enabled:
+          type: boolean
+          description: A tag switched off leaves the filter; its assignments stay.
+        auto_rule:
+          type: [string, "null"]
+          description: Requires scope `global`.
+          enum: [new_document, null]
+        auto_duration_minutes:
+          type: [integer, "null"]
+          minimum: 1
+          maximum: 525600
+          description: How long an automatic assignment lasts. Null means forever.
+
+    Tag:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        slug: { type: string }
+        name:
+          type: [string, "null"]
+          description: Null on system tags — the interface translates those from the slug.
+        color: { type: string }
+        description: { type: [string, "null"] }
+        scope:
+          type: string
+          enum: [global, personal]
+          description: |
+            `global`: an assignment is visible to everyone with access to the
+            document. `personal`: only to whoever made it.
+        assign_policy: { type: string, enum: [everyone, admin] }
+        is_system:
+          type: boolean
+          description: Comes with the installation. Not deletable.
+        is_private:
+          type: boolean
+          description: Created by the caller for themselves.
+        enabled: { type: boolean }
+        position: { type: integer }
+        auto_rule: { type: [string, "null"] }
+        auto_duration_minutes: { type: [integer, "null"] }
+
+    TagBrief:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: [string, "null"] }
+        color: { type: string }
+        scope: { type: string, enum: [global, personal] }
+        is_system: { type: boolean }
+
+    DocumentTag:
+      allOf:
+        - $ref: "#/components/schemas/TagBrief"
+        - type: object
+          properties:
+            source:
+              type: string
+              enum: [manual, auto]
+            expires_at:
+              type: [string, "null"]
+              format: date-time
+              description: Set only where the automation put the tag.
+
+    TagKeyList:
+      type: object
+      required: [tags]
+      properties:
+        tags:
+          type: array
+          maxItems: 50
+          description: Slugs or uuids. An empty array is allowed and means "none".
+          items: { type: string, maxLength: 64 }
+
+    SearchHit:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        name: { type: string }
+        path: { type: string }
+        directory: { type: string }
+        extension: { type: string }
+        mime_type: { type: [string, "null"] }
+        size: { type: integer }
+        size_bucket: { type: string }
+        modified_at: { type: [integer, "null"], description: Unix timestamp. }
+        year: { type: [integer, "null"] }
+        author: { type: [string, "null"] }
+        title: { type: [string, "null"] }
+        page_count: { type: [integer, "null"] }
+        instance_name: { type: string }
+        folder_label: { type: string }
+        folder_id: { type: integer }
+        ocr_used: { type: boolean }
+        has_preview: { type: boolean }
+        highlighted_name: { type: string }
+        snippet:
+          type: [string, "null"]
+          description: |
+            Escaped text with `<mark>` around the matches. The full text never
+            leaves the server.
+        tags:
+          type: array
+          description: Global assignments plus the caller's own.
+          items: { $ref: "#/components/schemas/TagBrief" }
+
+    Facet:
+      type: object
+      properties:
+        name:
+          type: string
+          description: |
+            `tags` and `my_tags` carry tags; the rest are derived from the file.
+        values:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: On tag facets, the tag's uuid — feed it back into `filters`.
+              count: { type: integer }
+              slug: { type: string, description: Tag facets only. }
+              label: { type: [string, "null"], description: Tag facets only. }
+              color: { type: string, description: Tag facets only. }
+              is_system: { type: boolean, description: Tag facets only. }
+
+    SearchResult:
+      type: object
+      properties:
+        hits:
+          type: array
+          items: { $ref: "#/components/schemas/SearchHit" }
+        total: { type: integer }
+        page: { type: integer }
+        per_page: { type: integer }
+        total_pages: { type: integer }
+        facets:
+          type: array
+          items: { $ref: "#/components/schemas/Facet" }
+        took_ms: { type: [integer, "null"] }
+
+    DocumentDetail:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        name: { type: string }
+        path: { type: string }
+        directory: { type: string }
+        extension: { type: [string, "null"] }
+        mime_type: { type: [string, "null"] }
+        size: { type: integer }
+        modified_at: { type: [string, "null"], format: date-time }
+        indexed_at: { type: [string, "null"], format: date-time }
+        page_count: { type: [integer, "null"] }
+        ocr_used: { type: boolean }
+        metadata: { type: [object, "null"], additionalProperties: true }
+        has_preview: { type: boolean }
+        tags:
+          type: array
+          items: { $ref: "#/components/schemas/DocumentTag" }
+        instance:
+          type: object
+          properties:
+            name: { type: string }
+            uuid: { type: string, format: uuid }
+        folder:
+          type: object
+          properties:
+            label: { type: string }
+            uuid: { type: string, format: uuid }
+        nextcloud_url:
+          type: string
+          description: Deep link into Nextcloud, for whoever has an account there.

@@ -47,6 +47,9 @@ it. The decrement runs as an `UPDATE … RETURNING` — exactly one worker sees 
 closes the run, even when several finish at the same time. Runs caught mid-crawl by a
 restart are cleaned up by an hourly task.
 
+The first run to finish also stamps `watched_folders.baseline_at`. That is the line the
+"Neu" automation waits for — see [tags.md](tags.md).
+
 ## Text extraction
 
 The `apache/tika:3.3.1.0-full` image ships with Tesseract, so a single container covers
@@ -82,6 +85,23 @@ If a user has no grant at all, no query goes out — an empty filter would be eq
 Facets come from `facetDistribution` and build the filter panel. Multiple values of the
 same facet are ORed, different facets are ANDed.
 
+### Tags in the index
+
+Tags live in the database; the index only mirrors them, as a filterable field `tag_tokens`
+holding one entry per assignment — `t12` for a global one, `u17:t12` for user 17's own.
+Meilisearch counts all of them, and `DocumentSearch` throws away every token the caller may
+not see before the response leaves the backend. That is also why `maxValuesPerFacet` sits
+at 1000: the ceiling has to clear the sum across all users, not what one person gets to
+look at.
+
+Tokens are keyed by the tag's id, not its slug, so renaming a tag costs no reindex and an
+instance tag cannot collide with someone's private one of the same name. `TagService`
+writes them: on the initial index they travel with `DocumentDto`, later changes go in as a
+partial update. Only documents in state `indexed` are patched — an unknown id would make
+Meilisearch create a stub rather than skip it.
+
+Details of scopes and the automation: [tags.md](tags.md).
+
 ### Match highlighting
 
 Meilisearch inserts the highlight markers raw into the text, and that text comes from
@@ -108,9 +128,17 @@ download, together with `X-Content-Type-Options: nosniff`.
 - `documents` — a file's state, not its text: path, hash, size, ETag, keys for preview and
   text blob, processing state
 - `index_runs` — one row per crawl with counters and an error list
+- `tags` — the vocabulary: instance tags (`owner_id` null) and private ones, with scope,
+  assignment policy and the automation rule, see [tags.md](tags.md)
+- `document_tag` — the assignments; `user_id` null means global, set means personal
+- `api_tokens` — personal API keys, stored as a SHA-256 hash, see [api.md](api.md)
 
 The path is stored as `text`; the uniqueness index runs over `path_hash` — a Btree index
 over arbitrarily long paths would eventually hit Postgres's row-size limit.
+
+`tags` and `document_tag` each carry two partial unique indexes rather than one plain one.
+Both tables use a nullable column to mean "belongs to nobody in particular", and Postgres
+counts NULLs as distinct — so the null case needs an index of its own.
 
 ## Queues
 

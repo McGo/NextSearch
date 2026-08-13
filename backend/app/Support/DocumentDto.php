@@ -13,6 +13,7 @@ final readonly class DocumentDto
 {
     /**
      * @param  array<string, scalar|null>  $metadata
+     * @param  list<string>  $tagTokens  see TagService::tokensFor()
      */
     public function __construct(
         public string $uuid,
@@ -30,9 +31,13 @@ final readonly class DocumentDto
         public array $metadata = [],
         public bool $ocrUsed = false,
         public ?string $previewKey = null,
+        public array $tagTokens = [],
     ) {}
 
-    public static function fromModel(Document $document, string $text): self
+    /**
+     * @param  list<string>  $tagTokens
+     */
+    public static function fromModel(Document $document, string $text, array $tagTokens = []): self
     {
         $document->loadMissing(['folder', 'instance']);
         $metadata = $document->metadata ?? [];
@@ -53,6 +58,7 @@ final readonly class DocumentDto
             metadata: $metadata,
             ocrUsed: $document->ocr_used,
             previewKey: $document->preview_key,
+            tagTokens: $tagTokens,
         );
     }
 
@@ -100,6 +106,11 @@ final readonly class DocumentDto
             'page_count' => $this->metadata['page_count'] ?? null,
             'ocr_used' => $this->ocrUsed,
             'has_preview' => $this->previewKey !== null,
+
+            // One entry per assignment: `t12` for a global tag, `u17:t12` for
+            // user 17's own. The backend resolves them and drops what the
+            // caller may not see — the raw tokens never reach the browser.
+            'tag_tokens' => $this->tagTokens,
 
             'content' => mb_substr($this->text, 0, $limit),
         ];

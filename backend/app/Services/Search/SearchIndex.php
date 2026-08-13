@@ -44,12 +44,20 @@ class SearchIndex
                 'path_segments',
                 'extension', 'mime_type', 'year', 'month', 'size_bucket',
                 'author', 'language', 'ocr_used', 'has_preview',
+                // Tags, encoded per assignment: `t12` is global, `u17:t12`
+                // belongs to user 17 alone. See TagService.
+                'tag_tokens',
             ],
 
             'sortableAttributes' => ['modified_at', 'size', 'name'],
             'displayedAttributes' => ['*'],
             'rankingRules' => ['words', 'typo', 'proximity', 'attribute', 'sort', 'exactness'],
-            'faceting' => ['maxValuesPerFacet' => 200],
+            // Generous, because the tag facet holds one value per assignment
+            // kind: the global tags plus every user's personal ones. The
+            // backend throws away what the caller may not see — but only after
+            // Meilisearch has counted it, so the ceiling has to sit above the
+            // sum, not above what one person gets to look at.
+            'faceting' => ['maxValuesPerFacet' => 1000],
             'pagination' => ['maxTotalHits' => 10_000],
             'stopWords' => ['der', 'die', 'das', 'und', 'oder', 'the', 'and', 'of'],
             'typoTolerance' => [
@@ -78,6 +86,24 @@ class SearchIndex
     }
 
     /**
+     * Partial update: the given fields are merged, everything else on the
+     * document stays as it is. Each entry needs an `id`.
+     *
+     * Careful — an id Meilisearch doesn't know is created rather than skipped.
+     * Only patch documents that are actually in the index.
+     *
+     * @param  list<array<string, mixed>>  $documents
+     */
+    public function patch(array $documents): void
+    {
+        if ($documents === []) {
+            return;
+        }
+
+        $this->client->index($this->name())->updateDocuments($documents, 'id');
+    }
+
+    /**
      * Partial-updates just the folder label on the given documents. Used when a
      * folder is renamed: the facet and the hit subline follow the new name
      * without re-fetching or re-processing the files.
@@ -86,17 +112,10 @@ class SearchIndex
      */
     public function relabelDocuments(array $uuids, string $label): void
     {
-        if ($uuids === []) {
-            return;
-        }
-
-        $documents = array_map(fn (string $uuid) => [
+        $this->patch(array_map(fn (string $uuid) => [
             'id' => str_replace('-', '', $uuid),
             'folder_label' => $label,
-        ], $uuids);
-
-        // updateDocuments merges the given fields, leaving the rest untouched.
-        $this->client->index($this->name())->updateDocuments($documents, 'id');
+        ], $uuids));
     }
 
     /**
