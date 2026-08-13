@@ -10,6 +10,8 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-08-13
+
 ### Added
 
 - **Tags.** Documents can be marked and filtered by tags. An administrator keeps the
@@ -36,6 +38,12 @@ Images for each release are published to Docker Hub as
   row and let the crawl write them again. With tags hanging on those rows that would throw
   away what people sorted by hand, so the rows now stay and only their state is reset.
   *Clear index* is unchanged and still removes everything.
+
+### Fixed
+
+- **File sizes show their decimal again.** Below ten units the size was meant to carry one
+  decimal, but a detour over `Number()` swallowed it — `1 MB` instead of `1,0 MB`. Above ten
+  units nothing changes.
 
 ## [0.2.6] — 2026-07-28
 
@@ -166,6 +174,7 @@ Gotenberg, MinIO, Postgres and Redis.
   documented in `docs/hosting.md`.
 - **Docker Hub publishing** (multi-arch) via a GitHub Actions workflow.
 
+[0.3.0]: https://github.com/McGo/NextSearch/releases/tag/v0.3.0
 [0.2.6]: https://github.com/McGo/NextSearch/releases/tag/v0.2.6
 [0.2.5]: https://github.com/McGo/NextSearch/releases/tag/v0.2.5
 [0.2.4]: https://github.com/McGo/NextSearch/releases/tag/v0.2.4
