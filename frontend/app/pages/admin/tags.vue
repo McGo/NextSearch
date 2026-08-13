@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Tag, TagInput } from '~/composables/useTags'
+import type { Tag, TagAssignPolicy, TagColor, TagInput, TagScope } from '~/composables/useTags'
 import { TAG_COLORS } from '~/composables/useTags'
 
 const { t } = useI18n()
@@ -28,17 +28,35 @@ onMounted(reload)
 
 // --- Form -------------------------------------------------------------------
 
-const emptyForm = (): TagInput & { uuid?: string } => ({
+/**
+ * The form state keeps every field filled — an input bound to `null` is a type
+ * error and an empty box either way. What the API wants as null is turned back
+ * in submit().
+ */
+interface TagForm {
+  name: string
+  color: TagColor
+  description: string
+  scope: TagScope
+  assign_policy: TagAssignPolicy
+  position: number
+  enabled: boolean
+  auto_rule: string | null
+  auto_duration_minutes: number
+}
+
+const DEFAULT_DURATION = 7 * 24 * 60
+
+const emptyForm = (): TagForm => ({
   name: '',
   color: 'neutral',
   description: '',
-  owner: 'instance',
   scope: 'global',
   assign_policy: 'everyone',
   position: 0,
   enabled: true,
   auto_rule: null,
-  auto_duration_minutes: null
+  auto_duration_minutes: DEFAULT_DURATION
 })
 
 const form = reactive(emptyForm())
@@ -52,7 +70,6 @@ const automatic = computed({
   get: () => form.auto_rule === 'new_document',
   set: (on: boolean) => {
     form.auto_rule = on ? 'new_document' : null
-    form.auto_duration_minutes = on ? (form.auto_duration_minutes ?? 7 * 24 * 60) : null
   }
 })
 
@@ -65,7 +82,6 @@ function openCreate() {
 
 function openEdit(tag: Tag) {
   Object.assign(form, {
-    uuid: tag.uuid,
     name: label(tag),
     color: tag.color,
     description: tag.description ?? '',
@@ -74,7 +90,7 @@ function openEdit(tag: Tag) {
     position: tag.position,
     enabled: tag.enabled,
     auto_rule: tag.auto_rule,
-    auto_duration_minutes: tag.auto_duration_minutes
+    auto_duration_minutes: tag.auto_duration_minutes ?? DEFAULT_DURATION
   })
   editing.value = tag
   formError.value = null
@@ -85,10 +101,10 @@ async function submit() {
   saving.value = true
   formError.value = null
 
-  const payload: Partial<TagInput> = {
+  const payload: TagInput = {
     name: form.name.trim(),
     color: form.color,
-    description: form.description?.trim() || null,
+    description: form.description.trim() || null,
     position: Number(form.position) || 0,
     enabled: form.enabled
   }
@@ -100,14 +116,14 @@ async function submit() {
     payload.auto_rule = form.auto_rule
   }
   if (form.auto_rule !== null || isSystem.value) {
-    payload.auto_duration_minutes = form.auto_duration_minutes
+    payload.auto_duration_minutes = Number(form.auto_duration_minutes) || DEFAULT_DURATION
   }
 
   try {
     if (editing.value) {
       await update(editing.value.uuid, payload)
     } else {
-      await create({ ...payload, name: payload.name!, owner: 'instance', scope: form.scope })
+      await create({ ...payload, owner: 'instance', scope: form.scope })
     }
 
     open.value = false
@@ -146,12 +162,15 @@ function duration(minutes: number | null): string {
   return t('admin.tags.minutes', { count: minutes }, minutes)
 }
 
-const colorOptions = TAG_COLORS.map(value => ({ value, label: t(`admin.tags.colors.${value}`) }))
-const scopeOptions = [
+const colorOptions: { value: TagColor, label: string }[]
+  = TAG_COLORS.map(value => ({ value, label: t(`admin.tags.colors.${value}`) }))
+
+const scopeOptions: { value: TagScope, label: string }[] = [
   { value: 'global', label: t('admin.tags.scopes.global') },
   { value: 'personal', label: t('admin.tags.scopes.personal') }
 ]
-const policyOptions = [
+
+const policyOptions: { value: TagAssignPolicy, label: string }[] = [
   { value: 'everyone', label: t('admin.tags.policies.everyone') },
   { value: 'admin', label: t('admin.tags.policies.admin') }
 ]

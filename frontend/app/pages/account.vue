@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TagColor } from '~/composables/useTags'
 import { TAG_COLORS } from '~/composables/useTags'
 
 const { t, locale, locales, setLocale } = useI18n()
@@ -121,8 +122,10 @@ const { items: allTags, load: loadTags, create: createTag, remove: removeTag, la
 
 const ownTags = computed(() => allTags.value.filter(tag => tag.is_private))
 const newTagName = ref('')
-const newTagColor = ref('neutral')
+const newTagColor = ref<TagColor>('neutral')
 const tagBusy = ref(false)
+const tagColorOptions: { value: TagColor, label: string }[]
+  = TAG_COLORS.map(value => ({ value, label: t(`admin.tags.colors.${value}`) }))
 
 onMounted(() => {
   loadTags().catch(() => { /* the list just stays empty */ })
@@ -531,7 +534,7 @@ const themeOptions = [
         >
           <USelect
             v-model="newTagColor"
-            :items="TAG_COLORS.map(value => ({ value, label: t(`admin.tags.colors.${value}`) }))"
+            :items="tagColorOptions"
             value-key="value"
             class="w-36"
           />

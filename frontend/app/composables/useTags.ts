@@ -1,12 +1,21 @@
 export type TagScope = 'global' | 'personal'
 export type TagAssignPolicy = 'everyone' | 'admin'
 
+/** Colours a tag may take. Mirrors Tag::COLORS in the backend. */
+export const TAG_COLORS = ['neutral', 'primary', 'secondary', 'success', 'info', 'warning', 'error'] as const
+
+/**
+ * The union rather than plain string: the interface passes it straight to
+ * Nuxt UI's `color` prop, which only takes these.
+ */
+export type TagColor = typeof TAG_COLORS[number]
+
 export interface Tag {
   uuid: string
   slug: string
   /** Null for system tags — those are translated from the slug. */
   name: string | null
-  color: string
+  color: TagColor
   description: string | null
   scope: TagScope
   assign_policy: TagAssignPolicy
@@ -24,7 +33,7 @@ export interface DocumentTag {
   uuid: string
   slug: string
   name: string | null
-  color: string
+  color: TagColor
   scope: TagScope
   is_system: boolean
   source: 'manual' | 'auto'
@@ -33,7 +42,7 @@ export interface DocumentTag {
 
 export interface TagInput {
   name: string
-  color?: string
+  color?: TagColor
   description?: string | null
   owner?: 'me' | 'instance'
   scope?: TagScope
@@ -43,9 +52,6 @@ export interface TagInput {
   auto_rule?: string | null
   auto_duration_minutes?: number | null
 }
-
-/** Colours a tag may take. Mirrors Tag::COLORS in the backend. */
-export const TAG_COLORS = ['neutral', 'primary', 'secondary', 'success', 'info', 'warning', 'error'] as const
 
 /**
  * The tag vocabulary this user may work with — the instance tags plus their
