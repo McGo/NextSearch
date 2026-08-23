@@ -10,6 +10,8 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-08-23
+
 ### Added
 
 - **MCP server under `/api/mcp`.** NextSearch speaks the Model Context Protocol, so an
