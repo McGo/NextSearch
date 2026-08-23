@@ -10,6 +10,15 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-08-23
+
+### Security
+
+- **Two dependencies with advisories updated.** `league/commonmark` 2.8.3 → 2.10.0 closes
+  a quadratic-time denial of service when parsing crafted Markdown — reachable here,
+  because a `.md` file in a watched folder is rendered in the browser. `guzzlehttp/guzzle`
+  7.15.1 → 7.15.2 closes a host-check bypass through noncanonical hosts.
+
 ### Changed
 
 - **The help page links the documentation it mentions.** Where it talks about the HTTP API
@@ -17,6 +26,9 @@ Images for each release are published to Docker Hub as
   [OpenAPI file](docs/api/openapi.yaml); the MCP section points at
   [docs/mcp.md](docs/mcp.md). The same two hints in the profile were plain text before and
   are links now.
+- **The API specification is tested against the routes.** `docs/api/openapi.yaml` and the
+  registered `/api/v1` routes are compared in both directions, so an endpoint added
+  without its entry in the file fails the suite instead of somebody's client later.
 
 ## [0.5.0] — 2026-08-23
 
@@ -226,6 +238,7 @@ Gotenberg, MinIO, Postgres and Redis.
   documented in `docs/hosting.md`.
 - **Docker Hub publishing** (multi-arch) via a GitHub Actions workflow.
 
+[0.6.0]: https://github.com/McGo/NextSearch/releases/tag/v0.6.0
 [0.5.0]: https://github.com/McGo/NextSearch/releases/tag/v0.5.0
 [0.4.0]: https://github.com/McGo/NextSearch/releases/tag/v0.4.0
 [0.3.0]: https://github.com/McGo/NextSearch/releases/tag/v0.3.0

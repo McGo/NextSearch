@@ -30,8 +30,13 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     version: '0.6.0',
-    date: null,
+    date: '2026-08-23',
     entries: [
+      {
+        kind: 'fixed',
+        de: 'Zwei Abhängigkeiten mit gemeldeten Schwachstellen aktualisiert. Die eine betraf das Rendern von Markdown: eine passend gebaute .md-Datei im überwachten Ordner konnte den Server beim Anzeigen ausbremsen.',
+        en: 'Two dependencies with reported vulnerabilities updated. One concerned rendering markdown: a crafted .md file in a watched folder could bog the server down when displayed.'
+      },
       {
         kind: 'changed',
         de: 'Die Hilfe verlinkt die Dokumentation, die sie nennt: API-Beschreibung und OpenAPI-Datei beim Abschnitt zur HTTP-Schnittstelle, die MCP-Anleitung beim Abschnitt daneben. Dieselben zwei Hinweise in den Benutzereinstellungen waren vorher nur Text.',
