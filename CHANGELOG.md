@@ -194,6 +194,7 @@ Gotenberg, MinIO, Postgres and Redis.
   documented in `docs/hosting.md`.
 - **Docker Hub publishing** (multi-arch) via a GitHub Actions workflow.
 
+[0.4.0]: https://github.com/McGo/NextSearch/releases/tag/v0.4.0
 [0.3.0]: https://github.com/McGo/NextSearch/releases/tag/v0.3.0
 [0.2.6]: https://github.com/McGo/NextSearch/releases/tag/v0.2.6
 [0.2.5]: https://github.com/McGo/NextSearch/releases/tag/v0.2.5
