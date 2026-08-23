@@ -18,7 +18,8 @@ Images for each release are published to Docker Hub as
   the reader, the API limit and the MCP address with its tools. Every value comes from a
   live endpoint, so the page cannot drift away from the installation. Administration
   topics appear only for administrators. Screenshots are generated against a throwaway
-  demo installation — see [docs/help.md](docs/help.md).
+  demo installation, which also produces the pair the README shows — light and dark, so
+  GitHub picks whichever fits the reader. See [docs/help.md](docs/help.md).
 - **Changelog page.** The version number in the footer leads to `/changelog`, which lists
   what changed between versions in the reader's language, marking the version this
   installation runs on.

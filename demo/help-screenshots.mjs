@@ -2,9 +2,12 @@
  * Takes the screenshots the help page shows.
  *
  * Runs inside the official Playwright image against a running installation —
- * see help-screenshots.sh, which is what you actually call. Every shot is taken
- * once per interface language, because a German reader with English screenshots
- * is worse served than with none.
+ * see help-screenshots.sh, which is what you actually call.
+ *
+ * Two sets come out of it. The ones for the help page are taken once per
+ * interface language, because a German reader with English screenshots is worse
+ * served than with none. The ones for the README are English only and come in a
+ * light and a dark variant, so GitHub can show whichever fits the reader.
  *
  * The guard at the top is the important part: this must never run against an
  * installation holding real documents. A screenshot of somebody's invoice in a
@@ -17,6 +20,7 @@ const BASE = process.env.HELP_BASE_URL ?? 'http://host.docker.internal:3000'
 const EMAIL = process.env.ADMIN_EMAIL
 const PASSWORD = process.env.ADMIN_PASSWORD
 const OUT = process.env.HELP_OUT ?? '/out'
+const README_OUT = process.env.README_OUT ?? '/readme'
 const LOCALES = ['de', 'en']
 
 /** Hosts an installation may talk to and still count as a demo. */
@@ -78,6 +82,16 @@ async function useLocale(context, locale) {
   }])
 }
 
+/**
+ * Parks the pointer in the corner. After a click it stays where it was, and
+ * after the next navigation it sits on top of whatever moved under it — a card
+ * with a hover border in the screenshot looks like a selection nobody made.
+ */
+async function park(page) {
+  await page.mouse.move(2, 2)
+  await page.waitForTimeout(150)
+}
+
 async function shoot(target, dir, name, options = {}) {
   await target.screenshot({ path: `${dir}/${name}.png`, animations: 'disabled', ...options })
   console.log(`  ${name}.png`)
@@ -108,6 +122,7 @@ async function openRenderedDocument(page) {
       await hit.click()
       await page.waitForURL('**/documents/**', { timeout: 15000 })
       await page.waitForTimeout(2000)
+      await park(page)
 
       return true
     }
@@ -146,6 +161,7 @@ try {
     // The search, with results and the filter column beside them.
     await page.goto(`${BASE}/?q=rechnung`, { waitUntil: 'networkidle' })
     await page.waitForTimeout(2000)
+    await park(page)
     await shoot(page, dir, 'search')
 
     // The filter column on its own — in the help it stands next to the passage
@@ -173,7 +189,40 @@ try {
     // so the shot stops there.
     await page.goto(`${BASE}/account?tab=mcp`, { waitUntil: 'networkidle' })
     await page.waitForTimeout(1200)
+    await park(page)
     await shoot(page, dir, 'mcp', { clip: { x: 0, y: 0, width: VIEWPORT.width, height: 760 } })
+
+    await context.close()
+  }
+  // The README set: English, and once per colour scheme. GitHub picks by the
+  // reader's theme, and a light screenshot on a dark page is a lamp in the face.
+  await mkdir(README_OUT, { recursive: true })
+
+  for (const scheme of ['light', 'dark']) {
+    console.log(`\nreadme (${scheme}):`)
+
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 900 },
+      deviceScaleFactor: 1,
+      colorScheme: scheme,
+      locale: 'en-GB',
+      timezoneId: 'Europe/Berlin',
+    })
+
+    await useLocale(context, 'en')
+    const page = await context.newPage()
+    await signIn(page)
+
+    await page.goto(`${BASE}/?q=rechnung`, { waitUntil: 'networkidle' })
+    await page.waitForTimeout(2000)
+    await park(page)
+    await shoot(page, README_OUT, `search-${scheme}`)
+
+    if (await openRenderedDocument(page)) {
+      await shoot(page, README_OUT, `document-${scheme}`, {
+        clip: { x: 0, y: 0, width: 1440, height: 640 },
+      })
+    }
 
     await context.close()
   }

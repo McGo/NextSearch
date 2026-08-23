@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #
-# Erzeugt die Screenshots für die Hilfeseite und legt sie unter
-# frontend/public/help-shots/<sprache>/ ab.
+# Erzeugt die Screenshots für die Hilfeseite und fürs README:
+#
+#   frontend/public/help-shots/<sprache>/   Hilfeseite, deutsch und englisch
+#   assets/screenshots/                     README, englisch, hell und dunkel
 #
 #   ./demo/help-screenshots.sh
 #
@@ -28,6 +30,7 @@ PORT_OVERRIDE="${APP_PORT:-}"
 
 PORT="${PORT_OVERRIDE:-${APP_PORT:-3000}}"
 OUT_DIR="frontend/public/help-shots"
+README_DIR="assets/screenshots"
 # Das offizielle Image bringt die Browser mit, das npm-Paket nicht — das wird
 # im Container nachinstalliert, in derselben Version wie die Browser darin.
 PLAYWRIGHT_VERSION="1.56.0"
@@ -42,7 +45,7 @@ if ! curl -fsS -o /dev/null "http://127.0.0.1:${PORT}/api/health"; then
   exit 1
 fi
 
-mkdir -p "$OUT_DIR"
+mkdir -p "$OUT_DIR" "$README_DIR"
 
 echo "[2/3] Playwright im Container starten ..."
 # Der Hostname landet sichtbar in den Bildern (die MCP-Adresse steht auf der
@@ -54,17 +57,22 @@ docker run --rm \
   --add-host "${SHOT_HOST}:host-gateway" \
   -v "$PWD/demo/help-screenshots.mjs:/work/help-screenshots.mjs:ro" \
   -v "$PWD/$OUT_DIR:/out" \
+  -v "$PWD/$README_DIR:/readme" \
   -w /work \
   -e "HELP_BASE_URL=http://${SHOT_HOST}:${PORT}" \
   -e "ADMIN_EMAIL=${ADMIN_EMAIL}" \
   -e "ADMIN_PASSWORD=${ADMIN_PASSWORD}" \
   -e HELP_OUT=/out \
+  -e README_OUT=/readme \
   "$IMAGE" \
   sh -c "npm install --no-save --no-audit --no-fund --loglevel=error playwright@${PLAYWRIGHT_VERSION} \
          && node /work/help-screenshots.mjs"
 
-echo "[3/3] Fertig. Die Bilder liegen unter $OUT_DIR/"
+echo "[3/3] Fertig."
+echo "Hilfeseite:"
 ls -1 "$OUT_DIR"/*/*.png 2>/dev/null | sed 's|^|  |' || true
+echo "README:"
+ls -1 "$README_DIR"/*.png 2>/dev/null | sed 's|^|  |' || true
 
 cat <<'EOF'
 

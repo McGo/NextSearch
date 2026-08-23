@@ -63,8 +63,15 @@ appears twice, the order slips, or a second version is left undated.
 
 ## Regenerating the screenshots
 
-The images live in `frontend/public/help-shots/{de,en}/` and are taken against a
-throwaway installation:
+Two sets come out of one run:
+
+| Where | What |
+|---|---|
+| `frontend/public/help-shots/{de,en}/` | the help page, once per interface language |
+| `assets/screenshots/` | the README, English, in a light and a dark variant |
+
+The README embeds its pair through `<picture>`, so GitHub shows whichever matches the
+reader's theme. Both are taken against a throwaway installation:
 
 ```bash
 make demo
@@ -102,6 +109,8 @@ Notes worth knowing before you change the script:
   `host.docker.internal`.
 - `HelpFigure.vue` hides itself when an image is missing. A checkout without the
   screenshots is a normal state, not a broken one.
+- The pointer is parked in a corner before every shot. It stays where the last click left
+  it, and a card with a hover border in a screenshot reads as a selection nobody made.
 
 ## After a change to the interface
 
