@@ -10,6 +10,27 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+### Added
+
+- **Help page.** `/help` describes this installation rather than NextSearch in general:
+  the connected folders with their intervals, the file formats being read, whether OCR is
+  running and in which languages, the tag vocabulary with what each tag's scope means for
+  the reader, the API limit and the MCP address with its tools. Every value comes from a
+  live endpoint, so the page cannot drift away from the installation. Administration
+  topics appear only for administrators. Screenshots are generated against a throwaway
+  demo installation — see [docs/help.md](docs/help.md).
+- **Changelog page.** The version number in the footer leads to `/changelog`, which lists
+  what changed between versions in the reader's language, marking the version this
+  installation runs on.
+
+### Changed
+
+- **The search page guides through setup.** A fresh installation used to land on an empty
+  result list, which reads the same as a broken one. It now says which of the three steps
+  is due — connect a Nextcloud, pick a folder, wait for the first crawl — and links to
+  where that happens. Whoever lacks the rights for it reads what they are waiting for
+  instead of a search field with nothing behind it.
+
 ## [0.4.0] — 2026-08-23
 
 ### Added

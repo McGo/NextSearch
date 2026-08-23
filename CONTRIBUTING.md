@@ -41,6 +41,14 @@ that and you open an XSS hole.
 **Streamed originals.** `Content-Disposition: inline` only for types in
 `DocumentController::INLINE_TYPES`. HTML and SVG are not among them and must not be added.
 
+**The help page.** A feature is finished when `/help` covers it. Numbers and states go
+into `HelpController` so they stay live; the prose goes into the `help` block of the
+translation files. If the change is visible in the interface, take the screenshots again
+(`./demo/help-screenshots.sh`). A release additionally writes
+`frontend/app/data/changelog.ts` in both languages, next to `CHANGELOG.md`. The whole
+procedure, and why the screenshots may only be taken against a throwaway installation, is
+in [docs/help.md](docs/help.md).
+
 ## Translations
 
 The interface ships in English and German. Adding a language is two steps:

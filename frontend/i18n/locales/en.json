@@ -20,14 +20,16 @@
     "settings": "Settings",
     "savedSearches": "Saved searches",
     "appearance": "Appearance",
-    "tags": "Tags"
+    "tags": "Tags",
+    "changelog": "Changes"
   },
   "userMenu": {
     "changePassword": "Change password",
     "logout": "Sign out",
     "admin": "Administration",
     "userManagement": "User management",
-    "account": "User settings"
+    "account": "User settings",
+    "help": "Help"
   },
   "footer": {
     "note": "Sharing is managed in {app} and applies independently of each Nextcloud's file permissions."
@@ -545,5 +547,129 @@
         "hint": "Only tags that already exist and that you may assign yourself."
       }
     }
+  },
+  "help": {
+    "title": "Help",
+    "subtitle": "What this installation does, with the values that currently apply.",
+    "loading": "Loading …",
+    "footnote": "The numbers and lists on this page come from the running installation. Change a folder, a format or a tag, and it reads differently the next time you open it.",
+    "overview": {
+      "title": "What is in here",
+      "instances": "Nextclouds",
+      "folders": "Folders",
+      "documents": "Documents",
+      "version": "Version",
+      "body": "NextSearch reads the folders listed below, extracts the text from the files and makes it searchable. The files themselves stay in Nextcloud; what lives here is the text, a preview image and the metadata.",
+      "lastIndexed": "Last indexed: {at}.",
+      "pending": "{count} documents still to go.",
+      "folder": "Folder",
+      "instance": "Nextcloud",
+      "interval": "Checked",
+      "everyMinutes": "every {minutes} min",
+      "paused": "paused",
+      "noFolders": "No folder has been shared with you yet. The administrator of this installation can change that.",
+      "noFoldersAdmin": "No folder is set up yet. Connect a Nextcloud under Administration › Instances, then pick a path under Folders.",
+      "changelogHint": "What changed from version to version is under"
+    },
+    "search": {
+      "title": "Searching",
+      "body": "The search covers the contents of the files, the file name and the folder names in the path. Case does not matter, and small typos are absorbed by the index. More words narrow the result rather than widen it.",
+      "figure": "Result list with the filter column",
+      "formats": "{count} file formats are read:",
+      "ocrOn": "PDFs without a text layer and image files go through text recognition, set to {languages}. That takes longer than a file that carries its own text.",
+      "ocrOff": "Text recognition is switched off. Scanned PDFs without a text layer are indexed, but without their text.",
+      "maxSize": "Files above {mb} MB are skipped.",
+      "sorts": "Sort by: {sorts}.",
+      "perPage": "{count} hits per page."
+    },
+    "filter": {
+      "title": "Filtering",
+      "body": "The column beside the results shows what occurs in the current result, with counts: {facets}. One click narrows, a second one takes the filter back off.",
+      "combining": "Several values of the same category act as “or” — pdf or docx. Values from different categories act as “and” — pdf from 2019. The counts follow whatever else is selected.",
+      "figure": "Filter column showing what occurs in the current result"
+    },
+    "documents": {
+      "title": "Opening documents",
+      "body": "A hit leads to the document page: preview of the first page, metadata, tags. From there the original can be viewed in the browser or downloaded — no Nextcloud account needed, the credentials stay on the server. Markdown, text files and e-mails are rendered by NextSearch itself.",
+      "previewOff": "Preview images are switched off in this installation.",
+      "figure": "Document page with preview and tags"
+    },
+    "tags": {
+      "title": "Tags",
+      "body": "The search finds what a file says. Tags record what it means to the people working with it, and in the filter they are a category like any other.",
+      "figure": "The tag picker on a document",
+      "noteGlobal": "visible to everyone",
+      "notePersonal": "visible only to you",
+      "noteOwn": "your own tag",
+      "noteAuto": "assigned automatically",
+      "noteAutoDays": "assigned automatically, falls off after {days} days",
+      "noteReadOnly": "administrators only",
+      "empty": "No tags have been created yet.",
+      "own": "You create your own tags straight from a document, or under User settings › My tags. They belong to you alone — nobody else sees them or where you put them."
+    },
+    "saved": {
+      "title": "Saving searches",
+      "body": "A search including its filters and sort order can be saved below the search field and recalled with one click. Saved searches belong to you and are collected under “Saved searches”."
+    },
+    "access": {
+      "title": "Your access",
+      "body": "Password, two-factor sign-in, your own tags and your keys are under User settings.",
+      "twoFactorOn": "Two-factor sign-in is enabled for your account.",
+      "twoFactorOff": "Two-factor sign-in is not enabled for your account.",
+      "apiTitle": "HTTP API",
+      "apiBody": "Searching and tagging also work over HTTP, with a personal key as a bearer token. The key can do exactly what you can do. The limit is {limit} requests per minute.",
+      "mcpTitle": "MCP",
+      "mcpBody": "An assistant such as Claude can search and set tags over the Model Context Protocol. Available tools: {tools}.",
+      "mcpOauth": "Add the address in the client as a custom connector. The client sends you to an approval page here, where you decide what it may do.",
+      "mcpKeyOnly": "Signing in through the browser is switched off. A client needs a personal key as a bearer token.",
+      "figure": "Connected applications in the user settings",
+      "toAccount": "Go to user settings"
+    },
+    "admin": {
+      "title": "Administration",
+      "body": "The scheduler checks every minute which folder has passed its interval. The default is {minutes} minutes per folder, adjustable per folder.",
+      "instance": "Nextcloud",
+      "host": "Host",
+      "folderCount": "Folders",
+      "people": "Accounts: {users}, {admins} of them with administrator rights.",
+      "states": "{total} documents in the database, {failed} failed, {skipped} skipped. Skipped means the format is not covered or the file is too large.",
+      "permissions": "The shares here have nothing to do with the permissions in Nextcloud. Whoever is granted a folder reads its contents in full text and opens the originals — regardless of what Nextcloud itself would allow."
+    }
+  },
+  "setup": {
+    "title": "Nothing to search yet",
+    "subtitleAdmin": "Three steps to the first hit.",
+    "subtitleUser": "Setup is still under way. What is missing can only be added by an administrator.",
+    "instance": {
+      "title": "Connect a Nextcloud",
+      "body": "Address, user and an app password. NextSearch only ever reads.",
+      "action": "Go to instances"
+    },
+    "folder": {
+      "title": "Pick a folder",
+      "body": "Choose a path from the connected Nextcloud. Subfolders come along.",
+      "action": "Go to folders"
+    },
+    "indexing": {
+      "title": "Let it index",
+      "body": "The first run starts on its own. How long it takes to pull the text out of the files depends on how many there are — longer for scanned PDFs that go through text recognition.",
+      "bodyPending": "{pending} files still to go, {indexed} done. The page pulls in new hits by itself.",
+      "action": "Start a run"
+    },
+    "helpHint": "How this fits together is in the",
+    "helpLink": "help"
+  },
+  "changelog": {
+    "title": "Changes",
+    "subtitle": "What came in between the versions. This installation runs {version}.",
+    "unreleased": "not released yet",
+    "installed": "running here",
+    "kind": {
+      "added": "new",
+      "changed": "changed",
+      "fixed": "fixed"
+    },
+    "toHelp": "Go to help",
+    "toRepo": "Full changelog in the repository"
   }
 }

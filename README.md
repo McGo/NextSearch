@@ -27,6 +27,9 @@ instances as you like — and makes their contents searchable.
   for the person searching.
 - **Answers** an HTTP API for searching and tagging from a script, with a personal key per
   user.
+- **Explains** itself: a help page built from the installation's own state — connected
+  folders, indexed formats, the tag vocabulary — and a changelog behind the version
+  number.
 - **Talks** to assistants over MCP, so Claude can search and tag with the permissions of
   whoever connected it.
 
@@ -161,7 +164,8 @@ internally to Laravel; everything else sits on the Compose network with no publi
 | `minio` | object storage for previews and text blobs |
 
 More in [docs/architecture.md](docs/architecture.md); format coverage in
-[docs/formats.md](docs/formats.md). Deploying from the published images
+[docs/formats.md](docs/formats.md); how the built-in help keeps itself current in
+[docs/help.md](docs/help.md). Deploying from the published images
 (`mirkohaaser/nextsearch-app`, `mirkohaaser/nextsearch-web`), running against
 external Postgres, Redis or S3, and moving a setup onto a server:
 [docs/hosting.md](docs/hosting.md). Running it on Unraid as two containers

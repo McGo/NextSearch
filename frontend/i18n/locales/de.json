@@ -20,14 +20,16 @@
     "settings": "Einstellungen",
     "savedSearches": "Gespeicherte Suchen",
     "appearance": "Darstellung",
-    "tags": "Tags"
+    "tags": "Tags",
+    "changelog": "Änderungen"
   },
   "userMenu": {
     "changePassword": "Passwort ändern",
     "logout": "Abmelden",
     "admin": "Verwaltung",
     "userManagement": "Benutzerverwaltung",
-    "account": "Benutzereinstellungen"
+    "account": "Benutzereinstellungen",
+    "help": "Hilfe"
   },
   "footer": {
     "note": "Freigaben werden in {app} gepflegt und gelten unabhängig von den Dateirechten der jeweiligen Nextcloud."
@@ -545,5 +547,129 @@
         "hint": "Nur Tags, die es schon gibt und die du selbst vergeben darfst."
       }
     }
+  },
+  "help": {
+    "title": "Hilfe",
+    "subtitle": "Was diese Installation kann, mit den Werten, die gerade gelten.",
+    "loading": "Wird geladen …",
+    "footnote": "Die Zahlen und Listen auf dieser Seite kommen aus der laufenden Installation. Ändert sich etwas an Ordnern, Formaten oder Tags, steht es beim nächsten Aufruf hier.",
+    "overview": {
+      "title": "Was hier drinsteckt",
+      "instances": "Nextclouds",
+      "folders": "Ordner",
+      "documents": "Dokumente",
+      "version": "Version",
+      "body": "NextSearch liest die unten aufgeführten Ordner aus, holt den Text aus den Dateien und macht ihn durchsuchbar. Die Dateien selbst bleiben in der Nextcloud; hier liegen Text, Vorschaubild und Metadaten.",
+      "lastIndexed": "Zuletzt indiziert: {at}.",
+      "pending": "{count} Dokumente stehen noch aus.",
+      "folder": "Ordner",
+      "instance": "Nextcloud",
+      "interval": "Prüfintervall",
+      "everyMinutes": "alle {minutes} Min.",
+      "paused": "pausiert",
+      "noFolders": "Für dich ist noch kein Ordner freigegeben. Das ändert der Administrator dieser Installation.",
+      "noFoldersAdmin": "Es ist noch kein Ordner eingerichtet. Unter Verwaltung › Instanzen eine Nextcloud anbinden, danach unter Ordner einen Pfad auswählen.",
+      "changelogHint": "Was sich mit den Versionen geändert hat, steht unter"
+    },
+    "search": {
+      "title": "Suchen",
+      "body": "Die Suche geht über den Inhalt der Dateien, den Dateinamen und die Ordnernamen im Pfad. Groß- und Kleinschreibung spielt keine Rolle, kleinere Tippfehler fängt der Index ab. Mehrere Wörter grenzen ein — je mehr, desto weniger Treffer.",
+      "figure": "Trefferliste mit Filterspalte",
+      "formats": "{count} Dateiformate werden gelesen:",
+      "ocrOn": "Bei PDFs ohne Textebene und bei Bildern läuft Texterkennung, eingestellt auf {languages}. Das dauert länger als bei Dateien mit Textebene.",
+      "ocrOff": "Texterkennung ist ausgeschaltet. Gescannte PDFs ohne Textebene landen im Index, aber ohne ihren Text.",
+      "maxSize": "Dateien über {mb} MB werden übersprungen.",
+      "sorts": "Sortieren nach: {sorts}.",
+      "perPage": "{count} Treffer pro Seite."
+    },
+    "filter": {
+      "title": "Filtern",
+      "body": "Die Spalte neben den Treffern zeigt mit Anzahl, was im aktuellen Ergebnis vorkommt: {facets}. Ein Klick engt ein, ein zweiter nimmt den Filter zurück.",
+      "combining": "Mehrere Werte derselben Kategorie wirken als „oder\" — pdf oder docx. Werte aus verschiedenen Kategorien wirken als „und\" — pdf aus 2019. Die Zahlen an den Werten richten sich nach der übrigen Auswahl.",
+      "figure": "Filterspalte mit dem, was im aktuellen Ergebnis vorkommt"
+    },
+    "documents": {
+      "title": "Dokumente öffnen",
+      "body": "Ein Treffer führt auf die Dokumentseite: Vorschau der ersten Seite, Metadaten, Tags. Von dort lässt sich das Original im Browser ansehen oder herunterladen — ohne eigenes Nextcloud-Konto, die Zugangsdaten bleiben auf dem Server. Markdown, Textdateien und E-Mails stellt NextSearch selbst dar.",
+      "previewOff": "Vorschaubilder sind in dieser Installation abgeschaltet.",
+      "figure": "Dokumentseite mit Vorschau und Tags"
+    },
+    "tags": {
+      "title": "Tags",
+      "body": "Die Suche findet, was in einer Datei steht. Tags halten fest, was sie für die Beteiligten bedeutet, und sind im Filter eine Kategorie wie jede andere.",
+      "figure": "Tag-Auswahl an einem Dokument",
+      "noteGlobal": "für alle sichtbar",
+      "notePersonal": "nur für dich sichtbar",
+      "noteOwn": "dein eigener Tag",
+      "noteAuto": "wird automatisch vergeben",
+      "noteAutoDays": "wird automatisch vergeben, fällt nach {days} Tagen ab",
+      "noteReadOnly": "nur Administratoren vergeben ihn",
+      "empty": "Es sind noch keine Tags angelegt.",
+      "own": "Eigene Tags legst du direkt an einem Dokument an oder unter Benutzereinstellungen › Meine Tags. Sie gehören dir allein — niemand sonst sieht sie oder ihre Zuordnungen."
+    },
+    "saved": {
+      "title": "Suchen speichern",
+      "body": "Eine Suche samt Filtern und Sortierung lässt sich unter dem Suchfeld speichern und später mit einem Klick wieder aufrufen. Gespeicherte Suchen gehören dir und sind unter „Gespeicherte Suchen\" gesammelt."
+    },
+    "access": {
+      "title": "Dein Zugang",
+      "body": "Passwort, Zwei-Faktor-Anmeldung, eigene Tags und Schlüssel stehen unter Benutzereinstellungen.",
+      "twoFactorOn": "Für dein Konto ist die Zwei-Faktor-Anmeldung eingeschaltet.",
+      "twoFactorOff": "Für dein Konto ist die Zwei-Faktor-Anmeldung nicht eingeschaltet.",
+      "apiTitle": "HTTP-API",
+      "apiBody": "Suchen und Tags setzen geht auch per HTTP, mit einem persönlichen Schlüssel als Bearer-Token. Der Schlüssel kann genau das, was du kannst. Das Limit liegt bei {limit} Anfragen pro Minute.",
+      "mcpTitle": "MCP",
+      "mcpBody": "Ein Assistent wie Claude kann über das Model Context Protocol suchen und Tags setzen. Verfügbare Werkzeuge: {tools}.",
+      "mcpOauth": "Die Adresse trägst du im Client als eigenen Connector ein. Der Client schickt dich auf eine Freigabeseite hier, auf der du entscheidest, was er darf.",
+      "mcpKeyOnly": "Die Anmeldung über den Browser ist abgeschaltet. Ein Client braucht einen persönlichen Schlüssel als Bearer-Token.",
+      "figure": "Verbundene Anwendungen in den Benutzereinstellungen",
+      "toAccount": "Zu den Benutzereinstellungen"
+    },
+    "admin": {
+      "title": "Verwaltung",
+      "body": "Der Scheduler prüft jede Minute, welcher Ordner sein Intervall überschritten hat. Voreingestellt sind {minutes} Minuten pro Ordner, änderbar pro Ordner.",
+      "instance": "Nextcloud",
+      "host": "Host",
+      "folderCount": "Ordner",
+      "people": "Konten: {users}, davon {admins} mit Administratorrechten.",
+      "states": "{total} Dokumente in der Datenbank, {failed} fehlgeschlagen, {skipped} übersprungen. Übersprungen heißt: Format nicht vorgesehen oder Datei zu groß.",
+      "permissions": "Die Freigaben hier haben nichts mit den Rechten in der Nextcloud zu tun. Wer einen Ordner freigegeben bekommt, liest dessen Inhalt im Volltext und öffnet die Originale — unabhängig davon, was die Nextcloud selbst erlauben würde."
+    }
+  },
+  "setup": {
+    "title": "Noch nichts zu durchsuchen",
+    "subtitleAdmin": "Drei Schritte bis zum ersten Treffer.",
+    "subtitleUser": "Die Einrichtung läuft noch. Was fehlt, kann nur ein Administrator ergänzen.",
+    "instance": {
+      "title": "Nextcloud anbinden",
+      "body": "Adresse, Benutzer und ein App-Passwort. NextSearch greift ausschließlich lesend zu.",
+      "action": "Zu den Instanzen"
+    },
+    "folder": {
+      "title": "Ordner auswählen",
+      "body": "Einen Pfad aus der angebundenen Nextcloud wählen. Unterordner kommen mit.",
+      "action": "Zu den Ordnern"
+    },
+    "indexing": {
+      "title": "Indizieren lassen",
+      "body": "Der erste Durchlauf startet automatisch. Bis Text aus den Dateien geholt und durchsuchbar ist, dauert es je nach Menge — bei gescannten PDFs mit Texterkennung länger.",
+      "bodyPending": "{pending} Dateien stehen noch aus, {indexed} sind durch. Die Seite holt neue Treffer von selbst nach.",
+      "action": "Durchlauf anstoßen"
+    },
+    "helpHint": "Wie das alles zusammenhängt, steht in der",
+    "helpLink": "Hilfe"
+  },
+  "changelog": {
+    "title": "Änderungen",
+    "subtitle": "Was zwischen den Versionen dazugekommen ist. Diese Installation läuft auf {version}.",
+    "unreleased": "noch nicht veröffentlicht",
+    "installed": "läuft hier",
+    "kind": {
+      "added": "neu",
+      "changed": "geändert",
+      "fixed": "behoben"
+    },
+    "toHelp": "Zur Hilfe",
+    "toRepo": "Vollständiger Changelog im Repository"
   }
 }

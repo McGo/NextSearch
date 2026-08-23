@@ -40,7 +40,8 @@ function isActive(to: string): boolean {
 const userMenuItems = computed(() => [
   [{ label: user.value?.email ?? '', type: 'label' as const }],
   [
-    { label: t('userMenu.account'), icon: 'i-lucide-user-cog', to: '/account' }
+    { label: t('userMenu.account'), icon: 'i-lucide-user-cog', to: '/account' },
+    { label: t('userMenu.help'), icon: 'i-lucide-circle-question-mark', to: '/help' }
   ],
   // Administration, its own group with a heading, below the account entry.
   ...(isAdmin.value
@@ -145,7 +146,13 @@ const userMenuItems = computed(() => [
       </template>
 
       <template #right>
-        <span class="text-xs text-muted font-mono">v{{ config.public.appVersion }}</span>
+        <!-- The version is the question "what changed?" in three characters —
+             so it links to the answer. -->
+        <NuxtLink
+          to="/changelog"
+          class="text-xs text-muted font-mono hover:text-default"
+          :title="t('nav.changelog')"
+        >v{{ config.public.appVersion }}</NuxtLink>
       </template>
     </UFooter>
   </UApp>

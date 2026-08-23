@@ -64,7 +64,10 @@ function entryDot(entry: FacetValue): string | null {
 </script>
 
 <template>
-  <aside class="space-y-6">
+  <aside
+    data-shot="facets"
+    class="space-y-6"
+  >
     <div
       v-if="activeCount > 0"
       class="flex items-center justify-between"

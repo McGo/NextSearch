@@ -13,6 +13,7 @@ use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTagController;
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\IndexingStatusController;
 use App\Http\Controllers\OAuth\AuthorizationController;
 use App\Http\Controllers\OAuth\ConnectionController;
@@ -59,6 +60,10 @@ Route::prefix('api')->group(function () {
 
         Route::get('/search', SearchController::class);
         Route::get('/indexing-status', IndexingStatusController::class);
+
+        // What the help page is built from: the state of this installation,
+        // cut to what the caller may see.
+        Route::get('/help', HelpController::class);
 
         // Saved searches — scoped to the signed-in user inside the controller.
         Route::get('/saved-searches', [SavedSearchController::class, 'index']);
