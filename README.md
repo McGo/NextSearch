@@ -27,6 +27,8 @@ instances as you like — and makes their contents searchable.
   for the person searching.
 - **Answers** an HTTP API for searching and tagging from a script, with a personal key per
   user.
+- **Talks** to assistants over MCP, so Claude can search and tag with the permissions of
+  whoever connected it.
 
 ## Quick start
 
@@ -117,6 +119,29 @@ curl -X POST -H "Authorization: Bearer nxs_…" -H "Content-Type: application/js
 Endpoints, error shapes and limits in [docs/api.md](docs/api.md); the OpenAPI file for
 Postman, Insomnia or Bruno in [docs/api/openapi.yaml](docs/api/openapi.yaml).
 
+## MCP
+
+The same search and the same tagging, over the Model Context Protocol. An assistant that
+supports it — Claude Desktop, Claude Code, an editor with MCP support — connects to
+
+```
+https://search.example.org/api/mcp
+```
+
+and gets four tools: search documents, read one, list the tag vocabulary, set and remove
+tags. A connection carries its user's permissions and nothing more.
+
+Claude Desktop fetches its own access: add the URL as a custom connector, and you land on
+an approval page on your own installation that says what the application will be allowed to
+do. Writing tags is a switch there; reading is the connection. Everything you have
+connected is listed under User settings › MCP access and can be cut with one click.
+
+Clients that cannot run a browser flow use a personal API key as a bearer token instead.
+
+For this to work, `APP_URL` has to be the address people actually reach — a client compares
+it against what it discovered, and refuses the connection when the two differ. Setup,
+tools, scopes and the usual pitfalls: [docs/mcp.md](docs/mcp.md).
+
 ## How it's put together
 
 Only the Nuxt container is reachable from outside, on `APP_PORT`. It forwards `/api`
@@ -125,7 +150,7 @@ internally to Laravel; everything else sits on the Compose network with no publi
 | Service | Role |
 |---|---|
 | `web` | Nuxt 4 — user interface and API proxy |
-| `app` | Laravel 13 on FrankenPHP — API, auth, document streaming |
+| `app` | Laravel 13 on FrankenPHP — API, MCP, auth, document streaming |
 | `worker` | crawling, text extraction, preview images |
 | `scheduler` | triggers folders that are due |
 | `postgres` | instances, folders, users, file state |

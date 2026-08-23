@@ -10,6 +10,24 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+### Added
+
+- **MCP server under `/api/mcp`.** NextSearch speaks the Model Context Protocol, so an
+  assistant can search the index and set tags. Four tools: full-text search with every
+  facet filter the interface offers, one document with its metadata and tags, the tag
+  vocabulary, and setting or removing tags for up to 500 documents at a time. A connection
+  carries its user's permissions and nothing more — the same folder grants, the same tags.
+  Documented in [docs/mcp.md](docs/mcp.md).
+- **OAuth for MCP clients.** Clients that fetch their own access — Claude Desktop among
+  them — register themselves, send the user to a consent screen on their own installation
+  and receive a token from there. Authorization code with PKCE, rotating refresh tokens,
+  and the discovery documents under `/.well-known`. What has been connected is listed
+  under User settings › MCP access, with a button that cuts it. Clients that cannot run a
+  browser flow keep using a personal API key.
+- **Reading and writing are separate permissions.** The consent screen grants searching
+  and reading; setting tags is a switch next to it that can be left off. A personal key
+  carries both, as before.
+
 ## [0.3.0] — 2026-08-13
 
 ### Added

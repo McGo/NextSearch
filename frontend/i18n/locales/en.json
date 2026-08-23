@@ -417,7 +417,8 @@
       "appearance": "Language & theme",
       "security": "Security",
       "tags": "My tags",
-      "api": "API keys"
+      "api": "API keys",
+      "mcp": "MCP"
     },
     "language": "Language",
     "theme": {
@@ -474,7 +475,35 @@
       "lastUsed": "last used {at}",
       "neverUsed": "never used",
       "expiresAt": "expires {at}",
-      "docsHint": "Endpoints, examples and the OpenAPI file live in docs/api.md in the repository."
+      "docsHint": "Endpoints, examples and the OpenAPI file live in docs/api.md in the repository.",
+      "expired": "expired",
+      "expiredAt": "expired {at}",
+      "revokeTitle": "Revoke key",
+      "revokeConfirm": "“{name}” stops working immediately. Whatever uses it is locked out."
+    },
+    "mcp": {
+      "title": "MCP access",
+      "desc": "NextSearch speaks the Model Context Protocol. An assistant such as Claude can search and set tags through it — with your permissions, the same folders, the same tags.",
+      "urlLabel": "Server address",
+      "copyUrl": "Copy",
+      "urlCopied": "Address copied.",
+      "urlHint": "Add this address in the client as a custom connector.",
+      "viaOauth": "Through the browser",
+      "viaOauthDesc": "The client fetches its own access. You end up on an approval page here and decide what it may do. This is the way for Claude Desktop.",
+      "viaKey": "With a key",
+      "viaKeyDesc": "For clients that cannot fetch anything themselves: create an API key and set it as a bearer token.",
+      "toKeys": "Go to API keys",
+      "connectionsTitle": "Connected applications",
+      "connectionsDesc": "Whatever fetched access through the browser. A key lives in the tab next door.",
+      "noConnections": "Nothing is connected.",
+      "connectedAt": "connected since {at}",
+      "lastUsed": "last used {at}",
+      "neverUsed": "never used",
+      "revoke": "Disconnect",
+      "revokeTitle": "Disconnect application",
+      "revokeConfirm": "“{name}” loses access immediately. For a new connection the application has to ask again.",
+      "revokeFailed": "The connection could not be cut.",
+      "docsHint": "Setup, tools and pitfalls are in docs/mcp.md in the repository."
     }
   },
   "tags": {
@@ -490,5 +519,31 @@
     "assignFailed": "The tag could not be set.",
     "removeFailed": "The tag could not be removed.",
     "createFailed": "The tag could not be created."
+  },
+  "oauth": {
+    "title": "Approve access",
+    "checking": "Checking the request …",
+    "heading": "{app} wants to access NextSearch",
+    "subtitle": "On behalf of {email}.",
+    "firstTime": "This application is asking for the first time. Access goes to {host} — if that means nothing to you, stop here.",
+    "permissions": "What the application will be allowed to do:",
+    "redirectHost": "Sent back to",
+    "registeredAt": "Registered on",
+    "scopeNote": "The application sees only what you see. Shared folders, your tags — nothing else. You can cut the connection at any time in your profile under MCP access.",
+    "allow": "Allow access",
+    "deny": "Decline",
+    "failed": "The request could not be handled.",
+    "refusedTitle": "This request does not go through",
+    "backToSearch": "Back to search",
+    "scopes": {
+      "documents_read": {
+        "label": "Search and read documents",
+        "hint": "Full-text search, metadata and tags of the shared folders. The files themselves stay here."
+      },
+      "tags_write": {
+        "label": "Set and remove tags",
+        "hint": "Only tags that already exist and that you may assign yourself."
+      }
+    }
   }
 }

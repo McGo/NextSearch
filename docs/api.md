@@ -263,6 +263,13 @@ curl -s -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/js
 
 Beyond a hundred hits, page through with `page` — `total_pages` tells you how far.
 
+## The same thing for assistants
+
+Searching and tagging also work over the Model Context Protocol, at `/api/mcp`. Same
+services underneath, same permissions, and the personal key from above works there too —
+what an assistant additionally gets is a browser flow, so it can fetch its own access
+without anybody copying a key around. See [mcp.md](mcp.md).
+
 ## What the API deliberately does not do
 
 No file contents, no downloads, no index administration, no user management. Those stay in

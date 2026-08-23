@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Middleware\AuthenticateMcp;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/v1.php',
         apiPrefix: 'api/v1',
         commands: __DIR__.'/../routes/console.php',
+        // The MCP server and its OAuth endpoints. Stateless like the public
+        // API, but with paths of their own — two of them have to sit at the
+        // root of the domain, where a prefix would put them out of reach.
+        then: fn () => Route::middleware('api')->group(__DIR__.'/../routes/mcp.php'),
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // The Nuxt container is the only caller and sits on the same network.
@@ -37,6 +43,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
+            // A personal key or an OAuth token, and the 401 that tells an MCP
+            // client where to fetch one.
+            'auth.mcp' => AuthenticateMcp::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -133,6 +133,59 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | MCP-Server
+    |--------------------------------------------------------------------------
+    |
+    | The Model Context Protocol endpoint under /api/mcp, so an assistant such
+    | as Claude can search and tag. Authentication is either a personal API key
+    | or, for clients that fetch their own token in a browser, the OAuth server
+    | below. Documented in docs/mcp.md.
+    |
+    */
+
+    'mcp' => [
+        'enabled' => filter_var(env('MCP_ENABLED', true), FILTER_VALIDATE_BOOL),
+
+        // What the client sees in `initialize`. The name ends up in the
+        // connector list of the client, so it carries the installation's name.
+        'server_name' => env('MCP_SERVER_NAME', 'NextSearch'),
+
+        // Reported in `initialize`. The release tag is baked into the image by
+        // CI; a local checkout says "dev".
+        'server_version' => env('APP_VERSION', 'dev'),
+
+        // Protocol revisions this server speaks, newest first. A client asking
+        // for something else is answered with the first of these.
+        'protocol_versions' => ['2025-06-18', '2025-03-26', '2024-11-05'],
+
+        // Requests per minute per token. A tool call is one request.
+        'rate_limit' => (int) env('MCP_RATE_LIMIT', 240),
+
+        // Hits a single search tool call returns at most. Above that a model
+        // stops reading and only burns context.
+        'max_results' => (int) env('MCP_MAX_RESULTS', 25),
+
+        'oauth' => [
+            'enabled' => filter_var(env('MCP_OAUTH_ENABLED', true), FILTER_VALIDATE_BOOL),
+
+            // RFC 7591. Switching this off means clients have to be entered by
+            // hand — nothing Claude Desktop can do, so it stays on by default.
+            'dynamic_registration' => filter_var(env('MCP_OAUTH_DYNAMIC_REGISTRATION', true), FILTER_VALIDATE_BOOL),
+
+            'access_token_ttl_minutes' => (int) env('MCP_ACCESS_TOKEN_TTL_MINUTES', 60),
+            'refresh_token_ttl_days' => (int) env('MCP_REFRESH_TOKEN_TTL_DAYS', 30),
+
+            // Long enough for a slow browser redirect, short enough that a code
+            // left in a log is worthless.
+            'authorization_code_ttl_seconds' => 300,
+
+            // New client registrations per hour per address.
+            'registration_rate_limit' => (int) env('MCP_OAUTH_REGISTRATION_RATE_LIMIT', 10),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Suchindex
     |--------------------------------------------------------------------------
     */

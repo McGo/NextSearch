@@ -14,6 +14,8 @@ use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTagController;
 use App\Http\Controllers\IndexingStatusController;
+use App\Http\Controllers\OAuth\AuthorizationController;
+use App\Http\Controllers\OAuth\ConnectionController;
 use App\Http\Controllers\SavedSearchController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TagController;
@@ -68,6 +70,19 @@ Route::prefix('api')->group(function () {
         Route::get('/auth/tokens', [ApiTokenController::class, 'index']);
         Route::post('/auth/tokens', [ApiTokenController::class, 'store']);
         Route::delete('/auth/tokens/{apiToken}', [ApiTokenController::class, 'destroy']);
+
+        // The consent screen for MCP clients. On the session on purpose: it
+        // is the one place in the OAuth flow where a person decides something,
+        // and they have to be signed in to do it. The page lives at
+        // /oauth/authorize in the interface; everything else about the flow
+        // sits in routes/mcp.php.
+        Route::get('/oauth/authorize', [AuthorizationController::class, 'show']);
+        Route::post('/oauth/authorize', [AuthorizationController::class, 'approve']);
+        Route::post('/oauth/authorize/deny', [AuthorizationController::class, 'deny']);
+
+        // The connected applications in the profile, and cutting one loose.
+        Route::get('/oauth/connections', [ConnectionController::class, 'index']);
+        Route::delete('/oauth/connections/{client}', [ConnectionController::class, 'destroy']);
 
         // Tags. The same controllers answer under /api/v1 with a personal key;
         // see routes/v1.php.

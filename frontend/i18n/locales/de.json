@@ -417,7 +417,8 @@
       "appearance": "Sprache & Design",
       "security": "Sicherheit",
       "tags": "Meine Tags",
-      "api": "API-Schlüssel"
+      "api": "API-Schlüssel",
+      "mcp": "MCP"
     },
     "language": "Sprache",
     "theme": {
@@ -474,7 +475,35 @@
       "lastUsed": "zuletzt benutzt {at}",
       "neverUsed": "noch nie benutzt",
       "expiresAt": "läuft ab {at}",
-      "docsHint": "Endpunkte, Beispiele und die OpenAPI-Datei stehen in docs/api.md im Repository."
+      "docsHint": "Endpunkte, Beispiele und die OpenAPI-Datei stehen in docs/api.md im Repository.",
+      "expired": "abgelaufen",
+      "expiredAt": "abgelaufen {at}",
+      "revokeTitle": "Schlüssel widerrufen",
+      "revokeConfirm": "„{name}“ wird sofort ungültig. Was ihn benutzt, bleibt draußen."
+    },
+    "mcp": {
+      "title": "MCP-Zugang",
+      "desc": "NextSearch spricht das Model Context Protocol. Ein Assistent wie Claude kann damit suchen und Tags setzen — mit deinen Rechten, denselben Ordnern, denselben Tags.",
+      "urlLabel": "Adresse des Servers",
+      "copyUrl": "Kopieren",
+      "urlCopied": "Adresse kopiert.",
+      "urlHint": "Diese Adresse trägst du im Client als eigenen Connector ein.",
+      "viaOauth": "Über den Browser",
+      "viaOauthDesc": "Der Client holt sich seinen Zugang selbst. Du landest auf einer Freigabeseite hier und entscheidest, was er darf. Das ist der Weg für Claude Desktop.",
+      "viaKey": "Mit einem Schlüssel",
+      "viaKeyDesc": "Für Clients, die sich nichts selbst holen können: einen API-Schlüssel anlegen und als Bearer-Token hinterlegen.",
+      "toKeys": "Zu den API-Schlüsseln",
+      "connectionsTitle": "Verbundene Anwendungen",
+      "connectionsDesc": "Was sich über den Browser Zugang geholt hat. Ein Schlüssel steht im Reiter nebenan.",
+      "noConnections": "Es ist nichts verbunden.",
+      "connectedAt": "verbunden seit {at}",
+      "lastUsed": "zuletzt benutzt {at}",
+      "neverUsed": "noch nie benutzt",
+      "revoke": "Trennen",
+      "revokeTitle": "Verbindung trennen",
+      "revokeConfirm": "„{name}“ verliert den Zugriff sofort. Für eine neue Verbindung muss die Anwendung wieder fragen.",
+      "revokeFailed": "Die Verbindung ließ sich nicht trennen.",
+      "docsHint": "Einrichtung, Werkzeuge und Fallstricke stehen in docs/mcp.md im Repository."
     }
   },
   "tags": {
@@ -490,5 +519,31 @@
     "assignFailed": "Der Tag ließ sich nicht setzen.",
     "removeFailed": "Der Tag ließ sich nicht entfernen.",
     "createFailed": "Der Tag ließ sich nicht anlegen."
+  },
+  "oauth": {
+    "title": "Zugriff freigeben",
+    "checking": "Anfrage wird geprüft …",
+    "heading": "{app} möchte auf NextSearch zugreifen",
+    "subtitle": "Im Namen von {email}.",
+    "firstTime": "Diese Anwendung fragt zum ersten Mal. Der Zugang geht an {host} — wenn dir das nichts sagt, brich hier ab.",
+    "permissions": "Das darf die Anwendung dann:",
+    "redirectHost": "Rückgabe an",
+    "registeredAt": "Angemeldet am",
+    "scopeNote": "Die Anwendung sieht nur, was du selbst siehst. Freigegebene Ordner, deine Tags — mehr nicht. Du kannst den Zugriff jederzeit im Profil unter MCP-Zugang trennen.",
+    "allow": "Zugriff erlauben",
+    "deny": "Ablehnen",
+    "failed": "Die Anfrage ließ sich nicht bearbeiten.",
+    "refusedTitle": "Diese Anfrage geht nicht durch",
+    "backToSearch": "Zur Suche",
+    "scopes": {
+      "documents_read": {
+        "label": "Dokumente suchen und lesen",
+        "hint": "Volltextsuche, Metadaten und Tags der freigegebenen Ordner. Die Dateien selbst bleiben hier."
+      },
+      "tags_write": {
+        "label": "Tags setzen und entfernen",
+        "hint": "Nur Tags, die es schon gibt und die du selbst vergeben darfst."
+      }
+    }
   }
 }

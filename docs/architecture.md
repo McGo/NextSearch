@@ -27,6 +27,11 @@ Only `web` has a published port. Nitro forwards `/api/**` to `app` — so the in
 the API share an origin, and the session cookie plus CSRF protection work without special
 handling. The backend is not reachable from outside; neither are Meilisearch or MinIO.
 
+Two more paths take the same route: `/.well-known/oauth-protected-resource` and
+`/.well-known/oauth-authorization-server`. They belong to the MCP server's OAuth discovery
+and have to answer at the root of the domain, so Nitro forwards them from a server
+middleware rather than the `/api` proxy — see [mcp.md](mcp.md).
+
 ## Data flow during indexing
 
 1. The **scheduler** checks every minute which folder has passed its interval and creates
@@ -109,6 +114,22 @@ foreign files. So the markers are not HTML tags but placeholders: the backend es
 whole snippet first and then replaces the placeholders with `<mark>`. A `<script>` from an
 indexed document therefore never reaches the browser as markup.
 
+## MCP
+
+The endpoint at `/api/mcp` is JSON-RPC 2.0 over a single POST route, stateless: no session
+id, no server-initiated stream, so `GET` is answered with 405 as the transport prescribes.
+A restart of the container costs a client nothing.
+
+The tools are thin. They translate a model's arguments into calls on the same services the
+interface uses — `DocumentSearch` for the search, `BulkTagger` for the tagging — and turn
+the result into text plus a structured object. Nothing about permissions happens in the
+tool layer; it happens where it happened before, which is the point of routing through the
+same services.
+
+Authentication accepts two kinds of token, a personal key and an OAuth access token, and
+resolves both to the same thing: the user, plus the scopes the connection was granted. The
+401 for a missing token carries the header that tells a client where to fetch one.
+
 ## Streaming the originals
 
 `GET /api/documents/{uuid}/raw` checks the grant, fetches the file via WebDAV and streams
@@ -132,6 +153,11 @@ download, together with `X-Content-Type-Options: nosniff`.
   assignment policy and the automation rule, see [tags.md](tags.md)
 - `document_tag` — the assignments; `user_id` null means global, set means personal
 - `api_tokens` — personal API keys, stored as a SHA-256 hash, see [api.md](api.md)
+- `oauth_clients` — MCP clients that registered themselves, with their callbacks
+- `oauth_authorization_codes` — the short-lived codes of the consent flow, with the PKCE
+  challenge they were issued against
+- `oauth_access_tokens` · `oauth_refresh_tokens` — what an MCP client authenticates with,
+  hashed like the personal keys, see [mcp.md](mcp.md)
 
 The path is stored as `text`; the uniqueness index runs over `path_hash` — a Btree index
 over arbitrarily long paths would eventually hit Postgres's row-size limit.

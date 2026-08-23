@@ -65,7 +65,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Baked into the web image for the footer; ignored by the app image.
+          # Baked into the web image for the footer, and into the app image so the
+          # MCP server can report its version.
           build-args: |
             APP_VERSION=${{ steps.meta.outputs.version }}
           cache-from: type=gha

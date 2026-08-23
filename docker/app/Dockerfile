@@ -51,9 +51,14 @@ RUN chmod +x /usr/local/bin/app-entrypoint
 WORKDIR /app
 COPY --from=vendor /app /app
 
+# The release tag, passed by CI. The MCP server reports it to its clients;
+# a local build says "dev".
+ARG APP_VERSION=dev
+
 # FrankenPHP serves unencrypted on 8080 — TLS and port exposure are the
 # operator's concern; only the Nuxt container faces the outside anyway.
-ENV SERVER_NAME=":8080" \
+ENV APP_VERSION=$APP_VERSION \
+    SERVER_NAME=":8080" \
     FRANKENPHP_CONFIG="" \
     CADDY_GLOBAL_OPTIONS="auto_https off"
 

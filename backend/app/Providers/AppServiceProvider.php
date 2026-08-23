@@ -33,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->registerApiTokenGuard();
         $this->registerApiRateLimit();
+        $this->registerMcpRateLimits();
 
         // Behind the Nuxt proxy Laravel would otherwise build http URLs, even
         // though the operator terminates TLS in front of it.
@@ -102,5 +103,26 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(
             (int) config('nextsearch.api.rate_limit')
         )->by($request->user()?->id ?: $request->ip()));
+    }
+
+    /**
+     * Two limits for the MCP side.
+     *
+     * The endpoint itself is counted per user, and more generously than
+     * /api/v1: an assistant working through a question fires a handful of tool
+     * calls in a row, and being throttled mid-thought is worse than useless.
+     *
+     * Registration is counted per address, because it is the one endpoint here
+     * that a stranger can reach and that writes a row.
+     */
+    private function registerMcpRateLimits(): void
+    {
+        RateLimiter::for('mcp', fn (Request $request) => Limit::perMinute(
+            (int) config('nextsearch.mcp.rate_limit')
+        )->by($request->user()?->id ?: $request->ip()));
+
+        RateLimiter::for('oauth-register', fn (Request $request) => Limit::perHour(
+            (int) config('nextsearch.mcp.oauth.registration_rate_limit')
+        )->by($request->ip()));
     }
 }

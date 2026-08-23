@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\Indexing\IndexRunner;
+use App\Services\OAuth\OAuthServer;
 use Illuminate\Support\Facades\Schedule;
 
 // Check every minute which folder has passed its interval or was requested
@@ -29,4 +30,12 @@ Schedule::command('nextsearch:tags-sweep')
 Schedule::command('nextsearch:reconcile')
     ->daily()
     ->name('nextsearch:reconcile')
+    ->withoutOverlapping();
+
+// Spent authorization codes and long-dead OAuth tokens. Nothing depends on this
+// running — an expired token is refused either way — it only keeps the tables
+// from growing for no reason.
+Schedule::call(fn (OAuthServer $server) => $server->prune())
+    ->daily()
+    ->name('nextsearch:oauth-prune')
     ->withoutOverlapping();

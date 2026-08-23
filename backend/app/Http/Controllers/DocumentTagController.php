@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Models\Tag;
 use App\Models\User;
+use App\Services\Tags\BulkTagger;
 use App\Services\Tags\TagService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Hanging tags on documents and taking them off again — from the interface over
@@ -21,10 +21,10 @@ use Illuminate\Validation\ValidationException;
  */
 class DocumentTagController extends Controller
 {
-    /** Documents one bulk call may touch. */
-    private const BULK_LIMIT = 500;
-
-    public function __construct(private readonly TagService $tags) {}
+    public function __construct(
+        private readonly TagService $tags,
+        private readonly BulkTagger $bulk,
+    ) {}
 
     public function index(Request $request, Document $document): JsonResponse
     {
@@ -97,15 +97,14 @@ class DocumentTagController extends Controller
      * Tagging many documents in one call. Whoever tags from a script does not
      * want one request per document.
      *
-     * Documents the caller has no access to are skipped rather than refused —
-     * a bulk call over a wide result set should not fail on a single folder.
+     * The work itself sits in BulkTagger — the MCP server runs the same code.
      */
     public function bulk(Request $request): JsonResponse
     {
         $user = $request->user();
 
         $validated = $request->validate([
-            'documents' => ['required', 'array', 'min:1', 'max:'.self::BULK_LIMIT],
+            'documents' => ['required', 'array', 'min:1', 'max:'.BulkTagger::LIMIT],
             'documents.*' => ['string', 'uuid'],
             'add' => ['sometimes', 'array', 'max:50'],
             'add.*' => ['string', 'max:64'],
@@ -113,46 +112,12 @@ class DocumentTagController extends Controller
             'remove.*' => ['string', 'max:64'],
         ]);
 
-        $add = $this->lookup($validated['add'] ?? [], $user);
-        $remove = $this->lookup($validated['remove'] ?? [], $user);
-
-        if ($add->isEmpty() && $remove->isEmpty()) {
-            throw ValidationException::withMessages(['add' => __('nextsearch.tag.nothing_to_do')]);
-        }
-
-        $documents = Document::query()
-            ->whereIn('uuid', $validated['documents'])
-            ->get();
-
-        $touched = 0;
-        $skipped = [];
-
-        foreach ($documents as $document) {
-            if (! $user->canAccessFolder($document->watched_folder_id)) {
-                $skipped[] = $document->uuid;
-
-                continue;
-            }
-
-            foreach ($add as $tag) {
-                $this->tags->attach($document, $tag, $user);
-            }
-
-            foreach ($remove as $tag) {
-                $this->tags->detach($document, $tag, $user);
-            }
-
-            $touched++;
-        }
-
-        // Uuids that matched no document at all — a typo or a deleted file.
-        $unknown = array_values(array_diff($validated['documents'], $documents->pluck('uuid')->all()));
-
-        return response()->json([
-            'updated' => $touched,
-            'skipped' => $skipped,
-            'unknown' => $unknown,
-        ]);
+        return response()->json($this->bulk->apply(
+            $user,
+            $validated['documents'],
+            $this->bulk->lookup($validated['add'] ?? [], $user),
+            $this->bulk->lookup($validated['remove'] ?? [], $user),
+        ));
     }
 
     /**
@@ -165,35 +130,7 @@ class DocumentTagController extends Controller
             'tags.*' => ['string', 'max:64'],
         ]);
 
-        return $this->lookup($validated['tags'], $user);
-    }
-
-    /**
-     * Turns slugs or uuids into tags. Anything unknown or off limits stops the
-     * call — silently dropping a tag would leave the caller believing it landed.
-     *
-     * @param  list<string>  $keys
-     * @return Collection<int, Tag>
-     */
-    private function lookup(array $keys, User $user)
-    {
-        return collect($keys)->unique()->values()->map(function (string $key) use ($user) {
-            $tag = $this->tags->resolve($key, $user);
-
-            if ($tag === null) {
-                throw ValidationException::withMessages([
-                    'tags' => __('nextsearch.tag.unknown_named', ['tag' => $key]),
-                ]);
-            }
-
-            if (! $tag->assignableBy($user)) {
-                throw ValidationException::withMessages([
-                    'tags' => __('nextsearch.tag.not_assignable_named', ['tag' => $key]),
-                ]);
-            }
-
-            return $tag;
-        });
+        return $this->bulk->lookup($validated['tags'], $user);
     }
 
     /**

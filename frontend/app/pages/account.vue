@@ -10,15 +10,22 @@ const toast = useToast()
 const colorMode = useColorMode()
 const { user, refresh: refreshAuth } = useAuth()
 
-type TabKey = 'password' | 'security' | 'tags' | 'api' | 'appearance'
+type TabKey = 'password' | 'security' | 'tags' | 'api' | 'mcp' | 'appearance'
 const tabs: { key: TabKey, label: string }[] = [
   { key: 'password', label: t('account.tabs.password') },
   { key: 'security', label: t('account.tabs.security') },
   { key: 'tags', label: t('account.tabs.tags') },
   { key: 'api', label: t('account.tabs.api') },
+  { key: 'mcp', label: t('account.tabs.mcp') },
   { key: 'appearance', label: t('account.tabs.appearance') }
 ]
-const active = ref<TabKey>('password')
+
+// Deep link from the MCP tab to the key form and back, so "create a key" does
+// not mean "go and find it yourself".
+const route = useRoute()
+const active = ref<TabKey>(
+  tabs.some(tab => tab.key === route.query.tab) ? route.query.tab as TabKey : 'password'
+)
 
 // --- Password ---------------------------------------------------------------
 const pwForm = reactive({ current_password: '', password: '', password_confirmation: '' })
@@ -173,6 +180,12 @@ const keyBusy = ref(false)
 const keyError = ref<string | null>(null)
 // Shown exactly once, right after creation — afterwards only the hash exists.
 const freshKey = ref<string | null>(null)
+// Revoking is immediate and cannot be undone, so it goes through a question.
+const revokingKey = ref<ApiKey | null>(null)
+
+function keyExpired(key: ApiKey): boolean {
+  return key.expires_at !== null && new Date(key.expires_at) < new Date()
+}
 
 async function loadKeys() {
   const response = await api.get<{ data: ApiKey[] }>('/api/auth/tokens')
@@ -208,11 +221,15 @@ async function createKey() {
   }
 }
 
-async function revokeKey(uuid: string) {
+async function revokeKey() {
+  const key = revokingKey.value
+  if (!key) return
+
   keyBusy.value = true
   try {
-    await api.del(`/api/auth/tokens/${uuid}`)
+    await api.del(`/api/auth/tokens/${key.uuid}`)
     await loadKeys()
+    revokingKey.value = null
   } catch {
     toast.add({ title: t('account.api.revokeFailed'), color: 'error' })
   } finally {
@@ -220,13 +237,60 @@ async function revokeKey(uuid: string) {
   }
 }
 
-async function copyKey() {
-  if (!freshKey.value) return
-  await navigator.clipboard.writeText(freshKey.value)
-  toast.add({ title: t('account.api.copied'), color: 'success' })
+async function copyText(value: string, title: string) {
+  await navigator.clipboard.writeText(value)
+  toast.add({ title, color: 'success' })
 }
 
 const { dateTime } = useFormat()
+
+// --- MCP --------------------------------------------------------------------
+// Applications that fetched a token for themselves through the browser flow —
+// Claude Desktop and its like. A personal key from the tab next door works too;
+// what is listed here is only what went through consent.
+interface McpConnection {
+  client_id: string
+  name: string
+  client_uri: string | null
+  scopes: string[]
+  connected_at: string | null
+  expires_at: string | null
+  last_used_at: string | null
+}
+
+const connections = ref<McpConnection[]>([])
+const connectionBusy = ref(false)
+const revokingConnection = ref<McpConnection | null>(null)
+
+// The address a client is given. Same origin as the interface — the backend has
+// no published port of its own.
+const mcpUrl = ref('/api/mcp')
+
+onMounted(() => {
+  mcpUrl.value = `${window.location.origin}/api/mcp`
+  loadConnections().catch(() => { /* the list just stays empty */ })
+})
+
+async function loadConnections() {
+  const response = await api.get<{ data: McpConnection[] }>('/api/oauth/connections')
+  connections.value = response.data
+}
+
+async function revokeConnection() {
+  const connection = revokingConnection.value
+  if (!connection) return
+
+  connectionBusy.value = true
+  try {
+    await api.del(`/api/oauth/connections/${connection.client_id}`)
+    await loadConnections()
+    revokingConnection.value = null
+  } catch {
+    toast.add({ title: t('account.mcp.revokeFailed'), color: 'error' })
+  } finally {
+    connectionBusy.value = false
+  }
+}
 
 // --- Appearance -------------------------------------------------------------
 const flagOf = (l: unknown) => (l as { flag?: string } | undefined)?.flag
@@ -612,7 +676,7 @@ const themeOptions = [
             variant="outline"
             icon="i-lucide-copy"
             :label="t('account.api.copy')"
-            @click="copyKey"
+            @click="copyText(freshKey, t('account.api.copied'))"
           />
           <UButton
             size="xs"
@@ -684,22 +748,36 @@ const themeOptions = [
         <li
           v-for="key in keys"
           :key="key.uuid"
-          class="flex flex-wrap items-center gap-3 px-3 py-2"
+          class="flex flex-wrap items-center gap-3 px-3 py-2.5"
         >
+          <UIcon
+            name="i-lucide-key-round"
+            class="size-4 shrink-0"
+            :class="keyExpired(key) ? 'text-muted' : 'text-primary'"
+          />
+
           <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-medium">
+            <p class="flex items-center gap-2 truncate text-sm font-medium">
               {{ key.name }}
               <span class="font-mono text-xs text-muted">…{{ key.last_four }}</span>
+              <UBadge
+                v-if="keyExpired(key)"
+                size="sm"
+                color="neutral"
+                variant="subtle"
+                :label="t('account.api.expired')"
+              />
             </p>
             <p class="text-xs text-muted">
               {{ key.last_used_at
                 ? t('account.api.lastUsed', { at: dateTime(key.last_used_at) })
                 : t('account.api.neverUsed') }}
               <template v-if="key.expires_at">
-                · {{ t('account.api.expiresAt', { at: dateTime(key.expires_at) }) }}
+                · {{ t(keyExpired(key) ? 'account.api.expiredAt' : 'account.api.expiresAt', { at: dateTime(key.expires_at) }) }}
               </template>
             </p>
           </div>
+
           <UButton
             size="xs"
             color="error"
@@ -707,13 +785,163 @@ const themeOptions = [
             icon="i-lucide-trash-2"
             :disabled="keyBusy"
             :label="t('account.api.revoke')"
-            @click="revokeKey(key.uuid)"
+            @click="revokingKey = key"
           />
         </li>
       </ul>
 
       <p class="text-xs text-muted">
         {{ t('account.api.docsHint') }}
+      </p>
+    </section>
+
+    <!-- MCP: the endpoint, and the applications hanging off it -->
+    <section
+      v-else-if="active === 'mcp'"
+      class="max-w-2xl space-y-8"
+    >
+      <div>
+        <h2 class="font-medium">
+          {{ t('account.mcp.title') }}
+        </h2>
+        <p class="text-sm text-muted">
+          {{ t('account.mcp.desc') }}
+        </p>
+      </div>
+
+      <!-- The one thing anyone has to copy out of here. -->
+      <div class="space-y-2">
+        <p class="text-sm font-medium">
+          {{ t('account.mcp.urlLabel') }}
+        </p>
+        <div class="flex items-center gap-2">
+          <code class="min-w-0 flex-1 truncate rounded bg-elevated px-2 py-1.5 font-mono text-sm select-all">{{ mcpUrl }}</code>
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-copy"
+            :label="t('account.mcp.copyUrl')"
+            @click="copyText(mcpUrl, t('account.mcp.urlCopied'))"
+          />
+        </div>
+        <p class="text-xs text-muted">
+          {{ t('account.mcp.urlHint') }}
+        </p>
+      </div>
+
+      <!-- Two ways in, and they are not equivalent: one asks here, the other
+           is carried by the person setting it up. -->
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div class="rounded-lg border border-default p-3 space-y-1.5">
+          <p class="flex items-center gap-2 text-sm font-medium">
+            <UIcon
+              name="i-lucide-user-check"
+              class="size-4 text-primary"
+            />
+            {{ t('account.mcp.viaOauth') }}
+          </p>
+          <p class="text-xs text-muted">
+            {{ t('account.mcp.viaOauthDesc') }}
+          </p>
+        </div>
+
+        <div class="rounded-lg border border-default p-3 space-y-1.5">
+          <p class="flex items-center gap-2 text-sm font-medium">
+            <UIcon
+              name="i-lucide-key-round"
+              class="size-4 text-primary"
+            />
+            {{ t('account.mcp.viaKey') }}
+          </p>
+          <p class="text-xs text-muted">
+            {{ t('account.mcp.viaKeyDesc') }}
+          </p>
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="link"
+            class="px-0"
+            trailing-icon="i-lucide-arrow-right"
+            :label="t('account.mcp.toKeys')"
+            @click="active = 'api'"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <h3 class="text-sm font-medium">
+            {{ t('account.mcp.connectionsTitle') }}
+          </h3>
+          <p class="text-xs text-muted">
+            {{ t('account.mcp.connectionsDesc') }}
+          </p>
+        </div>
+
+        <p
+          v-if="connections.length === 0"
+          class="text-sm text-muted"
+        >
+          {{ t('account.mcp.noConnections') }}
+        </p>
+
+        <ul
+          v-else
+          class="divide-y divide-default rounded-lg border border-default"
+        >
+          <li
+            v-for="connection in connections"
+            :key="connection.client_id"
+            class="flex flex-wrap items-center gap-3 px-3 py-2.5"
+          >
+            <UIcon
+              name="i-lucide-plug"
+              class="size-4 shrink-0 text-primary"
+            />
+
+            <div class="min-w-0 flex-1 space-y-1">
+              <p class="truncate text-sm font-medium">
+                {{ connection.name }}
+              </p>
+              <p class="text-xs text-muted">
+                <template v-if="connection.connected_at">
+                  {{ t('account.mcp.connectedAt', { at: dateTime(connection.connected_at) }) }}
+                </template>
+                <template v-if="connection.last_used_at">
+                  · {{ t('account.mcp.lastUsed', { at: dateTime(connection.last_used_at) }) }}
+                </template>
+                <template v-else>
+                  · {{ t('account.mcp.neverUsed') }}
+                </template>
+              </p>
+              <div class="flex flex-wrap gap-1">
+                <UBadge
+                  v-for="scope in connection.scopes"
+                  :key="scope"
+                  size="sm"
+                  color="neutral"
+                  variant="subtle"
+                  :label="t(`oauth.scopes.${scope.replace(':', '_')}.label`)"
+                />
+              </div>
+            </div>
+
+            <UButton
+              size="xs"
+              color="error"
+              variant="ghost"
+              icon="i-lucide-unplug"
+              :disabled="connectionBusy"
+              :label="t('account.mcp.revoke')"
+              @click="revokingConnection = connection"
+            />
+          </li>
+        </ul>
+      </div>
+
+      <p class="text-xs text-muted">
+        {{ t('account.mcp.docsHint') }}
       </p>
     </section>
 
@@ -770,5 +998,64 @@ const themeOptions = [
         </div>
       </div>
     </section>
+
+    <!-- Revoking either one is immediate and cannot be taken back. -->
+    <UModal
+      :open="revokingKey !== null"
+      :title="t('account.api.revokeTitle')"
+      @update:open="value => { if (!value) revokingKey = null }"
+    >
+      <template #body>
+        <p class="text-sm">
+          {{ t('account.api.revokeConfirm', { name: revokingKey?.name ?? '' }) }}
+        </p>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :label="t('common.cancel')"
+            @click="revokingKey = null"
+          />
+          <UButton
+            color="error"
+            icon="i-lucide-trash-2"
+            :loading="keyBusy"
+            :label="t('account.api.revoke')"
+            @click="revokeKey"
+          />
+        </div>
+      </template>
+    </UModal>
+
+    <UModal
+      :open="revokingConnection !== null"
+      :title="t('account.mcp.revokeTitle')"
+      @update:open="value => { if (!value) revokingConnection = null }"
+    >
+      <template #body>
+        <p class="text-sm">
+          {{ t('account.mcp.revokeConfirm', { name: revokingConnection?.name ?? '' }) }}
+        </p>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :label="t('common.cancel')"
+            @click="revokingConnection = null"
+          />
+          <UButton
+            color="error"
+            icon="i-lucide-unplug"
+            :loading="connectionBusy"
+            :label="t('account.mcp.revoke')"
+            @click="revokeConnection"
+          />
+        </div>
+      </template>
+    </UModal>
   </UContainer>
 </template>
