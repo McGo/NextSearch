@@ -41,6 +41,11 @@ that and you open an XSS hole.
 **Streamed originals.** `Content-Disposition: inline` only for types in
 `DocumentController::INLINE_TYPES`. HTML and SVG are not among them and must not be added.
 
+**The API specification.** `docs/api/openapi.yaml` is a contract other people build
+against, and adding a route does not force anyone to touch it. `OpenApiSpecTest` compares
+the two in both directions and fails when they drift apart — a new endpoint under
+`/api/v1` needs its entry in the file.
+
 **The help page.** A feature is finished when `/help` covers it. Numbers and states go
 into `HelpController` so they stay live; the prose goes into the `help` block of the
 translation files. If the change is visible in the interface, take the screenshots again
