@@ -6,9 +6,13 @@ const { t, locale, locales, setLocale } = useI18n()
 useHead({ title: () => t('account.title') })
 
 const api = useApi()
+const config = useRuntimeConfig()
 const toast = useToast()
 const colorMode = useColorMode()
 const { user, refresh: refreshAuth } = useAuth()
+
+/** A file in the repository — the API and MCP docs are not in the app. */
+const doc = (path: string) => `${config.public.repoUrl}/blob/main/${path}`
 
 type TabKey = 'password' | 'security' | 'tags' | 'api' | 'mcp' | 'appearance'
 const tabs: { key: TabKey, label: string }[] = [
@@ -792,6 +796,12 @@ const themeOptions = [
 
       <p class="text-xs text-muted">
         {{ t('account.api.docsHint') }}
+        <a
+          :href="doc('docs/api.md')"
+          target="_blank"
+          rel="noopener"
+          class="text-primary hover:underline"
+        >{{ t('account.api.docsLink') }}</a>.
       </p>
     </section>
 
@@ -942,6 +952,12 @@ const themeOptions = [
 
       <p class="text-xs text-muted">
         {{ t('account.mcp.docsHint') }}
+        <a
+          :href="doc('docs/mcp.md')"
+          target="_blank"
+          rel="noopener"
+          class="text-primary hover:underline"
+        >{{ t('account.mcp.docsLink') }}</a>.
       </p>
     </section>
 

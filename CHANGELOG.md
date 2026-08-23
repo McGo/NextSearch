@@ -10,6 +10,14 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+### Changed
+
+- **The help page links the documentation it mentions.** Where it talks about the HTTP API
+  it now points at [docs/api.md](docs/api.md) and the
+  [OpenAPI file](docs/api/openapi.yaml); the MCP section points at
+  [docs/mcp.md](docs/mcp.md). The same two hints in the profile were plain text before and
+  are links now.
+
 ## [0.5.0] — 2026-08-23
 
 ### Added

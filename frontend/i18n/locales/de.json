@@ -477,11 +477,12 @@
       "lastUsed": "zuletzt benutzt {at}",
       "neverUsed": "noch nie benutzt",
       "expiresAt": "läuft ab {at}",
-      "docsHint": "Endpunkte, Beispiele und die OpenAPI-Datei stehen in docs/api.md im Repository.",
+      "docsHint": "Endpunkte, Beispiele und die OpenAPI-Datei stehen in der",
       "expired": "abgelaufen",
       "expiredAt": "abgelaufen {at}",
       "revokeTitle": "Schlüssel widerrufen",
-      "revokeConfirm": "„{name}“ wird sofort ungültig. Was ihn benutzt, bleibt draußen."
+      "revokeConfirm": "„{name}“ wird sofort ungültig. Was ihn benutzt, bleibt draußen.",
+      "docsLink": "API-Dokumentation"
     },
     "mcp": {
       "title": "MCP-Zugang",
@@ -505,7 +506,8 @@
       "revokeTitle": "Verbindung trennen",
       "revokeConfirm": "„{name}“ verliert den Zugriff sofort. Für eine neue Verbindung muss die Anwendung wieder fragen.",
       "revokeFailed": "Die Verbindung ließ sich nicht trennen.",
-      "docsHint": "Einrichtung, Werkzeuge und Fallstricke stehen in docs/mcp.md im Repository."
+      "docsHint": "Einrichtung, Werkzeuge und Fallstricke stehen in der",
+      "docsLink": "MCP-Dokumentation"
     }
   },
   "tags": {
@@ -623,7 +625,13 @@
       "mcpOauth": "Die Adresse trägst du im Client als eigenen Connector ein. Der Client schickt dich auf eine Freigabeseite hier, auf der du entscheidest, was er darf.",
       "mcpKeyOnly": "Die Anmeldung über den Browser ist abgeschaltet. Ein Client braucht einen persönlichen Schlüssel als Bearer-Token.",
       "figure": "Verbundene Anwendungen in den Benutzereinstellungen",
-      "toAccount": "Zu den Benutzereinstellungen"
+      "toAccount": "Zu den Benutzereinstellungen",
+      "apiDocs": "Endpunkte, Beispiele und Fehlerformen:",
+      "apiDocsLink": "API-Dokumentation",
+      "apiSpec": ". Maschinenlesbar als",
+      "apiSpecLink": "OpenAPI-Datei",
+      "mcpDocs": "Einrichtung, Werkzeuge und Fallstricke:",
+      "mcpDocsLink": "MCP-Dokumentation"
     },
     "admin": {
       "title": "Verwaltung",

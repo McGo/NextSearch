@@ -477,11 +477,12 @@
       "lastUsed": "last used {at}",
       "neverUsed": "never used",
       "expiresAt": "expires {at}",
-      "docsHint": "Endpoints, examples and the OpenAPI file live in docs/api.md in the repository.",
+      "docsHint": "Endpoints, examples and the OpenAPI file are in the",
       "expired": "expired",
       "expiredAt": "expired {at}",
       "revokeTitle": "Revoke key",
-      "revokeConfirm": "“{name}” stops working immediately. Whatever uses it is locked out."
+      "revokeConfirm": "“{name}” stops working immediately. Whatever uses it is locked out.",
+      "docsLink": "API documentation"
     },
     "mcp": {
       "title": "MCP access",
@@ -505,7 +506,8 @@
       "revokeTitle": "Disconnect application",
       "revokeConfirm": "“{name}” loses access immediately. For a new connection the application has to ask again.",
       "revokeFailed": "The connection could not be cut.",
-      "docsHint": "Setup, tools and pitfalls are in docs/mcp.md in the repository."
+      "docsHint": "Setup, tools and pitfalls are in the",
+      "docsLink": "MCP documentation"
     }
   },
   "tags": {
@@ -623,7 +625,13 @@
       "mcpOauth": "Add the address in the client as a custom connector. The client sends you to an approval page here, where you decide what it may do.",
       "mcpKeyOnly": "Signing in through the browser is switched off. A client needs a personal key as a bearer token.",
       "figure": "Connected applications in the user settings",
-      "toAccount": "Go to user settings"
+      "toAccount": "Go to user settings",
+      "apiDocs": "Endpoints, examples and error shapes:",
+      "apiDocsLink": "API documentation",
+      "apiSpec": ". Machine-readable as an",
+      "apiSpecLink": "OpenAPI file",
+      "mcpDocs": "Setup, tools and pitfalls:",
+      "mcpDocsLink": "MCP documentation"
     },
     "admin": {
       "title": "Administration",

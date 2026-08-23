@@ -29,6 +29,17 @@ export interface Release {
 /** Newest first — that is the order the page shows them in. */
 export const CHANGELOG: Release[] = [
   {
+    version: '0.6.0',
+    date: null,
+    entries: [
+      {
+        kind: 'changed',
+        de: 'Die Hilfe verlinkt die Dokumentation, die sie nennt: API-Beschreibung und OpenAPI-Datei beim Abschnitt zur HTTP-Schnittstelle, die MCP-Anleitung beim Abschnitt daneben. Dieselben zwei Hinweise in den Benutzereinstellungen waren vorher nur Text.',
+        en: 'The help page links the documentation it mentions: the API description and the OpenAPI file next to the HTTP section, the MCP guide next to the one below it. The same two hints in the user settings used to be plain text.'
+      }
+    ]
+  },
+  {
     version: '0.5.0',
     date: '2026-08-23',
     entries: [

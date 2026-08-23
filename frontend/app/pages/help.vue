@@ -69,8 +69,12 @@ interface Help {
 
 const { t, n } = useI18n()
 const api = useApi()
+const config = useRuntimeConfig()
 const { user } = useAuth()
 const { dateTime } = useFormat()
+
+/** A file in the repository — the API and MCP docs are not in the app. */
+const doc = (path: string) => `${config.public.repoUrl}/blob/main/${path}`
 
 useHead({ title: () => t('help.title') })
 
@@ -451,6 +455,21 @@ const sortLabels = computed(() =>
           <p class="text-sm">
             {{ t('help.access.apiBody', { limit: help.access.api.rate_limit }) }}
           </p>
+          <p class="text-sm">
+            {{ t('help.access.apiDocs') }}
+            <a
+              :href="doc('docs/api.md')"
+              target="_blank"
+              rel="noopener"
+              class="text-primary hover:underline"
+            >{{ t('help.access.apiDocsLink') }}</a>{{ t('help.access.apiSpec') }}
+            <a
+              :href="doc('docs/api/openapi.yaml')"
+              target="_blank"
+              rel="noopener"
+              class="text-primary hover:underline"
+            >{{ t('help.access.apiSpecLink') }}</a>.
+          </p>
 
           <template v-if="help.access.mcp.enabled">
             <h3 class="pt-2 text-sm font-medium">
@@ -462,6 +481,16 @@ const sortLabels = computed(() =>
             <code class="block rounded bg-elevated px-2 py-1.5 font-mono text-xs select-all">{{ help.access.mcp.url }}</code>
             <p class="text-sm">
               {{ help.access.mcp.oauth ? t('help.access.mcpOauth') : t('help.access.mcpKeyOnly') }}
+            </p>
+
+            <p class="text-sm">
+              {{ t('help.access.mcpDocs') }}
+              <a
+                :href="doc('docs/mcp.md')"
+                target="_blank"
+                rel="noopener"
+                class="text-primary hover:underline"
+              >{{ t('help.access.mcpDocsLink') }}</a>.
             </p>
 
             <HelpFigure
