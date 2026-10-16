@@ -52,13 +52,14 @@ class StatusCommand extends Command
         if ($runs->isNotEmpty()) {
             $this->newLine();
             $this->table(
-                ['Folder', 'State', 'seen', 'new', 'changed', 'removed', 'errors', 'open'],
+                ['Folder', 'State', 'seen', 'new', 'changed', 'moved', 'removed', 'errors', 'open'],
                 $runs->map(fn (IndexRun $run) => [
                     $run->folder->label,
                     $run->state,
                     $run->files_seen,
                     $run->files_new,
                     $run->files_updated,
+                    $run->files_moved,
                     $run->files_removed,
                     $run->files_failed,
                     $run->pending_jobs,

@@ -29,6 +29,7 @@ class StatusController extends Controller
                 'files_seen' => $run->files_seen,
                 'files_new' => $run->files_new,
                 'files_updated' => $run->files_updated,
+                'files_moved' => $run->files_moved,
                 'files_removed' => $run->files_removed,
                 'files_skipped' => $run->files_skipped,
                 'files_failed' => $run->files_failed,

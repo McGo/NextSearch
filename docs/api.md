@@ -410,10 +410,25 @@ why in `failure_reason`. A scanned PDF that goes through OCR takes noticeably lo
 one with a text layer, so poll gently.
 
 `url` is the document's page in the interface. Opening it takes a sign-in and a share of
-the folder, like everything else. **The link holds as long as the file stays where it
-is.** A document is tied to its path within the folder: rename the file or move it into
-another folder and the next crawl treats it as a new document, with a new uuid and
-without the old tags. Whoever moves files should look the new link up afterwards.
+the folder, like everything else.
+
+**Renaming and moving keep the document.** It is the Nextcloud file, keyed by its file id,
+not the path. Rename it, move it into another month, move it into another watched folder:
+the next crawl that reaches the new place keeps the uuid, the link and the tags, and the
+document is visible to whoever the new folder is shared with. Unless the content changed on
+the way, nothing is extracted again.
+
+Two things to know about timing:
+
+- The move becomes visible with the crawl of the *new* place. Trigger it with the reindex
+  call above, pointing `path` at the file's new location.
+- If the *old* place is crawled first, the document leaves the search and its page answers
+  `404` until the new place is crawled. It is not deleted: it waits, with its tags, for
+  `INDEX_VANISHED_RETENTION_DAYS` (default 30) and is then purged.
+
+Nextcloud keeps the file id when a file is renamed or moved within the same storage. A move
+across storages, into external storage for instance, can come out with a new id; then it
+is a new document.
 
 ## What the API deliberately does not do
 

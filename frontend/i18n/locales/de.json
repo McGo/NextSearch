@@ -296,7 +296,7 @@
       "new": "{count} neu",
       "updated": "{count} geändert",
       "skipped": "{count} übersprungen",
-      "removed": "{count} entfernt",
+      "removed": "{count} verschwunden",
       "failedCount": "{count} Fehler",
       "pipelineTitle": "Verarbeitungs-Pipeline",
       "pipelineIntro": "Jedes Dokument wandert von links nach rechts. Zwei Hintergrund-Warteschlangen erledigen die Arbeit; der Suchindex am Ende ist das, worin Sie suchen.",
@@ -331,7 +331,8 @@
       "rebuildConfirmTitle": "Suchindex neu aufbauen?",
       "rebuildConfirmBody": "Index und alle Dokument-Einträge werden verworfen, dann wird jeder Ordner von Grund auf neu gecrawlt und verarbeitet. Das dauert — die Suche bleibt unvollständig, bis es durch ist.",
       "clearIndexConfirmTitle": "Suchindex leeren?",
-      "clearIndexConfirmBody": "Jedes Dokument wird aus dem Index und seinem Eintrag entfernt. Die Suche liefert nichts, bis du neu aufbaust oder die Ordner erneut gecrawlt werden. Das lässt sich nicht rückgängig machen."
+      "clearIndexConfirmBody": "Jedes Dokument wird aus dem Index und seinem Eintrag entfernt. Die Suche liefert nichts, bis du neu aufbaust oder die Ordner erneut gecrawlt werden. Das lässt sich nicht rückgängig machen.",
+      "moved": "{count} verschoben"
     },
     "settings": {
       "title": "Darstellung",
@@ -613,7 +614,8 @@
       "title": "Dokumente öffnen",
       "body": "Ein Treffer führt auf die Dokumentseite: Vorschau der ersten Seite, Metadaten, Tags. Von dort lässt sich das Original im Browser ansehen oder herunterladen — ohne eigenes Nextcloud-Konto, die Zugangsdaten bleiben auf dem Server. Markdown, Textdateien und E-Mails stellt NextSearch selbst dar.",
       "previewOff": "Vorschaubilder sind in dieser Installation abgeschaltet.",
-      "figure": "Dokumentseite mit Vorschau und Tags"
+      "figure": "Dokumentseite mit Vorschau und Tags",
+      "identity": "Ein Dokument ist die Datei in der Nextcloud, nicht ihr Pfad. Wird sie dort umbenannt oder verschoben, auch in einen anderen Ordner, behält sie beim nächsten Durchlauf ihren Link und ihre Tags. Sichtbar ist sie dann für alle, denen der neue Ordner freigegeben ist. Verschwindet eine Datei ganz, ist sie sofort aus der Suche verschwunden. Kommt sie binnen {days} Tagen woanders wieder zum Vorschein, ist es dasselbe Dokument."
     },
     "tags": {
       "title": "Tags",
@@ -666,7 +668,8 @@
       "accountsState": "Offene Einladungen: {pending}. Deaktivierte Konten: {disabled}.",
       "adminApiTitle": "Admin-API",
       "adminApiBody": "Ein anderes System kann Konten, Ordner und Freigaben über /api/v1/admin pflegen. Dafür braucht es einen Schlüssel, bei dem beim Anlegen „Admin-API freischalten“ angehakt wurde. Ein gewöhnlicher Schlüssel eines Administrators reicht nicht. Verliert der Besitzer die Administratorrolle, ist der Schlüssel für diesen Bereich wertlos. Konten und Ordner löschen lässt sich darüber nicht.",
-      "adminApiKeys": "Im Moment gibt es keinen solchen Schlüssel. | Im Moment gibt es einen solchen Schlüssel. | Im Moment gibt es {count} solche Schlüssel."
+      "adminApiKeys": "Im Moment gibt es keinen solchen Schlüssel. | Im Moment gibt es einen solchen Schlüssel. | Im Moment gibt es {count} solche Schlüssel.",
+      "vanished": "{count} Dokumente sind aus ihrem Verzeichnis verschwunden und warten darauf, woanders wiedergefunden zu werden. Nach {days} Tagen werden sie gelöscht."
     }
   },
   "setup": {

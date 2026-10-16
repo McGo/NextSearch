@@ -702,9 +702,9 @@ paths:
       summary: Find a document by its path
       description: |
         For a system that put the file into Nextcloud itself. `state` says
-        whether it can be found yet. The link holds as long as the file stays
-        where it is; renamed or moved, it becomes a new document with a new
-        uuid.
+        whether it can be found yet. A document is the Nextcloud file, keyed
+        by its file id: renamed or moved, into another watched folder as well,
+        it keeps uuid, link and tags once the new place has been crawled.
       operationId: adminFindDocument
       parameters:
         - name: folder

@@ -12,6 +12,7 @@ interface IndexRun {
   files_seen: number
   files_new: number
   files_updated: number
+  files_moved: number
   files_removed: number
   files_skipped: number
   files_failed: number
@@ -366,6 +367,7 @@ function runStateLabel(state: IndexRun['state']): string {
               <span>{{ t('admin.status.seen', { count: run.files_seen }) }}</span>
               <span class="text-success">{{ t('admin.status.new', { count: run.files_new }) }}</span>
               <span>{{ t('admin.status.updated', { count: run.files_updated }) }}</span>
+              <span v-if="run.files_moved > 0">{{ t('admin.status.moved', { count: run.files_moved }) }}</span>
               <span>{{ t('admin.status.skipped', { count: run.files_skipped }) }}</span>
               <span>{{ t('admin.status.removed', { count: run.files_removed }) }}</span>
               <button

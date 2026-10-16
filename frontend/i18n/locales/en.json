@@ -296,7 +296,7 @@
       "new": "{count} new",
       "updated": "{count} changed",
       "skipped": "{count} skipped",
-      "removed": "{count} removed",
+      "removed": "{count} gone",
       "failedCount": "{count} errors",
       "pipelineTitle": "Processing pipeline",
       "pipelineIntro": "Each document travels left to right. Two background queues do the work; the search index at the end is what you search.",
@@ -331,7 +331,8 @@
       "rebuildConfirmTitle": "Rebuild the search index?",
       "rebuildConfirmBody": "The index and all document records are dropped, then every folder is crawled and processed from scratch. This takes a while — search stays incomplete until it finishes.",
       "clearIndexConfirmTitle": "Clear the search index?",
-      "clearIndexConfirmBody": "Every document is removed from the index and its record. Search returns nothing until you rebuild or the folders are crawled again. This cannot be undone."
+      "clearIndexConfirmBody": "Every document is removed from the index and its record. Search returns nothing until you rebuild or the folders are crawled again. This cannot be undone.",
+      "moved": "{count} moved"
     },
     "settings": {
       "title": "Appearance",
@@ -613,7 +614,8 @@
       "title": "Opening documents",
       "body": "A hit leads to the document page: preview of the first page, metadata, tags. From there the original can be viewed in the browser or downloaded — no Nextcloud account needed, the credentials stay on the server. Markdown, text files and e-mails are rendered by NextSearch itself.",
       "previewOff": "Preview images are switched off in this installation.",
-      "figure": "Document page with preview and tags"
+      "figure": "Document page with preview and tags",
+      "identity": "A document is the file in Nextcloud, not its path. Renamed or moved there, into another folder as well, it keeps its link and its tags with the next run, and is visible to everyone the new folder is shared with. A file that disappears leaves the search at once; if it turns up elsewhere within {days} days, it is the same document."
     },
     "tags": {
       "title": "Tags",
@@ -666,7 +668,8 @@
       "accountsState": "Open invitations: {pending}. Disabled accounts: {disabled}.",
       "adminApiTitle": "Admin API",
       "adminApiBody": "Another system can maintain accounts, folders and shares through /api/v1/admin. That takes a key that had \"Unlock the admin API\" ticked when it was made; an administrator's ordinary key is not enough. If the owner loses the administrator role, the key no longer opens this part. Accounts and folders cannot be deleted this way.",
-      "adminApiKeys": "At the moment there is no such key. | At the moment there is one such key. | At the moment there are {count} such keys."
+      "adminApiKeys": "At the moment there is no such key. | At the moment there is one such key. | At the moment there are {count} such keys.",
+      "vanished": "{count} documents have disappeared from their directory and are waiting to be found elsewhere. After {days} days they are deleted."
     }
   },
   "setup": {

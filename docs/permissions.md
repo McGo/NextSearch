@@ -50,6 +50,9 @@ It follows that:
 - The full text stays in the search index until the next crawl notices the deleted file.
   Until then the content remains findable through search, though the original is no longer
   retrievable.
+- A file moved into another watched folder takes its document along, tags included, and
+  from then on is visible to whoever that folder is shared with — and no longer to those
+  who only had the old one. Moving a file is therefore also a change of who may read it.
 
 ## Recommendations
 

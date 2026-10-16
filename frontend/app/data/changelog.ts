@@ -29,6 +29,22 @@ export interface Release {
 /** Newest first — that is the order the page shows them in. */
 export const CHANGELOG: Release[] = [
   {
+    version: '0.8.0',
+    date: null,
+    entries: [
+      {
+        kind: 'changed',
+        de: 'Ein Dokument ist jetzt die Datei in der Nextcloud, nicht ihr Pfad. Wird sie umbenannt oder verschoben, auch in einen anderen überwachten Ordner, behält sie Link und Tags. Sichtbar ist sie dann für alle, denen der neue Ordner freigegeben ist.',
+        en: 'A document is now the file in Nextcloud, not its path. Renamed or moved, into another watched folder as well, it keeps its link and tags, and is visible to everyone the new folder is shared with.'
+      },
+      {
+        kind: 'changed',
+        de: 'Eine verschwundene Datei ist sofort aus der Suche, wird aber erst nach einer Frist gelöscht. Taucht sie vorher woanders auf, ist es dasselbe Dokument. Die Durchläufe auf der Statusseite zählen Verschiebungen gesondert.',
+        en: 'A file that disappears leaves the search at once but is deleted only after a waiting period. If it turns up elsewhere before then, it is the same document. Runs on the status page count moves separately.'
+      }
+    ]
+  },
+  {
     version: '0.7.0',
     date: '2026-10-16',
     entries: [

@@ -111,6 +111,7 @@ class HelpController extends Controller
                 'office' => (bool) config('nextsearch.preview.office.enabled'),
             ],
             'per_page' => (int) config('nextsearch.search.per_page'),
+            'vanished_retention_days' => (int) config('nextsearch.index.vanished_retention_days'),
             // The facet keys the panel can show. The frontend already
             // translates these for the filter panel and reuses those labels.
             'facets' => ['tags', 'my_tags', ...DocumentSearch::FACETS],
@@ -218,6 +219,8 @@ class HelpController extends Controller
             'documents_total' => Document::query()->count(),
             'documents_failed' => Document::query()->where('state', Document::STATE_FAILED)->count(),
             'documents_skipped' => Document::query()->where('state', Document::STATE_SKIPPED)->count(),
+            // Gone from their directory, waiting to be found again elsewhere.
+            'documents_vanished' => Document::query()->withVanished()->whereNotNull('vanished_at')->count(),
         ];
     }
 }

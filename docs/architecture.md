@@ -38,12 +38,30 @@ middleware rather than the `/api` proxy — see [mcp.md](mcp.md).
    an `IndexRun`.
 2. **`CrawlFolderJob`** fetches one directory level via `PROPFIND`. For each subfolder it
    dispatches itself again — Nextcloud does not answer `Depth: infinity`.
-3. For each file it compares `oc:fileid` and the ETag against the stored state. Unchanged
-   means: skipped, no extraction. New or changed means: **`ProcessDocumentJob`**.
+3. For each file it compares path, ETag and size against the stored state. Unchanged
+   means: skipped, no extraction. New or changed means: **`ProcessDocumentJob`**. A file
+   that is not known at its path but is known by its `oc:fileid` — renamed, or moved,
+   from another watched folder as well — takes its existing document along: same uuid,
+   same tags, only the location changes. If the content did not change on the way, the
+   index entry is patched or rebuilt from the stored text, without a trip through Tika.
 4. That job downloads the file via `GET` into a temporary file, sends it to **Tika**
    (`PUT /tika` for text, `PUT /meta` for metadata), renders the preview image, stores the
    full text in object storage, and writes the document into **Meilisearch**.
-5. Files that no longer appear remotely are dropped from the database and the index.
+5. Files that no longer appear in their directory leave the index at once, but their rows
+   stay behind as *vanished* (`documents.vanished_at`), invisible to everything except the
+   crawl. That makes a move work whatever order the crawls run in: if the old directory is
+   crawled before the new one, the document waits until the new place finds it by its file
+   id. `nextsearch:purge-vanished` deletes what stays vanished longer than
+   `INDEX_VANISHED_RETENTION_DAYS` (default 30).
+
+### Identity
+
+A document is the Nextcloud file, keyed by instance and `oc:fileid`, not by its path.
+Nextcloud keeps the file id when a file is renamed or moved within the same storage. A
+move across storages — into external storage, for instance — may come out with a new id,
+and then NextSearch sees a new file. Two watched folders that overlap each keep their own
+document for a file both of them contain; a document of the folder being crawled is
+preferred over one from elsewhere.
 
 ### When a run is finished
 

@@ -10,6 +10,21 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+### Changed
+
+- **A document is the Nextcloud file, not its path.** Documents are now keyed by their
+  Nextcloud file id. A file that is renamed or moved — into another watched folder as
+  well — keeps its uuid, its link and its tags with the next crawl of its new place, and
+  is visible to whoever that folder is shared with. If the content did not change on the
+  way, nothing is extracted again: the index entry is patched, or rebuilt from the stored
+  text. Nextcloud keeps the file id within one storage; a move across storages can still
+  come out as a new document.
+- **Vanished files wait before they are deleted.** A file that no longer appears in its
+  directory leaves the search index at once, but its document is kept for
+  `INDEX_VANISHED_RETENTION_DAYS` (default 30), so a move works whatever order the
+  crawls run in. The new daily task `nextsearch:purge-vanished` deletes what stays
+  vanished. Run statistics count moves separately, and "removed" now reads "gone".
+
 ## [0.7.0] — 2026-10-16
 
 ### Added

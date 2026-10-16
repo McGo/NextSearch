@@ -46,6 +46,7 @@ interface Help {
     ocr: { enabled: boolean, languages: string }
     preview: { enabled: boolean, office: boolean }
     per_page: number
+    vanished_retention_days: number
     facets: string[]
     sorts: string[]
   }
@@ -68,6 +69,7 @@ interface Help {
     documents_total: number
     documents_failed: number
     documents_skipped: number
+    documents_vanished: number
   }
 }
 
@@ -370,6 +372,9 @@ const sortLabels = computed(() =>
           >
             {{ t('help.documents.previewOff') }}
           </p>
+          <p class="text-sm">
+            {{ t('help.documents.identity', { days: help.search.vanished_retention_days }) }}
+          </p>
 
           <HelpFigure
             name="document"
@@ -573,6 +578,16 @@ const sortLabels = computed(() =>
               total: n(help.admin.documents_total),
               failed: n(help.admin.documents_failed),
               skipped: n(help.admin.documents_skipped)
+            }) }}
+          </p>
+
+          <p
+            v-if="help.admin.documents_vanished > 0"
+            class="text-sm"
+          >
+            {{ t('help.admin.vanished', {
+              count: n(help.admin.documents_vanished),
+              days: help.search.vanished_retention_days
             }) }}
           </p>
 

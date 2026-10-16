@@ -50,6 +50,7 @@ x-app-env: &app-env
   INDEX_DEFAULT_INTERVAL_MINUTES: ${INDEX_DEFAULT_INTERVAL_MINUTES:-15}
   INDEX_MAX_FILE_SIZE_MB: ${INDEX_MAX_FILE_SIZE_MB:-100}
   INDEX_EXTENSIONS: ${INDEX_EXTENSIONS:-}
+  INDEX_VANISHED_RETENTION_DAYS: ${INDEX_VANISHED_RETENTION_DAYS:-30}
 
   # Only the starting point for the "Neu" tag — an administrator adjusts the
   # shelf life in the interface, and that is not overwritten on restart.

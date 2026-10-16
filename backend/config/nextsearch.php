@@ -26,6 +26,10 @@ return [
 
     'index' => [
         'default_interval_minutes' => (int) env('INDEX_DEFAULT_INTERVAL_MINUTES', 15),
+        // How long a document that disappeared from its directory waits for a
+        // crawl to find it elsewhere under its Nextcloud file id. Until then
+        // it keeps its uuid and tags; afterwards it is deleted.
+        'vanished_retention_days' => (int) env('INDEX_VANISHED_RETENTION_DAYS', 30),
         'max_file_size' => (int) env('INDEX_MAX_FILE_SIZE_MB', 100) * 1024 * 1024,
 
         // Everything else is skipped during the crawl and marked `skipped`.

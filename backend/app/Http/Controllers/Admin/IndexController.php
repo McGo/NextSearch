@@ -21,7 +21,9 @@ class IndexController extends Controller
     public function clear(SearchIndex $index): JsonResponse
     {
         $index->flush();
-        Document::query()->delete();
+        // Vanished rows included — after a clear there is nothing for them
+        // to come back to.
+        Document::query()->withVanished()->delete();
 
         // Without documents there is no stock either — the next crawl starts
         // from nothing, so the "Neu" automation has to wait for its baseline

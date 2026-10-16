@@ -13,9 +13,10 @@ use Illuminate\Http\Request;
  * that put the file into Nextcloud itself and now wants to know whether it has
  * been indexed, and under which link people will find it.
  *
- * The link stays valid as long as the file stays where it is. A document is
- * tied to its path within the folder: rename or move it and the next crawl
- * treats it as a new document with a new uuid.
+ * The uuid and the link survive a rename or a move, into another watched folder
+ * as well: a document is the Nextcloud file, keyed by its file id. Until the
+ * new place has been crawled, the old path may still answer here — or, if the
+ * old directory was crawled first, nothing does.
  */
 class DocumentLookupController extends Controller
 {

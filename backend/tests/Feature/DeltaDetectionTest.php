@@ -92,7 +92,7 @@ class DeltaDetectionTest extends TestCase
     }
 
     #[Test]
-    public function files_that_vanished_remotely_leave_database_and_index(): void
+    public function files_that_vanished_remotely_leave_the_index_and_wait_as_vanished(): void
     {
         Bus::fake([ProcessDocumentJob::class]);
 
@@ -111,7 +111,10 @@ class DeltaDetectionTest extends TestCase
 
         $this->runCrawl($folder, $run, $this->multistatus(), $index);
 
-        $this->assertDatabaseMissing('documents', ['id' => $gone->id]);
+        // Out of sight, but kept: the file may turn up elsewhere under its
+        // file id. nextsearch:purge-vanished deletes it later.
+        $this->assertNull(Document::query()->find($gone->id));
+        $this->assertNotNull(Document::query()->withVanished()->find($gone->id)?->vanished_at);
         $this->assertSame(1, $run->refresh()->files_removed);
     }
 

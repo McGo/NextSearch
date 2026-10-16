@@ -47,7 +47,9 @@ class ProcessDocumentJob implements ShouldQueue
     ): void {
         $document = $this->document->fresh(['folder.instance', 'instance']);
 
-        if ($document === null) {
+        // Gone, or vanished from its directory while this job waited. Indexing
+        // it now would put a dead hit back into the search.
+        if ($document === null || $document->isVanished()) {
             $this->run->settleJob();
 
             return;
