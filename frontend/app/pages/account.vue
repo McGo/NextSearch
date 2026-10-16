@@ -172,6 +172,7 @@ interface ApiKey {
   uuid: string
   name: string
   last_four: string
+  admin: boolean
   expires_at: string | null
   last_used_at: string | null
   created_at: string | null
@@ -180,6 +181,8 @@ interface ApiKey {
 const keys = ref<ApiKey[]>([])
 const keyName = ref('')
 const keyExpires = ref('')
+// Opens /api/v1/admin. Only administrators get the choice, and it is off by default.
+const keyAdmin = ref(false)
 const keyBusy = ref(false)
 const keyError = ref<string | null>(null)
 // Shown exactly once, right after creation — afterwards only the hash exists.
@@ -209,12 +212,14 @@ async function createKey() {
   try {
     const created = await api.post<ApiKey & { token: string }>('/api/auth/tokens', {
       name: keyName.value.trim(),
-      ...(keyExpires.value ? { expires_at: keyExpires.value } : {})
+      ...(keyExpires.value ? { expires_at: keyExpires.value } : {}),
+      ...(keyAdmin.value ? { admin: true } : {})
     })
 
     freshKey.value = created.token
     keyName.value = ''
     keyExpires.value = ''
+    keyAdmin.value = false
     await loadKeys()
   } catch (e) {
     keyError.value = e instanceof ApiError
@@ -728,6 +733,14 @@ const themeOptions = [
           :loading="keyBusy"
           :label="t('account.api.create')"
         />
+
+        <UCheckbox
+          v-if="user?.is_admin"
+          v-model="keyAdmin"
+          class="basis-full"
+          :label="t('account.api.adminLabel')"
+          :description="t('account.api.adminDesc')"
+        />
       </form>
 
       <UAlert
@@ -764,6 +777,13 @@ const themeOptions = [
             <p class="flex items-center gap-2 truncate text-sm font-medium">
               {{ key.name }}
               <span class="font-mono text-xs text-muted">…{{ key.last_four }}</span>
+              <UBadge
+                v-if="key.admin"
+                size="sm"
+                color="warning"
+                variant="subtle"
+                :label="t('account.api.adminBadge')"
+              />
               <UBadge
                 v-if="keyExpired(key)"
                 size="sm"

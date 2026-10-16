@@ -4,7 +4,9 @@ info:
   title: NextSearch API
   version: "1.0"
   description: |
-    Search and tagging over HTTP, authenticated with a personal API key.
+    Search and tagging over HTTP, authenticated with a personal API key, and
+    an admin section for keeping accounts and folders in step with another
+    system.
 
     A key carries no permissions of its own: a request does exactly what its
     owner can do in the interface — the same folder grants, the same tags.
@@ -27,6 +29,10 @@ tags:
   - name: Account
   - name: Documents
   - name: Tags
+  - name: Admin
+    description: |
+      Accounts, folders, shares and re-indexing. Needs a key that was made with
+      the admin flag, by someone who is still an administrator.
 
 paths:
   /me:
@@ -365,6 +371,372 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  /admin/instances:
+    get:
+      tags: [Admin]
+      summary: List the Nextcloud instances
+      description: Read only. Credentials never leave the server.
+      operationId: adminListInstances
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  instances:
+                    type: array
+                    items: { $ref: "#/components/schemas/Instance" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+
+  /admin/folders:
+    get:
+      tags: [Admin]
+      summary: List the watched folders
+      operationId: adminListFolders
+      parameters:
+        - name: instance
+          in: query
+          description: Only the folders of this instance (uuid).
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  folders:
+                    type: array
+                    items: { $ref: "#/components/schemas/Folder" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+    post:
+      tags: [Admin]
+      summary: Watch a folder
+      description: |
+        The path is checked against Nextcloud before the folder is created. A
+        path that is already watched on the instance answers `409` and carries
+        the existing folder, so a caller can treat the call as idempotent.
+      operationId: adminCreateFolder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [instance, label, remote_path]
+              properties:
+                instance: { type: string, format: uuid }
+                label: { type: string, maxLength: 190 }
+                remote_path:
+                  type: string
+                  maxLength: 1000
+                  description: Relative to the WebDAV root of the instance's account.
+                interval_minutes: { type: integer, minimum: 1, maximum: 10080 }
+                exclude_patterns:
+                  type: array
+                  items: { type: string, maxLength: 200 }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  folder: { $ref: "#/components/schemas/Folder" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+        "409":
+          description: Already watched. The body carries the existing folder.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  folder: { $ref: "#/components/schemas/Folder" }
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /admin/folders/{folder}/reindex:
+    parameters:
+      - name: folder
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Admin]
+      summary: Crawl a folder now
+      description: |
+        Without `path` the whole folder is crawled. With `path` only that
+        directory, relative to the folder; a path to a file crawls the
+        directory it sits in. If a run is already going, a `path` is added to
+        it and the response names that run.
+      operationId: adminReindexFolder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path: { type: string, maxLength: 1000, example: "2026/rentenbescheid.pdf" }
+                full:
+                  type: boolean
+                  description: Re-extract files even if they have not changed.
+      responses:
+        "200":
+          description: Started, or added to the running run.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run:
+                    type: object
+                    properties:
+                      uuid: { type: string, format: uuid }
+                      state: { type: string, enum: [running, completed] }
+                      path: { type: [string, "null"] }
+                  message: { type: string }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List accounts
+      operationId: adminListUsers
+      parameters:
+        - name: email
+          in: query
+          description: Only the account with this address, compared case-insensitively.
+          schema: { type: string, format: email }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items: { $ref: "#/components/schemas/ManagedUser" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+    post:
+      tags: [Admin]
+      summary: Create an account
+      description: |
+        Without `password` the account gets an invitation link instead, which
+        comes back in this response and nowhere else. NextSearch sends no mail;
+        pass the link on yourself.
+      operationId: adminCreateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name: { type: string, maxLength: 190 }
+                email: { type: string, format: email, maxLength: 190 }
+                password: { type: string, minLength: 12 }
+                role: { type: string, enum: [admin, user], default: user }
+                folders:
+                  type: array
+                  description: Folder uuids to share right away.
+                  items: { type: string, format: uuid }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: "#/components/schemas/ManagedUser" }
+                  invitation: { $ref: "#/components/schemas/Invitation" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /admin/users/{user}:
+    parameters:
+      - $ref: "#/components/parameters/UserUuid"
+    patch:
+      tags: [Admin]
+      summary: Change or disable an account
+      description: |
+        `disabled: true` shuts the account without deleting anything: no
+        sign-in, no API key, no OAuth token works for it until it is enabled
+        again. Repeating the call changes nothing. The key's own account and
+        the last active administrator cannot be disabled.
+      operationId: adminUpdateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, maxLength: 190 }
+                email: { type: string, format: email, maxLength: 190 }
+                password: { type: string, minLength: 12 }
+                role: { type: string, enum: [admin, user] }
+                disabled: { type: boolean }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: "#/components/schemas/ManagedUser" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /admin/users/{user}/folders:
+    parameters:
+      - $ref: "#/components/parameters/UserUuid"
+    put:
+      tags: [Admin]
+      summary: Set an account's folders
+      description: Exactly these folders afterwards, whatever was shared before.
+      operationId: adminSetUserFolders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [folders]
+              properties:
+                folders:
+                  type: array
+                  items: { type: string, format: uuid }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: "#/components/schemas/ManagedUser" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /admin/users/{user}/invitation:
+    parameters:
+      - $ref: "#/components/parameters/UserUuid"
+    post:
+      tags: [Admin]
+      summary: Issue a new invitation link
+      description: |
+        Any earlier link stops working. For an account that already has a
+        password the link works as a reset; the old password stays valid until
+        the link is used.
+      operationId: adminInviteUser
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invitation: { $ref: "#/components/schemas/Invitation" }
+                  user: { $ref: "#/components/schemas/ManagedUser" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: The account is disabled.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /admin/documents:
+    get:
+      tags: [Admin]
+      summary: Find a document by its path
+      description: |
+        For a system that put the file into Nextcloud itself. `state` says
+        whether it can be found yet. The link holds as long as the file stays
+        where it is; renamed or moved, it becomes a new document with a new
+        uuid.
+      operationId: adminFindDocument
+      parameters:
+        - name: folder
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+        - name: path
+          in: query
+          required: true
+          description: Relative to the folder.
+          schema: { type: string, maxLength: 1000 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document: { $ref: "#/components/schemas/AdminDocument" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/AdminKeyRequired"
+        "404":
+          description: Not known under this path, or not crawled yet.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -373,6 +745,11 @@ components:
       description: A personal API key, `nxs_` followed by 40 characters.
 
   parameters:
+    UserUuid:
+      name: user
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
     DocumentUuid:
       name: document
       in: path
@@ -387,6 +764,11 @@ components:
           schema: { $ref: "#/components/schemas/Error" }
     Forbidden:
       description: The folder is not granted to the key's owner.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    AdminKeyRequired:
+      description: The key lacks the admin flag, or its owner is no longer an administrator.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
@@ -635,3 +1017,90 @@ components:
         nextcloud_url:
           type: string
           description: Deep link into Nextcloud, for whoever has an account there.
+
+    Instance:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        name: { type: string }
+        base_url: { type: string, format: uri }
+        username: { type: string }
+        verify_tls: { type: boolean }
+        enabled: { type: boolean }
+        health_state: { type: [string, "null"] }
+        health_message: { type: [string, "null"] }
+        health_checked_at: { type: [string, "null"], format: date-time }
+        image_url: { type: [string, "null"] }
+        folders_count: { type: integer }
+        documents_count: { type: integer }
+
+    Folder:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        label: { type: string }
+        remote_path: { type: string }
+        enabled: { type: boolean }
+        interval_minutes: { type: integer }
+        exclude_patterns:
+          type: array
+          items: { type: string }
+        last_crawled_at: { type: [string, "null"], format: date-time }
+        image_url: { type: [string, "null"] }
+        documents_count: { type: integer }
+        instance:
+          type: object
+          properties:
+            uuid: { type: string, format: uuid }
+            name: { type: string }
+
+    ManagedUser:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [admin, user] }
+        is_admin: { type: boolean }
+        disabled: { type: boolean }
+        disabled_at: { type: [string, "null"], format: date-time }
+        has_password: { type: boolean }
+        invitation_pending: { type: boolean }
+        invitation_expires_at: { type: [string, "null"], format: date-time }
+        created_at: { type: [string, "null"], format: date-time }
+        folders:
+          type: array
+          items:
+            type: object
+            properties:
+              uuid: { type: string, format: uuid }
+              label: { type: string }
+
+    Invitation:
+      type: object
+      description: Shown once. Only its hash is stored.
+      properties:
+        url: { type: string, format: uri }
+        expires_at: { type: string, format: date-time }
+
+    AdminDocument:
+      type: object
+      properties:
+        uuid: { type: string, format: uuid }
+        name: { type: string }
+        path: { type: string, description: Relative to the folder. }
+        remote_path: { type: string }
+        state: { type: string, enum: [pending, indexed, failed, skipped] }
+        failure_reason: { type: [string, "null"] }
+        size: { type: integer }
+        modified_at: { type: [string, "null"], format: date-time }
+        indexed_at: { type: [string, "null"], format: date-time }
+        folder:
+          type: object
+          properties:
+            uuid: { type: string, format: uuid }
+            label: { type: string }
+        url:
+          type: string
+          format: uri
+          description: The document page in the interface. Needs a sign-in and a share of the folder.

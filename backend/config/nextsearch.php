@@ -133,6 +133,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Einladungen
+    |--------------------------------------------------------------------------
+    |
+    | How long an invitation link stays valid, in hours. NextSearch sends no
+    | mail: the link goes back to whoever created the account, in the interface
+    | or through the admin API, and they pass it on. Documented in docs/api.md.
+    |
+    */
+
+    'invitations' => [
+        'expire_hours' => (int) env('INVITATION_EXPIRE_HOURS', 168),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | MCP-Server
     |--------------------------------------------------------------------------
     |

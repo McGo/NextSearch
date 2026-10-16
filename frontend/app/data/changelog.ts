@@ -29,6 +29,32 @@ export interface Release {
 /** Newest first — that is the order the page shows them in. */
 export const CHANGELOG: Release[] = [
   {
+    version: '0.7.0',
+    date: null,
+    entries: [
+      {
+        kind: 'added',
+        de: 'Admin-API unter /api/v1/admin: Ein anderes System kann Konten anlegen, ändern und deaktivieren, Ordner anlegen, Freigaben setzen, einen Ordner sofort durchsuchen lassen und ein Dokument über seinen Pfad finden. Dafür braucht es einen Schlüssel, der beim Anlegen ausdrücklich für die Admin-API freigeschaltet wurde.',
+        en: 'Admin API under /api/v1/admin: another system can create, change and disable accounts, create folders, set shares, have a folder crawled right away and find a document by its path. It takes a key that was explicitly unlocked for the admin API when it was made.'
+      },
+      {
+        kind: 'added',
+        de: 'Einladungslinks. Wer ein Konto ohne Passwort anlegt, bekommt einen Link, mit dem die Person ihr Passwort selbst setzt. NextSearch verschickt keine Mails, den Link gibst du selbst weiter.',
+        en: 'Invitation links. Creating an account without a password gives you a link the person uses to set their own password. NextSearch sends no mail; you pass the link on yourself.'
+      },
+      {
+        kind: 'added',
+        de: 'Konten lassen sich deaktivieren statt löschen. Anmeldung, Schlüssel und verbundene Anwendungen funktionieren dann nicht mehr. Tags, gespeicherte Suchen und Freigaben bleiben erhalten.',
+        en: 'Accounts can be disabled instead of deleted. Sign-in, keys and connected applications stop working; tags, saved searches and shares are kept.'
+      },
+      {
+        kind: 'changed',
+        de: 'Ein Ordner lässt sich gezielt für ein Unterverzeichnis neu durchsuchen. So ist eine frisch abgelegte Datei gleich auffindbar, ohne dass der ganze Ordner durchlaufen muss.',
+        en: 'A folder can be re-crawled for a single subdirectory, so a file that was just dropped there becomes findable without walking the whole folder.'
+      }
+    ]
+  },
+  {
     version: '0.6.0',
     date: '2026-08-23',
     entries: [

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\QueueController;
 use App\Http\Controllers\Admin\StatusController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\ApiTokenController;
+use App\Http\Controllers\Auth\InvitationController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\BrandingController;
@@ -40,13 +41,22 @@ Route::prefix('api')->group(function () {
     // pending id lives in the session from the password step.
     Route::post('/auth/two-factor-challenge', [SessionController::class, 'twoFactorChallenge']);
 
+    // Setting a password from an invitation link. Public, the person is not
+    // signed in yet; the token in the path is the credential. Throttled per
+    // address, because it is guessable only by brute force and that should
+    // stay slow.
+    Route::middleware('throttle:20,1')->group(function () {
+        Route::get('/auth/invitations/{token}', [InvitationController::class, 'show']);
+        Route::post('/auth/invitations/{token}', [InvitationController::class, 'accept']);
+    });
+
     // Branding reads are public: the browser fetches the favicon, the manifest
     // and its icons before anyone is signed in.
     Route::get('/branding', [BrandingController::class, 'show']);
     Route::get('/branding/logo', [BrandingController::class, 'logo']);
     Route::get('/branding/icon/{variant}', [BrandingController::class, 'icon']);
 
-    Route::middleware('auth')->group(function () {
+    Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/auth/logout', [SessionController::class, 'logout']);
         Route::get('/auth/me', [SessionController::class, 'me']);
         Route::put('/auth/password', [SessionController::class, 'changePassword']);
@@ -137,6 +147,7 @@ Route::prefix('api')->group(function () {
 
             Route::apiResource('users', UserController::class)->except('show');
             Route::put('/users/{user}/folders', [UserController::class, 'syncFolderAccess']);
+            Route::post('/users/{user}/invitation', [UserController::class, 'invitation']);
         });
     });
 });

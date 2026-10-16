@@ -12,6 +12,13 @@ return [
         'password_min' => 'Das neue Passwort braucht mindestens :min Zeichen.',
         'password_confirmed' => 'Die Wiederholung stimmt nicht mit dem neuen Passwort überein.',
         'password_different' => 'Das neue Passwort muss sich vom aktuellen unterscheiden.',
+        'account_disabled' => 'Dieses Konto ist deaktiviert.',
+        'invitation_invalid' => 'Dieser Einladungslink gilt nicht mehr. Bitte einen neuen anfordern.',
+        'invitation_accepted' => 'Passwort gesetzt.',
+    ],
+    'api' => [
+        'admin_key_required' => 'Dafür braucht es einen API-Key mit Admin-Berechtigung.',
+        'admin_key_needs_admin' => 'Einen Admin-Key können nur Administratoren anlegen.',
     ],
     'admin_only' => 'Dieser Bereich ist Administratoren vorbehalten.',
     'nextcloud' => [
@@ -30,6 +37,7 @@ return [
         'no_preview' => 'Für dieses Dokument gibt es kein Vorschaubild.',
         'no_access' => 'Für diesen Ordner besteht keine Freigabe.',
         'gone' => 'Dieses Dokument ist nicht mehr verfügbar.',
+        'unknown_path' => 'Unter diesem Pfad ist im Ordner kein Dokument bekannt.',
     ],
     'instance' => [
         'removed' => 'Instanz entfernt.',
@@ -51,6 +59,8 @@ return [
         'removed' => 'Ordner entfernt.',
         'run_started' => 'Durchlauf gestartet.',
         'run_already' => 'Für diesen Ordner läuft bereits ein Durchlauf.',
+        'already_watched' => 'Dieser Pfad wird auf der Instanz bereits überwacht.',
+        'run_joined' => 'Das Verzeichnis wurde dem laufenden Durchlauf angehängt.',
     ],
     'tag' => [
         'admin_only' => 'Das Vokabular der Instanz pflegen ausschließlich Administratoren.',
@@ -67,5 +77,6 @@ return [
         'cannot_delete_self' => 'Das eigene Konto lässt sich nicht löschen.',
         'last_admin' => 'Es muss mindestens ein Administrator übrig bleiben.',
         'removed' => 'Konto entfernt.',
+        'cannot_disable_self' => 'Das eigene Konto lässt sich nicht deaktivieren.',
     ],
 ];

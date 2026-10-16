@@ -4,12 +4,22 @@ useHead({ title: () => t('admin.users.title') })
 
 interface ManagedUser {
   id: number
+  uuid: string
   name: string
   email: string
   role: 'admin' | 'user'
   is_admin: boolean
+  disabled: boolean
+  has_password: boolean
+  invitation_pending: boolean
+  invitation_expires_at: string | null
   created_at: string | null
   folders: { uuid: string, label: string }[]
+}
+
+interface Invitation {
+  url: string
+  expires_at: string
 }
 
 interface FolderOption {
@@ -21,6 +31,7 @@ interface FolderOption {
 const api = useApi()
 const toast = useToast()
 const { user: currentUser } = useAuth()
+const { dateTime } = useFormat()
 
 const users = ref<ManagedUser[]>([])
 const folders = ref<FolderOption[]>([])
@@ -34,6 +45,14 @@ const formError = ref<string | null>(null)
 
 const form = reactive({ name: '', email: '', password: '', role: 'user' as 'admin' | 'user' })
 const selectedFolders = ref<string[]>([])
+
+// NextSearch sends no mail. The link is shown here once and passed on by
+// whoever created the account.
+const invitation = ref<{ user: ManagedUser, link: Invitation } | null>(null)
+const inviteModal = computed({
+  get: () => invitation.value !== null,
+  set: (open: boolean) => { if (!open) invitation.value = null }
+})
 
 async function load() {
   pending.value = true
@@ -76,9 +95,16 @@ async function save() {
 
   try {
     if (editing.value) {
-      await api.put(`/api/admin/users/${editing.value.id}`, form)
+      await api.put(`/api/admin/users/${editing.value.uuid}`, form)
     } else {
-      await api.post('/api/admin/users', form)
+      const created = await api.post<{ user: ManagedUser, invitation?: Invitation }>('/api/admin/users', {
+        ...form,
+        password: form.password || null
+      })
+
+      if (created.invitation) {
+        invitation.value = { user: created.user, link: created.invitation }
+      }
     }
 
     userModal.value = false
@@ -96,7 +122,7 @@ async function saveShares() {
   saving.value = true
 
   try {
-    await api.put(`/api/admin/users/${editing.value!.id}/folders`, {
+    await api.put(`/api/admin/users/${editing.value!.uuid}/folders`, {
       folders: selectedFolders.value
     })
 
@@ -112,11 +138,47 @@ async function remove(user: ManagedUser) {
   if (!confirm(t('admin.users.deleteConfirm', { email: user.email }))) return
 
   try {
-    await api.del(`/api/admin/users/${user.id}`)
+    await api.del(`/api/admin/users/${user.uuid}`)
     await load()
   } catch (e) {
     toast.add({
       title: t('admin.users.deleteFailedTitle'),
+      description: e instanceof ApiError ? e.message : undefined,
+      color: 'error'
+    })
+  }
+}
+
+async function invite(user: ManagedUser) {
+  try {
+    const response = await api.post<{ user: ManagedUser, invitation: Invitation }>(`/api/admin/users/${user.uuid}/invitation`)
+    invitation.value = { user: response.user, link: response.invitation }
+    await load()
+  } catch (e) {
+    toast.add({
+      title: t('admin.users.inviteFailed'),
+      description: e instanceof ApiError ? e.message : undefined,
+      color: 'error'
+    })
+  }
+}
+
+async function copyInvitation() {
+  if (!invitation.value) return
+  await navigator.clipboard.writeText(invitation.value.link.url)
+  toast.add({ title: t('admin.users.invitationCopied'), color: 'success' })
+}
+
+async function setDisabled(user: ManagedUser, disabled: boolean) {
+  if (disabled && !confirm(t('admin.users.disableConfirm', { email: user.email }))) return
+
+  try {
+    await api.put(`/api/admin/users/${user.uuid}`, { disabled })
+    await load()
+    toast.add({ title: t(disabled ? 'admin.users.disabledToast' : 'admin.users.enabledToast'), color: 'success' })
+  } catch (e) {
+    toast.add({
+      title: t('admin.users.disableFailed'),
       description: e instanceof ApiError ? e.message : undefined,
       color: 'error'
     })
@@ -201,6 +263,27 @@ onMounted(load)
                 variant="outline"
                 :label="t('admin.users.you')"
               />
+              <UBadge
+                v-if="user.disabled"
+                size="sm"
+                color="error"
+                variant="subtle"
+                :label="t('admin.users.disabled')"
+              />
+              <UBadge
+                v-else-if="user.invitation_pending && !user.has_password"
+                size="sm"
+                color="warning"
+                variant="subtle"
+                :label="t('admin.users.invitationPending', { at: dateTime(user.invitation_expires_at) })"
+              />
+              <UBadge
+                v-else-if="!user.has_password"
+                size="sm"
+                color="warning"
+                variant="subtle"
+                :label="t('admin.users.noPassword')"
+              />
             </div>
 
             <p class="text-sm text-muted">
@@ -230,11 +313,31 @@ onMounted(load)
               @click="openShares(user)"
             />
             <UButton
+              v-if="!user.disabled"
+              size="sm"
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-link"
+              :title="t('admin.users.invite')"
+              :aria-label="t('admin.users.invite')"
+              @click="invite(user)"
+            />
+            <UButton
               size="sm"
               color="neutral"
               variant="ghost"
               icon="i-lucide-pencil"
               @click="openEdit(user)"
+            />
+            <UButton
+              v-if="user.id !== currentUser?.id"
+              size="sm"
+              color="neutral"
+              variant="ghost"
+              :icon="user.disabled ? 'i-lucide-user-check' : 'i-lucide-user-x'"
+              :title="t(user.disabled ? 'admin.users.enable' : 'admin.users.disable')"
+              :aria-label="t(user.disabled ? 'admin.users.enable' : 'admin.users.disable')"
+              @click="setDisabled(user, !user.disabled)"
             />
             <UButton
               v-if="user.id !== currentUser?.id"
@@ -283,7 +386,6 @@ onMounted(load)
               v-model="form.password"
               type="password"
               autocomplete="new-password"
-              :required="!editing"
               class="w-full"
             />
           </UFormField>
@@ -319,6 +421,49 @@ onMounted(load)
             />
           </div>
         </form>
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="inviteModal"
+      :title="t('admin.users.invitationTitle', { name: invitation?.user.name })"
+    >
+      <template #body>
+        <div
+          v-if="invitation"
+          class="space-y-4"
+        >
+          <p class="text-sm text-muted">
+            {{ t('admin.users.invitationDesc', { at: dateTime(invitation.link.expires_at) }) }}
+          </p>
+
+          <UAlert
+            v-if="invitation.user.has_password"
+            color="warning"
+            variant="subtle"
+            icon="i-lucide-info"
+            :description="t('admin.users.invitationAsReset')"
+          />
+
+          <div class="flex items-center gap-2">
+            <code class="min-w-0 flex-1 truncate rounded bg-elevated px-2 py-1.5 font-mono text-sm select-all">{{ invitation.link.url }}</code>
+            <UButton
+              size="sm"
+              icon="i-lucide-copy"
+              :label="t('admin.users.invitationCopy')"
+              @click="copyInvitation"
+            />
+          </div>
+
+          <div class="flex justify-end">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :label="t('common.close')"
+              @click="invitation = null"
+            />
+          </div>
+        </div>
       </template>
     </UModal>
 

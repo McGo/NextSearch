@@ -108,8 +108,8 @@ class OAuthServer
 
         $user = $record->user;
 
-        if ($user === null) {
-            throw OAuthException::invalidGrant('The account behind this code no longer exists.');
+        if ($user === null || $user->isDisabled()) {
+            throw OAuthException::invalidGrant('The account behind this code no longer exists or is disabled.');
         }
 
         return DB::transaction(function () use ($record, $client, $user) {
@@ -156,8 +156,8 @@ class OAuthServer
 
         $user = $record->user;
 
-        if ($user === null) {
-            throw OAuthException::invalidGrant('The account behind this token no longer exists.');
+        if ($user === null || $user->isDisabled()) {
+            throw OAuthException::invalidGrant('The account behind this token no longer exists or is disabled.');
         }
 
         return DB::transaction(function () use ($record, $client, $user) {
@@ -213,7 +213,7 @@ class OAuthServer
             ->where('token_hash', OauthAccessToken::hash($plain))
             ->first();
 
-        if ($token === null || ! $token->isUsable() || $token->user === null) {
+        if ($token === null || ! $token->isUsable() || $token->user === null || $token->user->isDisabled()) {
             return null;
         }
 

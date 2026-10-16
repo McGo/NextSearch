@@ -243,12 +243,28 @@
         "email": "E-Mail",
         "password": "Passwort",
         "passwordHintEdit": "Leer lassen, um es unverändert zu lassen",
-        "passwordHintNew": "Mindestens zwölf Zeichen",
+        "passwordHintNew": "Mindestens zwölf Zeichen. Leer lassen, dann gibt es einen Einladungslink.",
         "role": "Rolle",
         "roleUserOption": "Benutzer — sieht nur freigegebene Ordner",
         "roleAdminOption": "Administrator — sieht und verwaltet alles",
         "saveFailed": "Speichern fehlgeschlagen."
-      }
+      },
+      "disabled": "Deaktiviert",
+      "invitationPending": "Einladung offen bis {at}",
+      "noPassword": "Noch kein Passwort",
+      "invite": "Einladungslink erzeugen",
+      "inviteFailed": "Der Einladungslink ließ sich nicht erzeugen.",
+      "invitationTitle": "Einladungslink für {name}",
+      "invitationDesc": "NextSearch verschickt keine Mails. Gib den Link selbst weiter, per Mail oder Messenger. Er gilt einmal und bis {at}. Ein neuer Link ersetzt diesen.",
+      "invitationAsReset": "Das Konto hat schon ein Passwort. Der Link setzt es dann zurück, das alte Passwort gilt aber weiter, bis der Link benutzt wird.",
+      "invitationCopy": "Kopieren",
+      "invitationCopied": "Link kopiert.",
+      "disable": "Deaktivieren",
+      "enable": "Wieder aktivieren",
+      "disableConfirm": "Konto „{email}“ deaktivieren? Anmeldung, API-Schlüssel und verbundene Anwendungen funktionieren dann nicht mehr. Tags und gespeicherte Suchen bleiben erhalten.",
+      "disabledToast": "Konto deaktiviert.",
+      "enabledToast": "Konto wieder aktiv.",
+      "disableFailed": "Das ließ sich nicht ändern."
     },
     "status": {
       "title": "Status",
@@ -482,7 +498,10 @@
       "expiredAt": "abgelaufen {at}",
       "revokeTitle": "Schlüssel widerrufen",
       "revokeConfirm": "„{name}“ wird sofort ungültig. Was ihn benutzt, bleibt draußen.",
-      "docsLink": "API-Dokumentation"
+      "docsLink": "API-Dokumentation",
+      "adminLabel": "Admin-API freischalten",
+      "adminDesc": "Der Schlüssel darf dann auch unter /api/v1/admin Benutzer, Ordner und Freigaben verwalten. Nur für Systeme, die das wirklich brauchen.",
+      "adminBadge": "Admin-API"
     },
     "mcp": {
       "title": "MCP-Zugang",
@@ -641,7 +660,13 @@
       "folderCount": "Ordner",
       "people": "Konten: {users}, davon {admins} mit Administratorrechten.",
       "states": "{total} Dokumente in der Datenbank, {failed} fehlgeschlagen, {skipped} übersprungen. Übersprungen heißt: Format nicht vorgesehen oder Datei zu groß.",
-      "permissions": "Die Freigaben hier haben nichts mit den Rechten in der Nextcloud zu tun. Wer einen Ordner freigegeben bekommt, liest dessen Inhalt im Volltext und öffnet die Originale — unabhängig davon, was die Nextcloud selbst erlauben würde."
+      "permissions": "Die Freigaben hier haben nichts mit den Rechten in der Nextcloud zu tun. Wer einen Ordner freigegeben bekommt, liest dessen Inhalt im Volltext und öffnet die Originale — unabhängig davon, was die Nextcloud selbst erlauben würde.",
+      "accountsTitle": "Konten, Einladungen, Deaktivieren",
+      "accountsBody": "Wer ein Konto ohne Passwort anlegt, bekommt einen Einladungslink. NextSearch verschickt keine Mails, den Link gibst du selbst weiter. Er gilt einmal und {hours} Stunden lang. Mit einem neuen Link verliert der alte seine Gültigkeit. Für ein Konto mit Passwort setzt der Link das Passwort zurück. Ein deaktiviertes Konto kommt weder über die Anmeldung noch über einen Schlüssel oder eine verbundene Anwendung hinein. Seine Tags und gespeicherten Suchen bleiben erhalten.",
+      "accountsState": "Offene Einladungen: {pending}. Deaktivierte Konten: {disabled}.",
+      "adminApiTitle": "Admin-API",
+      "adminApiBody": "Ein anderes System kann Konten, Ordner und Freigaben über /api/v1/admin pflegen. Dafür braucht es einen Schlüssel, bei dem beim Anlegen „Admin-API freischalten“ angehakt wurde. Ein gewöhnlicher Schlüssel eines Administrators reicht nicht. Verliert der Besitzer die Administratorrolle, ist der Schlüssel für diesen Bereich wertlos. Konten und Ordner löschen lässt sich darüber nicht.",
+      "adminApiKeys": "Im Moment gibt es keinen solchen Schlüssel. | Im Moment gibt es einen solchen Schlüssel. | Im Moment gibt es {count} solche Schlüssel."
     }
   },
   "setup": {
@@ -679,5 +704,15 @@
     },
     "toHelp": "Zur Hilfe",
     "toRepo": "Vollständiger Changelog im Repository"
+  },
+  "invite": {
+    "title": "Einladung",
+    "subtitle": "Passwort für dein Konto setzen",
+    "greeting": "Hallo {name},",
+    "hint": "für {email} liegt ein Konto bereit. Leg ein Passwort fest, danach bist du angemeldet. Der Link gilt bis {at}.",
+    "submit": "Passwort setzen",
+    "invalid": "Dieser Einladungslink gilt nicht mehr.",
+    "failed": "Das Passwort ließ sich nicht setzen.",
+    "toLogin": "Zur Anmeldung"
   }
 }

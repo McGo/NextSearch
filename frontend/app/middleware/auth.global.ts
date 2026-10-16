@@ -1,6 +1,10 @@
 const PUBLIC_ROUTES = ['/login']
 
 export default defineNuxtRouteMiddleware(async (to) => {
+  // An invitation link opens for anyone holding it, signed in or not — an
+  // administrator may want to try the link before passing it on.
+  if (to.path.startsWith('/invite/')) return
+
   const { ensureResolved, user } = useAuth()
   const current = await ensureResolved()
 

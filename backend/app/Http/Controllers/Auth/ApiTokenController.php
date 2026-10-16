@@ -30,12 +30,19 @@ class ApiTokenController extends Controller
             'name' => ['required', 'string', 'max:120'],
             // Optional. Without it the key stays valid until it is revoked.
             'expires_at' => ['sometimes', 'nullable', 'date', 'after:now'],
+            // Opens /api/v1/admin. Set deliberately, never by default.
+            'admin' => ['sometimes', 'boolean'],
         ]);
+
+        $admin = (bool) ($validated['admin'] ?? false);
+
+        abort_if($admin && ! $request->user()->isAdmin(), 403, __('nextsearch.api.admin_key_needs_admin'));
 
         $issued = ApiToken::issue(
             $request->user(),
             $validated['name'],
             isset($validated['expires_at']) ? new \DateTimeImmutable($validated['expires_at']) : null,
+            $admin,
         );
 
         return response()->json(

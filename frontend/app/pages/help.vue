@@ -61,6 +61,10 @@ interface Help {
     default_interval_minutes: number
     users: number
     admins: number
+    users_disabled: number
+    invitations_pending: number
+    invitation_expire_hours: number
+    admin_api_keys: number
     documents_total: number
     documents_failed: number
     documents_skipped: number
@@ -574,6 +578,36 @@ const sortLabels = computed(() =>
 
           <p class="text-sm">
             {{ t('help.admin.permissions') }}
+          </p>
+
+          <h3 class="pt-2 text-sm font-medium">
+            {{ t('help.admin.accountsTitle') }}
+          </h3>
+          <p class="text-sm">
+            {{ t('help.admin.accountsBody', { hours: help.admin.invitation_expire_hours }) }}
+          </p>
+          <p class="text-sm">
+            {{ t('help.admin.accountsState', {
+              pending: n(help.admin.invitations_pending),
+              disabled: n(help.admin.users_disabled)
+            }) }}
+          </p>
+
+          <h3 class="pt-2 text-sm font-medium">
+            {{ t('help.admin.adminApiTitle') }}
+          </h3>
+          <p class="text-sm">
+            {{ t('help.admin.adminApiBody') }}
+            {{ t('help.admin.adminApiKeys', { count: help.admin.admin_api_keys }, help.admin.admin_api_keys) }}
+          </p>
+          <p class="text-sm">
+            {{ t('help.access.apiDocs') }}
+            <a
+              :href="doc('docs/api.md#the-admin-api')"
+              target="_blank"
+              rel="noopener"
+              class="text-primary hover:underline"
+            >{{ t('help.access.apiDocsLink') }}</a>.
           </p>
 
           <div class="flex flex-wrap gap-2 pt-1">

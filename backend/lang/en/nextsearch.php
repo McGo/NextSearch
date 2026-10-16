@@ -12,6 +12,13 @@ return [
         'password_min' => 'The new password needs at least :min characters.',
         'password_confirmed' => 'The repetition does not match the new password.',
         'password_different' => 'The new password must differ from the current one.',
+        'account_disabled' => 'This account is disabled.',
+        'invitation_invalid' => 'This invitation link is no longer valid. Please ask for a new one.',
+        'invitation_accepted' => 'Password set.',
+    ],
+    'api' => [
+        'admin_key_required' => 'This needs an API key with admin permission.',
+        'admin_key_needs_admin' => 'Only administrators can create an admin key.',
     ],
     'admin_only' => 'This area is reserved for administrators.',
     'nextcloud' => [
@@ -30,6 +37,7 @@ return [
         'no_preview' => 'There is no preview image for this document.',
         'no_access' => 'This folder is not shared with you.',
         'gone' => 'This document is no longer available.',
+        'unknown_path' => 'No document is known under this path in the folder.',
     ],
     'instance' => [
         'removed' => 'Instance removed.',
@@ -51,6 +59,8 @@ return [
         'removed' => 'Folder removed.',
         'run_started' => 'Run started.',
         'run_already' => 'A run is already in progress for this folder.',
+        'already_watched' => 'This path is already watched on the instance.',
+        'run_joined' => 'The directory was added to the run in progress.',
     ],
     'tag' => [
         'admin_only' => 'Only administrators maintain the instance vocabulary.',
@@ -67,5 +77,6 @@ return [
         'cannot_delete_self' => 'You cannot delete your own account.',
         'last_admin' => 'At least one administrator must remain.',
         'removed' => 'Account removed.',
+        'cannot_disable_self' => 'You cannot disable your own account.',
     ],
 ];

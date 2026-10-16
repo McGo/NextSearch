@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ApiToken;
 use App\Models\Document;
 use App\Models\Tag;
 use App\Models\User;
@@ -78,6 +79,26 @@ class HelpTest extends TestCase
             ->assertJsonPath('admin.documents_total', 8)
             ->assertJsonPath('admin.admins', 1)
             ->assertJsonCount(2, 'admin.instances');
+    }
+
+    #[Test]
+    public function the_administrator_sees_invitations_disabled_accounts_and_admin_keys(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        User::factory()->create(['password' => null])->issueInvitation();
+        User::factory()->create(['disabled_at' => now()]);
+        ApiToken::issue($admin, 'Unterlagen', admin: true);
+        ApiToken::issue($admin, 'Suchskript');
+        // The flag alone does not count once the owner is no administrator.
+        ApiToken::issue(User::factory()->create(['role' => User::ROLE_USER]), 'Alt', admin: true);
+
+        $this->actingAs($admin)
+            ->getJson('/api/help')
+            ->assertOk()
+            ->assertJsonPath('admin.invitations_pending', 1)
+            ->assertJsonPath('admin.users_disabled', 1)
+            ->assertJsonPath('admin.admin_api_keys', 1)
+            ->assertJsonPath('admin.invitation_expire_hours', 168);
     }
 
     #[Test]

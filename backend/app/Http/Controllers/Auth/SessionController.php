@@ -43,6 +43,14 @@ class SessionController extends Controller
         RateLimiter::clear($key);
 
         $user = User::where('email', $credentials['email'])->firstOrFail();
+
+        // Only said after the password was right — otherwise the message
+        // would tell a stranger which addresses have an account.
+        if ($user->isDisabled()) {
+            throw ValidationException::withMessages([
+                'email' => __('nextsearch.auth.account_disabled'),
+            ])->status(403);
+        }
         $remember = (bool) ($credentials['remember'] ?? false);
 
         // Password is right, but 2FA holds the sign-in until the second factor.
@@ -89,7 +97,7 @@ class SessionController extends Controller
 
         $user = User::find($pendingId);
 
-        if ($user === null || ! $user->hasTwoFactorEnabled()) {
+        if ($user === null || ! $user->hasTwoFactorEnabled() || $user->isDisabled()) {
             $request->session()->forget(['auth.2fa.pending_id', 'auth.2fa.remember']);
 
             throw ValidationException::withMessages([

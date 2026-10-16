@@ -39,6 +39,7 @@ class ApiToken extends Model
     protected function casts(): array
     {
         return [
+            'admin' => 'boolean',
             'expires_at' => 'datetime',
             'last_used_at' => 'datetime',
         ];
@@ -58,7 +59,7 @@ class ApiToken extends Model
      *
      * @return array{token: ApiToken, plain: string}
      */
-    public static function issue(User $user, string $name, ?\DateTimeInterface $expiresAt = null): array
+    public static function issue(User $user, string $name, ?\DateTimeInterface $expiresAt = null, bool $admin = false): array
     {
         $plain = self::PREFIX.Str::random(self::RANDOM_LENGTH);
 
@@ -68,6 +69,7 @@ class ApiToken extends Model
             'name' => $name,
             'token_hash' => self::hash($plain),
             'last_four' => mb_substr($plain, -4),
+            'admin' => $admin,
             'expires_at' => $expiresAt,
         ])->save();
 
@@ -82,6 +84,16 @@ class ApiToken extends Model
     public function hasExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
+    }
+
+    /**
+     * Whether the key opens /api/v1/admin. The flag alone is not enough: the
+     * owner has to be an administrator at the moment of the request, so a key
+     * loses its reach the moment its owner loses the role.
+     */
+    public function grantsAdminApi(): bool
+    {
+        return $this->admin && $this->user?->isAdmin() === true;
     }
 
     /**
@@ -106,6 +118,7 @@ class ApiToken extends Model
             'uuid' => $this->uuid,
             'name' => $this->name,
             'last_four' => $this->last_four,
+            'admin' => $this->admin,
             'expires_at' => $this->expires_at?->toIso8601String(),
             'last_used_at' => $this->last_used_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),

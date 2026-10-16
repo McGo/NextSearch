@@ -26,6 +26,15 @@ There are two roles:
 Grants are given per folder, not per file. Whoever is granted a folder sees all of its
 indexed content, including every subfolder.
 
+Grants can also be set from outside, through the admin API (see
+[api.md](api.md#the-admin-api)). That needs a key an administrator created with the admin
+flag; it does exactly what the user management in the interface does, nothing more.
+
+An account can be **disabled** instead of deleted. A disabled account gets in by no route —
+not by password, not with an API key, not through an OAuth connection — and a session still
+open in a browser ends with its next request. Its grants, tags and saved searches stay
+where they are until it is enabled again.
+
 ## What this means in practice
 
 A folder is indexed using the credentials of *one* Nextcloud account — the one stored on

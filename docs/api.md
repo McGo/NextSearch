@@ -2,7 +2,8 @@
 
 NextSearch has a small public API under `/api/v1`, meant for the jobs the interface is
 awkward at: tagging a few thousand documents from a script, wiring a search into another
-tool, keeping a vocabulary in step with something else.
+tool, keeping a vocabulary in step with something else. An admin section lets another
+system manage accounts, folders and shares — see [The admin API](#the-admin-api).
 
 A machine-readable description sits next to this file in
 [`api/openapi.yaml`](api/openapi.yaml) — import it into Postman, Insomnia, Bruno or
@@ -27,7 +28,8 @@ A key carries no permissions of its own. A request does exactly what its owner c
 the interface: the same folder grants, the same tags, the same administrator rights or
 lack of them. Revoking the key stops it immediately.
 
-Keys are managed over the session only. A key cannot mint another key.
+Keys are managed over the session only. A key cannot mint another key. A key that is
+supposed to reach the admin API needs a flag of its own, see [The key](#the-key).
 
 ## Conventions
 
@@ -38,8 +40,9 @@ Keys are managed over the session only. A key cannot mint another key.
   it by uuid to be sure.
 - Errors come back as `{"message": "…"}`, validation errors additionally as
   `{"errors": {"field": ["…"]}}`.
-- Status codes: `401` no or invalid key · `403` no access to that document or tag · `404`
-  unknown, or none of your business · `422` validation · `429` rate limit.
+- Status codes: `401` no or invalid key, or a disabled account · `403` no access to that
+  document or tag, or no admin flag on the key · `404` unknown, or none of your business ·
+  `409` already exists · `422` validation · `429` rate limit.
 - The rate limit is 120 requests per minute per key, adjustable with `API_RATE_LIMIT`.
   Responses carry `X-RateLimit-Remaining`.
 
@@ -270,8 +273,151 @@ services underneath, same permissions, and the personal key from above works the
 what an assistant additionally gets is a browser flow, so it can fetch its own access
 without anybody copying a key around. See [mcp.md](mcp.md).
 
+## The admin API
+
+Under `/api/v1/admin` another system can keep accounts, folders and shares in step with
+itself — a family portal that hands out document areas, an onboarding script, a directory
+sync. Searching on a person's behalf is not part of it: that runs over the OAuth flow with
+that person's own account (see [mcp.md](mcp.md)), so the search only ever sees what they
+may see.
+
+### The key
+
+An administrator's ordinary key does not open this part. When creating a key under **User
+settings › API keys**, an administrator ticks **Unlock the admin API**; the list marks such
+keys. Two things are checked on every request:
+
+- the key carries the admin flag, and
+- its owner is an administrator *right now*. Demote or disable the owner and the key stops
+  working here, without anybody having to remember it.
+
+Without either, the answer is `403`. Give the key its own label and, if the integration is
+temporary, an expiry date.
+
+### Accounts
+
+```bash
+curl -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+     -d '{"name":"Erna Mittermaier","email":"erna@example.org","folders":["3f9c…"]}' \
+     https://search.example.org/api/v1/admin/users
+```
+
+```json
+{
+  "user": {
+    "uuid": "0199…", "name": "Erna Mittermaier", "email": "erna@example.org",
+    "role": "user", "is_admin": false, "disabled": false, "disabled_at": null,
+    "has_password": false, "invitation_pending": true,
+    "invitation_expires_at": "2026-10-23T09:14:00+00:00",
+    "created_at": "2026-10-16T09:14:00+00:00",
+    "folders": [{ "uuid": "3f9c…", "label": "Unterlagen Erna" }]
+  },
+  "invitation": {
+    "url": "https://search.example.org/invite/k2Jd…",
+    "expires_at": "2026-10-23T09:14:00+00:00"
+  }
+}
+```
+
+**NextSearch sends no mail.** Leave out `password` and the response carries an invitation
+link instead — once, in this response, and nowhere else; the database keeps only its hash.
+Pass it on in your own mail, with your own wording. The link opens a page where the person
+sets a password and is signed in. It works once and for `INVITATION_EXPIRE_HOURS` (default
+168, a week).
+
+| Call | |
+|---|---|
+| `GET /admin/users` | all accounts; `?email=` finds one by address, case-insensitive |
+| `POST /admin/users` | `name`, `email`, optional `password`, `role` (`user` default, `admin`), `folders` |
+| `PATCH /admin/users/{uuid}` | `name`, `email`, `password`, `role`, `disabled` |
+| `PUT /admin/users/{uuid}/folders` | `{"folders": [uuids]}` — exactly these afterwards |
+| `POST /admin/users/{uuid}/invitation` | a fresh link; the previous one stops working |
+
+**Disabling** — `PATCH` with `{"disabled": true}` — shuts the account without deleting
+anything. Sign-in, the account's API keys and its OAuth connections all stop working; a
+browser session that is still open ends with its next request. Tags and saved searches stay.
+`{"disabled": false}` opens it again. Sending the same value twice changes nothing. The
+key's own account and the last active administrator cannot be disabled.
+
+**A fresh invitation for an account that has a password** works as a reset link. The old
+password keeps working until the link is used; an account with two-factor still has to
+give its code at the next sign-in.
+
+Deleting accounts is deliberately not offered here. Disable instead — or delete in the
+interface, where the warning is.
+
+### Folders
+
+```bash
+curl -H "Authorization: Bearer $KEY" https://search.example.org/api/v1/admin/instances
+
+curl -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+     -d '{"instance":"8a1e…","label":"Unterlagen Erna","remote_path":"Familie/Unterlagen/Erna"}' \
+     https://search.example.org/api/v1/admin/folders
+```
+
+`remote_path` is relative to the WebDAV root of the account the instance is connected
+with, and it is checked against Nextcloud before the folder is created — a typo fails
+right here with `422`, not later as a run that silently finds nothing. A path that is
+already watched answers `409` and carries the existing folder in `folder`, so a caller that
+sets up its folders on every start can carry on with that uuid.
+
+`GET /admin/folders` lists them, `?instance=` narrows to one instance. Changing and
+removing folders stays in the interface.
+
+### Making a new file findable
+
+The scheduler crawls every folder on its interval. A system that just put a file into
+Nextcloud does not have to wait for that:
+
+```bash
+curl -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+     -d '{"path":"2026/rentenbescheid.pdf"}' \
+     https://search.example.org/api/v1/admin/folders/3f9c…/reindex
+```
+
+`path` is relative to the folder. A path to a file crawls the directory it lies in, a path
+to a directory crawls that directory and everything below it, no `path` crawls the whole
+folder. If a run is already going for the folder, the directory is added to it and the
+response names that run. A run over one directory does not count as a crawl of the folder,
+so the next regular one comes on time.
+
+Then ask for the document by its path:
+
+```bash
+curl -G -H "Authorization: Bearer $KEY" \
+     --data-urlencode "folder=3f9c…" \
+     --data-urlencode "path=2026/rentenbescheid.pdf" \
+     https://search.example.org/api/v1/admin/documents
+```
+
+```json
+{
+  "document": {
+    "uuid": "6f1c…", "name": "rentenbescheid.pdf",
+    "path": "2026/rentenbescheid.pdf", "remote_path": "Familie/Unterlagen/Erna/2026/rentenbescheid.pdf",
+    "state": "indexed", "failure_reason": null, "size": 184320,
+    "modified_at": "2026-10-16T09:10:00+00:00", "indexed_at": "2026-10-16T09:11:02+00:00",
+    "folder": { "uuid": "3f9c…", "label": "Unterlagen Erna" },
+    "url": "https://search.example.org/documents/6f1c…"
+  }
+}
+```
+
+`404` means the crawl has not reached the file yet. `state` is `pending` while the text is
+being extracted and `indexed` once the document can be found; `failed` and `skipped` say
+why in `failure_reason`. A scanned PDF that goes through OCR takes noticeably longer than
+one with a text layer, so poll gently.
+
+`url` is the document's page in the interface. Opening it takes a sign-in and a share of
+the folder, like everything else. **The link holds as long as the file stays where it
+is.** A document is tied to its path within the folder: rename the file or move it into
+another folder and the next crawl treats it as a new document, with a new uuid and
+without the old tags. Whoever moves files should look the new link up afterwards.
+
 ## What the API deliberately does not do
 
-No file contents, no downloads, no index administration, no user management. Those stay in
-the interface, where the consequences are visible. Should you need them, say so in an
-issue rather than reaching for the session endpoints — those are not a contract.
+No file contents and no downloads. No index maintenance, no instance credentials, no
+deleting of accounts or folders. Those stay in the interface, where the consequences are
+visible. Should you need them, say so in an issue rather than reaching for the session
+endpoints — those are not a contract.

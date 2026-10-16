@@ -243,12 +243,28 @@
         "email": "Email",
         "password": "Password",
         "passwordHintEdit": "Leave empty to keep it unchanged",
-        "passwordHintNew": "At least twelve characters",
+        "passwordHintNew": "At least twelve characters. Leave it empty to get an invitation link instead.",
         "role": "Role",
         "roleUserOption": "User — sees only shared folders",
         "roleAdminOption": "Administrator — sees and manages everything",
         "saveFailed": "Saving failed."
-      }
+      },
+      "disabled": "Disabled",
+      "invitationPending": "Invitation open until {at}",
+      "noPassword": "No password yet",
+      "invite": "Create invitation link",
+      "inviteFailed": "The invitation link could not be created.",
+      "invitationTitle": "Invitation link for {name}",
+      "invitationDesc": "NextSearch sends no mail. Pass the link on yourself, by mail or messenger. It works once and until {at}. A new link replaces this one.",
+      "invitationAsReset": "This account already has a password. The link resets it, but the old password keeps working until the link is used.",
+      "invitationCopy": "Copy",
+      "invitationCopied": "Link copied.",
+      "disable": "Disable",
+      "enable": "Enable again",
+      "disableConfirm": "Disable the account \"{email}\"? Sign-in, API keys and connected applications stop working. Tags and saved searches are kept.",
+      "disabledToast": "Account disabled.",
+      "enabledToast": "Account active again.",
+      "disableFailed": "That could not be changed."
     },
     "status": {
       "title": "Status",
@@ -482,7 +498,10 @@
       "expiredAt": "expired {at}",
       "revokeTitle": "Revoke key",
       "revokeConfirm": "“{name}” stops working immediately. Whatever uses it is locked out.",
-      "docsLink": "API documentation"
+      "docsLink": "API documentation",
+      "adminLabel": "Unlock the admin API",
+      "adminDesc": "The key may then also manage users, folders and shares under /api/v1/admin. Only for systems that actually need it.",
+      "adminBadge": "Admin API"
     },
     "mcp": {
       "title": "MCP access",
@@ -641,7 +660,13 @@
       "folderCount": "Folders",
       "people": "Accounts: {users}, {admins} of them with administrator rights.",
       "states": "{total} documents in the database, {failed} failed, {skipped} skipped. Skipped means the format is not covered or the file is too large.",
-      "permissions": "The shares here have nothing to do with the permissions in Nextcloud. Whoever is granted a folder reads its contents in full text and opens the originals — regardless of what Nextcloud itself would allow."
+      "permissions": "The shares here have nothing to do with the permissions in Nextcloud. Whoever is granted a folder reads its contents in full text and opens the originals — regardless of what Nextcloud itself would allow.",
+      "accountsTitle": "Accounts, invitations, disabling",
+      "accountsBody": "Creating an account without a password gives you an invitation link. NextSearch sends no mail; you pass the link on yourself. It works once and for {hours} hours, and a new link replaces the old one. For an account that already has a password, the link resets it. A disabled account gets in neither by signing in nor with a key nor through a connected application. Its tags and saved searches are kept.",
+      "accountsState": "Open invitations: {pending}. Disabled accounts: {disabled}.",
+      "adminApiTitle": "Admin API",
+      "adminApiBody": "Another system can maintain accounts, folders and shares through /api/v1/admin. That takes a key that had \"Unlock the admin API\" ticked when it was made; an administrator's ordinary key is not enough. If the owner loses the administrator role, the key no longer opens this part. Accounts and folders cannot be deleted this way.",
+      "adminApiKeys": "At the moment there is no such key. | At the moment there is one such key. | At the moment there are {count} such keys."
     }
   },
   "setup": {
@@ -679,5 +704,15 @@
     },
     "toHelp": "Go to help",
     "toRepo": "Full changelog in the repository"
+  },
+  "invite": {
+    "title": "Invitation",
+    "subtitle": "Set a password for your account",
+    "greeting": "Hello {name},",
+    "hint": "an account is ready for {email}. Choose a password and you are signed in. The link is valid until {at}.",
+    "submit": "Set password",
+    "invalid": "This invitation link is no longer valid.",
+    "failed": "The password could not be set.",
+    "toLogin": "To the sign-in"
   }
 }

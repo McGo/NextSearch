@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\AuthenticateMcp;
+use App\Http\Middleware\EnsureAdminApiKey;
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -43,6 +45,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
+            // An admin key on /api/v1/admin, not just any key of an admin.
+            'admin.api' => EnsureAdminApiKey::class,
+            // Cuts off a session whose account was disabled meanwhile.
+            'active' => EnsureUserIsActive::class,
             // A personal key or an OAuth token, and the 401 that tells an MCP
             // client where to fetch one.
             'auth.mcp' => AuthenticateMcp::class,

@@ -63,7 +63,7 @@ class AuthenticateMcp
                 ->where('token_hash', ApiToken::hash($plain))
                 ->first();
 
-            if ($token === null || $token->hasExpired() || $token->user === null) {
+            if ($token === null || $token->hasExpired() || $token->user === null || $token->user->isDisabled()) {
                 return null;
             }
 

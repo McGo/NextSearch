@@ -10,6 +10,35 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+### Added
+
+- **Admin API.** Under `/api/v1/admin` another system can keep accounts, folders and
+  shares in step with itself: create, change and disable accounts, find one by address,
+  set an account's folders idempotently, list instances, create and list watched folders,
+  crawl a folder or a single directory right away, and look a document up by its path to
+  get its state and a link. It takes a key created with the new admin flag by an
+  administrator; an administrator's ordinary key does not open it, and the key stops
+  working there once its owner is no longer an administrator. Deleting accounts and
+  folders stays in the interface. See [docs/api.md](docs/api.md#the-admin-api).
+- **Invitation links.** An account created without a password gets a one-time link to set
+  one, valid for `INVITATION_EXPIRE_HOURS` (default 168). NextSearch sends no mail: the
+  link comes back to whoever created the account, in the interface or through the API, and
+  they pass it on. A new link replaces the old one; for an account with a password it works
+  as a reset.
+- **Disabling accounts.** A disabled account keeps its tags, saved searches and grants, but
+  gets in by no route: no sign-in, no API key, no OAuth token, and an open session ends with
+  its next request. The user management has a button for it.
+
+### Changed
+
+- **Accounts are addressed by uuid.** The user management routes take the account's uuid
+  instead of its numeric id; existing accounts get one during the migration.
+- **Creating a folder that is already watched** answers `409` with the existing folder
+  instead of failing on the database constraint.
+- **Re-indexing takes a path.** `POST …/folders/{folder}/reindex` crawls only the given
+  directory (or the directory a given file lies in). Such a run does not count as a crawl
+  of the whole folder and does not push back the next scheduled one.
+
 ## [0.6.0] — 2026-08-23
 
 ### Security

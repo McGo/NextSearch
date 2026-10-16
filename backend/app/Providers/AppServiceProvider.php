@@ -84,11 +84,14 @@ class AppServiceProvider extends ServiceProvider
                 ->where('token_hash', ApiToken::hash($plain))
                 ->first();
 
-            if ($token === null || $token->hasExpired() || $token->user === null) {
+            if ($token === null || $token->hasExpired() || $token->user === null || $token->user->isDisabled()) {
                 return null;
             }
 
             $token->touchLastUsed();
+
+            // The admin routes ask which key it was, not only whose.
+            $request->attributes->set(ApiToken::class, $token);
 
             return $token->user;
         });

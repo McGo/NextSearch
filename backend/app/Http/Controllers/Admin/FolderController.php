@@ -47,6 +47,18 @@ class FolderController extends Controller
         $instance = NextcloudInstance::query()->where('uuid', $data['instance'])->firstOrFail();
         $path = trim($data['remote_path'], '/');
 
+        // The same path twice would only index everything twice. The answer
+        // carries the existing folder, so a caller that sets up its folders
+        // idempotently can carry on with it.
+        $existing = $instance->folders()->where('remote_path', $path)->first();
+
+        if ($existing !== null) {
+            return response()->json([
+                'message' => __('nextsearch.folder.already_watched'),
+                'folder' => $this->present($existing->load('instance')),
+            ], 409);
+        }
+
         // Better a clear error now than a run later that silently finds
         // nothing.
         try {
@@ -125,25 +137,54 @@ class FolderController extends Controller
     }
 
     /**
-     * Marks the folder for the next scheduler run and kicks it off right away.
+     * Kicks off a run for the folder right away.
+     *
+     * With `path` only that directory is crawled — relative to the folder. A
+     * path to a file crawls the directory it sits in, which is what someone
+     * who just dropped a file there wants.
      */
-    public function reindex(Request $request, WatchedFolder $folder, IndexRunner $runner): JsonResponse
+    public function reindex(Request $request, WatchedFolder $folder, IndexRunner $runner, ReadOnlyWebDavClient $dav): JsonResponse
     {
-        $full = $request->boolean('full');
+        $data = $request->validate([
+            'full' => ['sometimes', 'boolean'],
+            'path' => ['sometimes', 'nullable', 'string', 'max:1000', 'not_regex:#(^|/)\.\.(/|$)#'],
+        ]);
 
-        if ($full) {
+        $full = (bool) ($data['full'] ?? false);
+        $subPath = trim((string) ($data['path'] ?? ''), '/');
+
+        if ($subPath !== '') {
+            try {
+                $entry = $dav->stat($folder->instance, $folder->normalizedPath().'/'.$subPath);
+            } catch (NextcloudException $e) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            if (! $entry->isDirectory) {
+                $parent = dirname($subPath);
+                $subPath = $parent === '.' ? '' : $parent;
+            }
+        }
+
+        if ($full && $subPath === '') {
             // A full rebuild drops the existing set, so remnants of vanished
             // files leave the index too.
             $folder->documents()->update(['state' => Document::STATE_PENDING, 'etag' => null]);
         }
 
-        $run = $runner->start($folder, $full, trigger: 'manual');
+        $run = $runner->start($folder, $full, trigger: 'manual', subPath: $subPath);
 
         return response()->json([
-            'run' => ['uuid' => $run->uuid, 'state' => $run->state],
-            'message' => $run->wasRecentlyCreated
-                ? __('nextsearch.folder.run_started')
-                : __('nextsearch.folder.run_already'),
+            'run' => [
+                'uuid' => $run->uuid,
+                'state' => $run->state,
+                'path' => $subPath === '' ? null : $subPath,
+            ],
+            'message' => match (true) {
+                $run->wasRecentlyCreated => __('nextsearch.folder.run_started'),
+                $subPath !== '' => __('nextsearch.folder.run_joined'),
+                default => __('nextsearch.folder.run_already'),
+            },
         ]);
     }
 

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 
-#[Fillable(['state', 'trigger', 'full', 'started_at', 'finished_at', 'errors', 'pending_jobs'])]
+#[Fillable(['state', 'trigger', 'full', 'sub_path', 'started_at', 'finished_at', 'errors', 'pending_jobs'])]
 class IndexRun extends Model
 {
     use HasUuids;
@@ -100,7 +100,11 @@ class IndexRun extends Model
                 'updated_at' => now(),
             ]);
 
-        $this->markFolderCrawled();
+        // A run over one directory has not seen the rest of the folder. It
+        // neither resets the schedule nor draws the baseline for "Neu".
+        if ($this->sub_path === null) {
+            $this->markFolderCrawled();
+        }
     }
 
     private function markFolderCrawled(): void

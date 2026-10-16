@@ -24,7 +24,8 @@ useHead({
   }]
 })
 
-const showChrome = computed(() => route.path !== '/login')
+// The sign-in and the invitation page stand on their own, without navigation.
+const showChrome = computed(() => route.path !== '/login' && !route.path.startsWith('/invite/'))
 
 // The header/bottom navigation — the same two entries for everyone. Everything
 // admin lives in the user menu instead.

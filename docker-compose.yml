@@ -55,6 +55,7 @@ x-app-env: &app-env
   # shelf life in the interface, and that is not overwritten on restart.
   TAGS_NEW_DURATION_MINUTES: ${TAGS_NEW_DURATION_MINUTES:-10080}
   API_RATE_LIMIT: ${API_RATE_LIMIT:-120}
+  INVITATION_EXPIRE_HOURS: ${INVITATION_EXPIRE_HOURS:-168}
 
   # The MCP server under /api/mcp and the OAuth flow in front of it. Both need
   # APP_URL to be the address people actually reach — a client compares it

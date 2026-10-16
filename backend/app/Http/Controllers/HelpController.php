@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApiToken;
 use App\Models\Document;
 use App\Models\NextcloudInstance;
 use App\Models\Tag;
@@ -201,6 +202,19 @@ class HelpController extends Controller
             'default_interval_minutes' => (int) config('nextsearch.index.default_interval_minutes'),
             'users' => User::query()->count(),
             'admins' => User::query()->where('role', User::ROLE_ADMIN)->count(),
+            'users_disabled' => User::query()->whereNotNull('disabled_at')->count(),
+            'invitations_pending' => User::query()
+                ->whereNotNull('invitation_hash')
+                ->where('invitation_expires_at', '>', now())
+                ->count(),
+            'invitation_expire_hours' => (int) config('nextsearch.invitations.expire_hours'),
+            // Keys that open /api/v1/admin and still work — the flag, an owner
+            // who is an administrator, not expired.
+            'admin_api_keys' => ApiToken::query()
+                ->where('admin', true)
+                ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->whereHas('user', fn ($query) => $query->where('role', User::ROLE_ADMIN)->whereNull('disabled_at'))
+                ->count(),
             'documents_total' => Document::query()->count(),
             'documents_failed' => Document::query()->where('state', Document::STATE_FAILED)->count(),
             'documents_skipped' => Document::query()->where('state', Document::STATE_SKIPPED)->count(),
