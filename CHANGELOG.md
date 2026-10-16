@@ -10,6 +10,8 @@ Images for each release are published to Docker Hub as
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-10-16
+
 ### Added
 
 - **Admin API.** Under `/api/v1/admin` another system can keep accounts, folders and
@@ -267,6 +269,7 @@ Gotenberg, MinIO, Postgres and Redis.
   documented in `docs/hosting.md`.
 - **Docker Hub publishing** (multi-arch) via a GitHub Actions workflow.
 
+[0.7.0]: https://github.com/McGo/NextSearch/releases/tag/v0.7.0
 [0.6.0]: https://github.com/McGo/NextSearch/releases/tag/v0.6.0
 [0.5.0]: https://github.com/McGo/NextSearch/releases/tag/v0.5.0
 [0.4.0]: https://github.com/McGo/NextSearch/releases/tag/v0.4.0

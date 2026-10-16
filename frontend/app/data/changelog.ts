@@ -30,7 +30,7 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     version: '0.7.0',
-    date: null,
+    date: '2026-10-16',
     entries: [
       {
         kind: 'added',
