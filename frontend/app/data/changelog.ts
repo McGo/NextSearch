@@ -29,6 +29,22 @@ export interface Release {
 /** Newest first — that is the order the page shows them in. */
 export const CHANGELOG: Release[] = [
   {
+    version: '0.8.1',
+    date: '2026-10-21',
+    entries: [
+      {
+        kind: 'fixed',
+        de: 'Sicherheitsupdate auf PHP 8.5.12. Es schließt zwei Lücken, über die sich ohne Anmeldung Code einschleusen ließ.',
+        en: 'Security update to PHP 8.5.12. It closes two vulnerabilities that allowed code injection without signing in.'
+      },
+      {
+        kind: 'changed',
+        de: 'Das Backend läuft jetzt auf php-fpm und nginx statt FrankenPHP. Für den Betrieb ändert sich nichts.',
+        en: 'The backend now runs on php-fpm and nginx instead of FrankenPHP. Nothing changes for operation.'
+      }
+    ]
+  },
+  {
     version: '0.8.0',
     date: '2026-10-16',
     entries: [

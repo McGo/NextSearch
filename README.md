@@ -174,7 +174,7 @@ internally to Laravel; everything else sits on the Compose network with no publi
 | Service | Role |
 |---|---|
 | `web` | Nuxt 4 — user interface and API proxy |
-| `app` | Laravel 13 on FrankenPHP — API, MCP, auth, document streaming |
+| `app` | Laravel 13 on php-fpm + nginx — API, MCP, auth, document streaming |
 | `worker` | crawling, text extraction, preview images |
 | `scheduler` | triggers folders that are due |
 | `postgres` | instances, folders, users, file state |

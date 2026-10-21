@@ -7,7 +7,7 @@ well-trodden on Unraid. The point of this guide is to reuse what you already run
 and keep NextSearch's own footprint to **two containers**.
 
 That is possible because the app image ships an all-in-one role: one container
-runs FrankenPHP, the queue worker and the scheduler together under a supervisor.
+runs php-fpm, nginx, the queue worker and the scheduler together under a supervisor.
 So the NextSearch side is:
 
 - **`app`** — the all-in-one backend (`serve` + `worker` + `scheduler`)
@@ -56,7 +56,7 @@ name: nextsearch
 services:
   app:
     image: mirkohaaser/nextsearch-app:0.2.4
-    # All-in-one: FrankenPHP + queue worker + scheduler in one container.
+    # All-in-one: php-fpm + nginx + queue worker + scheduler in one container.
     command: ["app-entrypoint", "all"]
     environment:
       APP_KEY: base64:PASTE_A_GENERATED_KEY_HERE

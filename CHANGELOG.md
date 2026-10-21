@@ -5,10 +5,29 @@ All notable changes to NextSearch are documented here. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Images for each release are published to Docker Hub as
-`mirkohaaser/nextsearch-app` and `mirkohaaser/nextsearch-web`, multi-arch
-(amd64 + arm64).
+`mirkohaaser/nextsearch-app` and `mirkohaaser/nextsearch-web`, for amd64
+(up to 0.8.0 also arm64).
 
 ## [Unreleased]
+
+## [0.8.1] — 2026-10-21
+
+### Security
+
+- **PHP 8.5.12.** The app image now runs PHP 8.5.12, which fixes CVE-2026-109618 and
+  CVE-2026-109619 (remote code execution without authentication, CVSS 9.2). Every
+  earlier image ships a vulnerable PHP — update.
+
+### Changed
+
+- **php-fpm and nginx instead of FrankenPHP.** The app image is built on the shared base
+  image `mirkohaaser/php:8.5.12-nginx` (Alpine). It still serves on port 8080, the
+  `serve`, `worker`, `scheduler` and `all` roles work as before.
+- **Everything runs as `www-data`.** php-fpm, the worker, the scheduler and the boot steps
+  share one user. On the first start an existing `storage` volume that still belongs to
+  root is handed over to `www-data` once.
+- **amd64 only.** The images are built for amd64; arm64 builds are paused until the base
+  image is available for arm64.
 
 ## [0.8.0] — 2026-10-16
 
@@ -286,6 +305,7 @@ Gotenberg, MinIO, Postgres and Redis.
   documented in `docs/hosting.md`.
 - **Docker Hub publishing** (multi-arch) via a GitHub Actions workflow.
 
+[0.8.1]: https://github.com/McGo/NextSearch/releases/tag/v0.8.1
 [0.8.0]: https://github.com/McGo/NextSearch/releases/tag/v0.8.0
 [0.7.0]: https://github.com/McGo/NextSearch/releases/tag/v0.7.0
 [0.6.0]: https://github.com/McGo/NextSearch/releases/tag/v0.6.0

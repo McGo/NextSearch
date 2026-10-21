@@ -97,7 +97,7 @@ server you don't need the source or a build step — the images are published to
 Docker Hub and you only pull them.
 
 `mirkohaaser/nextsearch-app` and `mirkohaaser/nextsearch-web` are built
-multi-arch (amd64 + arm64) by the `Publish` GitHub Actions workflow. A version
+for amd64 by the `Publish` GitHub Actions workflow. A version
 tag `v1.2.0` publishes the pinned tags `1.2.0` and `1.2` automatically; `latest`
 (the bleeding edge) is published only on demand, by running the workflow
 manually from `main`. Deploy from a pinned version, not `latest`.
@@ -136,9 +136,8 @@ git push origin v1.2.0
 
 `latest` is published manually: Actions → Publish → Run workflow, from `main`.
 
-The workflow builds both images for both architectures and pushes them. The
-arm64 build runs under emulation and is noticeably slower — drop `linux/arm64`
-from `platforms` in `.github/workflows/publish.yml` if you only deploy on amd64.
+The workflow builds both images for amd64 and pushes them. arm64 is paused
+until the PHP base image `mirkohaaser/php` is published for arm64 as well.
 
 ## Moving a local setup onto a server
 
